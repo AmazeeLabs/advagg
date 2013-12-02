@@ -947,26 +947,62 @@ function advagg_install_check_via_http(&$requirements) {
         }
 
         // Test 304.
-        // Send a If-Modified-Since header and see if the web server returns 304.
-        $url = file_create_url($url_path . '/' . $filename);
-        $options = array(
-          'timeout' => 10,
-          'headers' => array(
-            'Accept-Encoding' => 'gzip, deflate',
-            'If-Modified-Since' => $request->headers['last-modified'],
-          )
-        );
-
-        // Send request.
-        $request = drupal_http_request($url, $options);
-        if ($request->code != 304) {
-          // Recommend servers configuration be adjusted.
-          $requirements['advagg_' . $type . '_304' . $key] = array(
-            'title' => $t('Adv CSS/JS Agg - If-Modified-Since'),
-            'severity' => REQUIREMENT_WARNING,
-            'value' => $t('The If-Modified-Since header is being ignored by your web server.'),
-            'description' => $t('The web servers configuration will need to be adjusted. The server should have responded with a 304, instead a @code was returned.', array('@code' => $request->code)),
+        if (isset($request->headers['last-modified'])) {
+          // Send a If-Modified-Since header and see if the web server returns 304.
+          $url = file_create_url($url_path . '/' . $filename);
+          $options = array(
+            'timeout' => 10,
+            'headers' => array(
+              'Accept-Encoding' => 'gzip, deflate',
+              'If-Modified-Since' => $request->headers['last-modified'],
+            )
           );
+
+          // Send request.
+          $request = drupal_http_request($url, $options);
+          if ($request->code != 304) {
+            // Recommend servers configuration be adjusted.
+            $requirements['advagg_' . $type . '_304' . $key] = array(
+              'title' => $t('Adv CSS/JS Agg - If-Modified-Since'),
+              'severity' => REQUIREMENT_WARNING,
+              'value' => $t('The If-Modified-Since header is being ignored by your web server.'),
+              'description' => $t('The web servers configuration will need to be adjusted. The server should have responded with a 304, instead a @code was returned.', array('@code' => $request->code)),
+            );
+          }
+        }
+        else {
+          // Get path to advagg .htaccess file.
+          $files = array();
+          $files[] = $file_path . '/.htaccess';
+          $files[] = DRUPAL_ROOT . '/.htaccess';
+
+          // Check for bad .htaccess files.
+          $bad_config_found = FALSE;
+          foreach ($files as $file) {
+            if (!file_exists($file)) {
+              continue;
+            }
+            $contents = file_get_contents($file);
+            if (strpos($contents, 'Header unset Last-Modified') !== FALSE) {
+              $bad_config_found = TRUE;
+              $requirements['advagg_' . $type . '_last-modified_' . $key] = array(
+                'title' => $t('Adv CSS/JS Agg - Last-Modified'),
+                'severity' => REQUIREMENT_WARNING,
+                'value' => $t('The Last-Modified header is not being sent out by your web server.'),
+                'description' => $t('The web servers configuration will need to be adjusted. The server should have sent out a Last-Modified header. Remove "Header unset Last-Modified" inside this file to fix the issue: @file', array('@file' => $file)),
+              );
+            }
+          }
+
+          // Recommend servers configuration be adjusted.
+          if (!$bad_config_found) {
+            $requirements['advagg_' . $type . '_last-modified_' . $key] = array(
+              'title' => $t('Adv CSS/JS Agg - Last-Modified'),
+              'severity' => REQUIREMENT_WARNING,
+              'value' => $t('The Last-Modified header is not being sent out by your web server.'),
+              'description' => $t('The web servers configuration will need to be adjusted. The server should have sent out a Last-Modified header.'),
+            );
+          }
         }
       }
     }
