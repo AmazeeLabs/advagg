@@ -614,17 +614,12 @@ function advagg_build_aggregate_plans($files_to_aggregate, $type) {
 function advagg_create_aggregate_files($plans) {
   $filenames = array();
   foreach ($plans as $plan) {
-    // Use cache here?
-    if (!file_exists($plan['filepath'])) {
-      $filenames[] = $plan['filename'];
-    }
-  }
-  if (empty($filenames)) {
-    return;
+    $filenames[] = $plan['filename'];
   }
 
   // If the httprl module exists and we want to use it.
   if (module_exists('httprl') && variable_get('advagg_use_httprl', ADVAGG_USE_HTTPRL) && httprl_is_background_callback_capable()) {
+
     // Setup callback options array; call function in the background.
     $callback_options = array(
       array(

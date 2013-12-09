@@ -1661,6 +1661,11 @@ function advagg_build_aggregates($filenames) {
   module_load_include('inc', 'advagg', 'advagg.missing');
   $return = array();
   foreach ($filenames as $filename) {
+    // Skip if the file exists.
+    if (file_exists($filename)) {
+      continue;
+    }
+
     // Only create the file if we have a lock.
     $lock_name = 'advagg_' . $filename;
     if (lock_acquire($lock_name, 10)) {
