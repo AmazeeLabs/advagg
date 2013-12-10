@@ -216,6 +216,15 @@ Technical Details:
    the aggregate. Changing a setting that affects how aggregates get built
    (like toggling "Create .gz files") will change this value.
 
+ * To trigger scanning of the CSS / JS file cache to identify new files, run
+   the following:
+
+     // Trigger reloading the CSS and JS file cache in AdvAgg.
+     if (module_exists('advagg')) {
+       module_load_include('inc', 'advagg', 'advagg.cache');
+       advagg_push_new_changes();
+     }
+
 Hooks:
 
 Modify file contents.
