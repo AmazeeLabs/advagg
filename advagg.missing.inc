@@ -647,6 +647,11 @@ function advagg_save_aggregate($filename, $files, $type, $aggregate_settings) {
     advagg_save_data($uri, $data);
     if (!file_exists($uri) || filesize($uri) == 0) {
       watchdog('advagg', 'Write to file system failed. %uri', array('%uri' => $uri), WATCHDOG_EMERGENCY);
+      // If the file is empty, remove it. Serving via drupal is better than an
+      // empty aggregate being served.
+      if (file_exists($uri) && filesize($uri) == 0) {
+        @unlink($uri);
+      }
     }
   }
   return $files_to_save;
@@ -669,6 +674,11 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   // File already exists.
   if (!$overwrite && file_exists($uri) && filesize($uri) > 0) {
     return;
+  }
+
+  // If data is empty, write a space.
+  if (empty($data)) {
+    $data = ' ';
   }
 
   // Perform the replace operation. Since there could be multiple processes
