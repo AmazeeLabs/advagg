@@ -689,6 +689,9 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
 
   // Get a temporary filename in the destination directory.
   $temporary_file = drupal_tempnam(drupal_dirname($uri), 'file');
+  // Get the extension of the original filename and append it to the temp file
+  // name. Preserves the mime type in different stream wrapper implementations.
+  $temporary_file .= "." . pathinfo($uri, PATHINFO_EXTENSION);
   // Save to temporary filename in the destination directory.
   $filepath = file_unmanaged_save_data($data, $temporary_file, FILE_EXISTS_REPLACE);
 
