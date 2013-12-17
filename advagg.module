@@ -98,8 +98,9 @@ define('ADVAGG_CLEAR_SCRIPTS', TRUE);
 
 // Core hook implementations.
 /**
- * Inbound URL rewrite helper
- * If host includes subdomain, rewrite URI and internal path if necessary
+ * Inbound URL rewrite helper.
+ *
+ * If host includes subdomain, rewrite URI and internal path if necessary.
  */
 function advagg_url_inbound_alter(&$path, $original_path, $path_language) {
   // Do nothing if this has been disabled.
@@ -502,12 +503,12 @@ function advagg_js_alter(&$js) {
       continue;
     }
 
-    // If type is external but doesn't start with http or //, change it to file.
+    // If type is external but doesn't start with http or // change it to file.
     if ($value['type'] == 'external' && stripos($value['data'], 'http://') !== 0 && stripos($value['data'], 'https://') !== 0 && stripos($value['data'], '//') !== 0) {
       $value['type'] = 'file';
     }
 
-    // If type is file but it starts with http or //, change it to external.
+    // If type is file but it starts with http or // change it to external.
     if ((stripos($value['data'], 'http://') === 0 || stripos($value['data'], 'https://') === 0 || stripos($value['data'], '//') === 0) && $value['type'] == 'file') {
       $value['type'] = 'external';
     }
@@ -528,12 +529,12 @@ function advagg_css_alter(&$css) {
       continue;
     }
 
-    // If type is external but doesn't start with http or //, change it to file.
+    // If type is external but doesn't start with http or // change it to file.
     if ($value['type'] == 'external' && stripos($value['data'], 'http://') !== 0 && stripos($value['data'], 'https://') !== 0 && stripos($value['data'], '//') !== 0) {
       $value['type'] = 'file';
     }
 
-    // If type is file but it starts with http or //, change it to external.
+    // If type is file but it starts with http or // change it to external.
     if ((stripos($value['data'], 'http://') === 0 || stripos($value['data'], 'https://') === 0 || stripos($value['data'], '//') === 0) && $value['type'] == 'file') {
       $value['type'] = 'external';
     }
