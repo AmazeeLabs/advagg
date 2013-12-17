@@ -91,6 +91,11 @@ define('ADVAGG_URL_INBOUND_ALTER', TRUE);
  */
 define('ADVAGG_SCRIPTS_SCOPE_ANYWHERE', FALSE);
 
+/**
+ * Empty the scripts key inside of template_process_html replacement function.
+ */
+define('ADVAGG_CLEAR_SCRIPTS', TRUE);
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper
@@ -962,6 +967,10 @@ function _advagg_process_html(&$variables) {
   }
 
   // JS needs hacks.
+  // Clear out all old scripts
+  if (variable_get('advagg_clear_scripts', ADVAGG_CLEAR_SCRIPTS)) {
+    $variables['scripts'] = '';
+  }
   if (!isset($variables['scripts'])) {
     $variables['scripts'] = '';
   }
@@ -2078,7 +2087,7 @@ function advagg_group_js($javascript) {
         break;
 
       default:
-        // Define this here so we dont get undefined alerts down below.
+        // Define this here so we don't get undefined alerts down below.
         $group_keys = NULL;
         break;
     }

@@ -148,6 +148,10 @@ settings.php. In general they are settings that should not be changed.
     // it.
     $conf['advagg_scripts_scope_anywhere'] = FALSE;
 
+    // Empty the scripts key inside of template_process_html replacement
+    // function.
+    $conf['advagg_scripts_scope_anywhere'] = FALSE;
+
     // Set the jQuery UI version.
     $conf['advagg_css_cdn_jquery_ui_version'] = '1.8.7';
 
@@ -219,11 +223,11 @@ Technical Details:
  * To trigger scanning of the CSS / JS file cache to identify new files, run
    the following:
 
-     // Trigger reloading the CSS and JS file cache in AdvAgg.
-     if (module_exists('advagg')) {
-       module_load_include('inc', 'advagg', 'advagg.cache');
-       advagg_push_new_changes();
-     }
+      // Trigger reloading the CSS and JS file cache in AdvAgg.
+      if (module_exists('advagg')) {
+        module_load_include('inc', 'advagg', 'advagg.cache');
+        advagg_push_new_changes();
+      }
 
 Hooks:
 
