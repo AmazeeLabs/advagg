@@ -646,7 +646,7 @@ function advagg_save_aggregate($filename, $files, $type, $aggregate_settings) {
   foreach ($files_to_save as $uri => $data) {
     advagg_save_data($uri, $data);
     if (!file_exists($uri) || filesize($uri) == 0) {
-      watchdog('advagg', 'Write to file system failed. %uri', array('%uri' => $uri), WATCHDOG_EMERGENCY);
+      watchdog('advagg', 'Write to file system failed. %uri', array('%uri' => $uri), WATCHDOG_ALERT);
       // If the file is empty, remove it. Serving via drupal is better than an
       // empty aggregate being served.
       if (file_exists($uri) && filesize($uri) == 0) {
