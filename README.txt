@@ -328,7 +328,7 @@ core .htaccess file (located at the webroot level).
         Header unset ETag
         <IfModule !mod_expires.c>
           # Set a far future Cache-Control header to 52 weeks.
-          Header set Cache-Control "max-age=A31449600, no-transform, public"
+          Header set Cache-Control "max-age=31449600, no-transform, public"
         </IfModule>
         <IfModule mod_expires.c>
           Header append Cache-Control "no-transform, public"

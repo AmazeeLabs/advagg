@@ -297,7 +297,7 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
   $data .= "    Header set Content-Type text/${content_type}\n";
   $data .= "    <IfModule !mod_expires.c>\n";
   $data .= "      # Set a far future Cache-Control header to 52 weeks.\n";
-  $data .= "      Header set Cache-Control \"max-age=A31449600, no-transform, public\"\n";
+  $data .= "      Header set Cache-Control \"max-age=31449600, no-transform, public\"\n";
   $data .= "    </IfModule>\n";
   $data .= "    <IfModule mod_expires.c>\n";
   $data .= "      Header append Cache-Control \"no-transform, public\"\n";
