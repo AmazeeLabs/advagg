@@ -319,7 +319,7 @@ core .htaccess file (located at the webroot level).
         FileETag None
         # Enable expirations.
         ExpiresActive On
-        # Cache all aggregated js files for 52 weeks after access (A).
+        # Cache all aggregated css/js files for 52 weeks after access (A).
         ExpiresDefault A31449600
       </IfModule>
 
