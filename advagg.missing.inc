@@ -204,13 +204,10 @@ function advagg_missing_set_farfuture_headers() {
     header('Set-Cookie:');
     header('Set-Cookie:');
   }
-  // Set a far future Cache-Control header (480 weeks), which prevents
+  // Set a far future Cache-Control header (52 weeks), which prevents
   // intermediate caches from transforming the data and allows any
   // intermediate cache to cache it, since it's marked as a public resource.
-  header('Cache-Control: max-age=290304000, no-transform, public');
-  // Set a far future Expires header. The maximum UNIX timestamp is somewhere
-  // in 2038. Set it to a date in 2037, just to be safe.
-  header("Expires: Tue, 20 Jan 2037 04:08:15 GMT");
+  header('Cache-Control: max-age=31449600, no-transform, public');
 }
 
 /**
@@ -281,27 +278,30 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
   $data .= "      # Use ETags.\n";
   $data .= "      FileETag MTime Size\n";
   $data .= "    </IfModule>\n";
+  $data .= "  </IfModule>\n";
   $data .= "\n";
-  $data .= "    # Use Expires Directive.\n";
-  $data .= "    <IfModule mod_expires.c>\n";
-  $data .= "      # Do not use ETags.\n";
-  $data .= "      FileETag None\n";
-  $data .= "      # Enable expirations.\n";
-  $data .= "      ExpiresActive On\n";
-  $data .= "      # Cache all aggregated ${type} files for 480 weeks after access (A).\n";
-  $data .= "      ExpiresDefault A290304000\n";
-  $data .= "    </IfModule>\n";
+  $data .= "  # Use Expires Directive.\n";
+  $data .= "  <IfModule mod_expires.c>\n";
+  $data .= "    # Do not use ETags.\n";
+  $data .= "    FileETag None\n";
+  $data .= "    # Enable expirations.\n";
+  $data .= "    ExpiresActive On\n";
+  $data .= "    # Cache all aggregated ${type} files for 52 weeks after access (A).\n";
+  $data .= "    ExpiresDefault A31449600\n";
   $data .= "  </IfModule>\n";
   $data .= "\n";
   $data .= "  <IfModule mod_headers.c>\n";
-  $data .= "    # Serve correct content type.\n";
-  $data .= "    Header set Content-Type text/${content_type}\n";
-  $data .= "    # Set a far future Cache-Control header to 480 weeks.\n";
-  $data .= "    Header set Cache-Control \"max-age=290304000, no-transform, public\"\n";
-  $data .= "    # Set a far future Expires header.\n";
-  $data .= "    Header set Expires \"Tue, 20 Jan 2037 04:20:42 GMT\"\n";
   $data .= "    # Do not use etags for cache validation.\n";
   $data .= "    Header unset ETag\n";
+  $data .= "    # Serve correct content type.\n";
+  $data .= "    Header set Content-Type text/${content_type}\n";
+  $data .= "    <IfModule !mod_expires.c>\n";
+  $data .= "      # Set a far future Cache-Control header to 52 weeks.\n";
+  $data .= "      Header set Cache-Control \"max-age=A31449600, no-transform, public\"\n";
+  $data .= "    </IfModule>\n";
+  $data .= "    <IfModule mod_expires.c>\n";
+  $data .= "      Header append Cache-Control \"no-transform, public\"\n";
+  $data .= "    </IfModule>\n";
   $data .= "  </IfModule>\n";
   $data .= "</FilesMatch>\n";
 

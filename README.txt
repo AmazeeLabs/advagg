@@ -278,7 +278,7 @@ Note that @drupal might be @rewrite depending on your servers configuration.
       access_log  off;
       expires     max;
       add_header  ETag "";
-      add_header  Cache-Control "max-age=290304000, no-transform, public";
+      add_header  Cache-Control "max-age=31449600, no-transform, public";
       try_files   $uri @drupal;
     }
 
@@ -306,24 +306,33 @@ core .htaccess file (located at the webroot level).
     <FilesMatch "^(css|js)__[A-Za-z0-9-_]{43}__[A-Za-z0-9-_]{43}__[A-Za-z0-9-_]{43}.(css|js)(\.gz)?">
       # No mod_headers
       <IfModule !mod_headers.c>
-        # Use Expires Directive.
-        <IfModule mod_expires.c>
-          # Do not use ETags.
-          FileETag None
-          # Enable expirations.
-          ExpiresActive On
-          # Cache all aggregated css/js files for 480 weeks after access (A).
-          ExpiresDefault A290304000
+        # No mod_expires
+        <IfModule !mod_expires.c>
+          # Use ETags.
+          FileETag MTime Size
         </IfModule>
       </IfModule>
 
+      # Use Expires Directive.
+      <IfModule mod_expires.c>
+        # Do not use ETags.
+        FileETag None
+        # Enable expirations.
+        ExpiresActive On
+        # Cache all aggregated js files for 52 weeks after access (A).
+        ExpiresDefault A31449600
+      </IfModule>
+
       <IfModule mod_headers.c>
-        # Set a far future Cache-Control header to 480 weeks.
-        Header set Cache-Control "max-age=290304000, no-transform, public"
-        # Set a far future Expires header.
-        Header set Expires "Tue, 20 Jan 2037 04:20:42 GMT"
         # Do not use etags for cache validation.
         Header unset ETag
+        <IfModule !mod_expires.c>
+          # Set a far future Cache-Control header to 52 weeks.
+          Header set Cache-Control "max-age=A31449600, no-transform, public"
+        </IfModule>
+        <IfModule mod_expires.c>
+          Header append Cache-Control "no-transform, public"
+        </IfModule>
       </IfModule>
     </FilesMatch>
 
