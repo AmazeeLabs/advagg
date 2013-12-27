@@ -646,7 +646,22 @@ function advagg_save_aggregate($filename, $files, $type, $aggregate_settings) {
   foreach ($files_to_save as $uri => $data) {
     advagg_save_data($uri, $data);
     if (!file_exists($uri) || filesize($uri) == 0) {
-      watchdog('advagg', 'Write to file system failed. %uri', array('%uri' => $uri), WATCHDOG_ALERT);
+      if ($type == 'css') {
+        $full_dir = DRUPAL_ROOT . '/' . $css_path[1];
+      }
+      elseif ($type == 'js') {
+        $full_dir = DRUPAL_ROOT . '/' . $js_path[1];
+      }
+      $free_space = @disk_free_space($full_dir);
+      if ($free_space !== FALSE && strlen($data) > $free_space) {
+        watchdog('advagg', 'Write to file system failed. Disk is full. %uri', array('%uri' => $uri), WATCHDOG_ALERT);
+      }
+      elseif (!is_writable($full_dir)) {
+        watchdog('advagg', 'Write to file system failed. Check directory permissions. %uri', array('%uri' => $uri), WATCHDOG_ERROR);
+      }
+      else {
+        watchdog('advagg', 'Write to file system failed. %uri', array('%uri' => $uri), WATCHDOG_ERROR);
+      }
       // If the file is empty, remove it. Serving via drupal is better than an
       // empty aggregate being served.
       if (file_exists($uri) && filesize($uri) == 0) {
