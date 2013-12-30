@@ -298,6 +298,22 @@ variable must be set inside of settings.php. Add this to your settings.php file:
     $conf['fast_404_string_whitelisting'][] = '/advagg_';
 
 
+Modules like the Central Authentication Services https://drupal.org/project/cas
+will redirect all anonymous requests to a login page. Most of the time there is
+a setting that allows certian pages to be excluded from the redirect. You should
+add the following to those exclusions. Note that sites/default/files is the
+location of you public file system (public://) so you might have to adjust this
+to fit your setup. services/* is the default (CAS_EXCLUDE) and
+httprl_async_function_callback is needed if httprl will be used.
+    services/*
+    sites/default/files/advagg_css/*
+    sites/default/files/advagg_js/*
+    httprl_async_function_callback
+
+In the example of CAS this setting can be found on the admin/config/people/cas
+page and under Redirection there should be a setting called "Excluded Pages".
+
+
 If Far-Future headers are not being sent out and you are using Apache here are
 some tips to hopefully get it working. For Apache enable mod_rewrite,
 mod_headers, and mod_expires. Add the following code to the bottom of Drupal's
