@@ -309,6 +309,9 @@ function advagg_update_7200(&$sandbox) {
  * Implements hook_update_N().
  */
 function advagg_update_7201(&$sandbox) {
+  // Make sure the advagg_get_root_files_dir() function is available.
+  drupal_load('module', 'advagg');
+
   // Get paths to .htaccess file.
   list($css_path, $js_path) = advagg_get_root_files_dir();
   $files['css'] = $css_path[0] . '/.htaccess';
@@ -359,6 +362,9 @@ function advagg_update_7201(&$sandbox) {
  * Update the .htaccess file in the advagg directories.
  */
 function advagg_update_7202(&$sandbox) {
+  // Make sure the advagg_get_root_files_dir() function is available.
+  drupal_load('module', 'advagg');
+
   // Get paths to .htaccess file.
   list($css_path, $js_path) = advagg_get_root_files_dir();
   $files['css'] = $css_path[0] . '/.htaccess';
