@@ -13,6 +13,12 @@ function advagg_validator_admin_css_w3_form() {
 
   $form = advagg_validator_admin_form_generator('css', FALSE);
 
+  // Add notice that using this form will submit files to a remote server.
+  $form['notice'] = array(
+    '#markup' => '<div>' . t('Notice: The form below will submit files to the <a href="http://jigsaw.w3.org/css-validator/">http://jigsaw.w3.org/css-validator/</a> service if used.') . '</div>',
+    '#weight' => -1,
+  );
+
   return $form;
 }
 
@@ -29,8 +35,8 @@ function advagg_validator_admin_css_lint_form() {
     'data' => drupal_get_path('module', 'advagg_validator') . '/advagg_validator.js',
     'type' => 'file',
   );
-  return $form;
 
+  return $form;
 }
 
 function advagg_validator_admin_js_hint_form() {
