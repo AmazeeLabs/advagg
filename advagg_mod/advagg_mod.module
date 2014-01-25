@@ -220,6 +220,9 @@ function advagg_mod_js_alter(&$js) {
   }
 }
 
+/**
+ * Implements hook_js_alter().
+ */
 function advagg_mod_sort_css_js(&$array, $type) {
   if (   ($type == 'js' && variable_get('advagg_mod_js_adjust_sort_external', ADVAGG_MOD_JS_ADJUST_SORT_EXTERNAL))
       || ($type == 'css' && variable_get('advagg_mod_css_adjust_sort_external', ADVAGG_MOD_CSS_ADJUST_SORT_EXTERNAL))

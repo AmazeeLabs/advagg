@@ -283,7 +283,7 @@ function advagg_admin_info_form($form, $form_state) {
       ->execute();
     while ($row = $results->fetchAssoc()) {
       $form[$type][$row['filename_hash']] = array(
-        '#markup' => '<div>' . format_plural($row['changes'], 'changed 1 time - %file<br />', 'changed %changes times - %file<br /></div>',    array(
+        '#markup' => '<div>' . format_plural($row['changes'], 'changed 1 time - %file<br />', 'changed %changes times - %file<br /></div>', array(
           '%changes' => $row['changes'],
           '%file' => $row['filename'],
         )),
@@ -360,7 +360,8 @@ function advagg_admin_info_form($form, $form_state) {
     '#markup' => t('Current Value: %value. Below is the listing of variables and hooks used to generate the 3rd hash of an aggregates filename.', array('%value' => advagg_get_current_hooks_hash())),
   );
   $form['hooks_variables_hash']['output'] = array(
-    '#markup' => '<pre>' . print_r(advagg_current_hooks_hash_array(), TRUE) . '</pre>'
+    // @ignore production_php
+    '#markup' => '<pre>' . print_r(advagg_current_hooks_hash_array(), TRUE) . '</pre>',
   );
 
   // Get info about a file.
@@ -423,7 +424,7 @@ function advagg_admin_toggle_bypass_cookie() {
   // If the cookie does not exist then set it.
   else {
     // Cookie will last for 12 hours.
-    setcookie($cookie_name, $key, REQUEST_TIME+60*60*12, $GLOBALS['base_path'], '.' . $_SERVER['HTTP_HOST']);
+    setcookie($cookie_name, $key, REQUEST_TIME + (60 * 60 * 12), $GLOBALS['base_path'], '.' . $_SERVER['HTTP_HOST']);
     $_COOKIE[$cookie_name] = $key;
     drupal_set_message(t('AdvAgg Bypass Cookie Set.'));
   }
@@ -443,6 +444,7 @@ function advagg_admin_get_file_info_submit($form, &$form_state) {
   else {
     $output = '<pre>' . check_plain(print_r($info, TRUE)) . '</pre>';
   }
+  // @ignore security_dsm
   drupal_set_message($output);
 }
 
@@ -482,8 +484,9 @@ function advagg_admin_get_file_info_validate($form, &$form_state) {
 /**
  * Get detailed info about the given filename.
  *
- * @param $filename
+ * @param string $filename
  *   Name of file to lookup.
+ *
  * @return array
  *   Returns an array of detailed info about this file.
  */
@@ -615,7 +618,7 @@ function advagg_admin_increment_global_counter() {
 }
 
 /**
- *  Scan for missing files and remove the associated entries in the database.
+ * Scan for missing files and remove the associated entries in the database.
  */
 function advagg_admin_remove_missing_files_from_db_button() {
   module_load_include('inc', 'advagg', 'advagg.cache');

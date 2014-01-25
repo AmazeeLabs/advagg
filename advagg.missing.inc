@@ -14,7 +14,7 @@ function advagg_missing_aggregate() {
   // Do not stop processing this request.
   ignore_user_abort(TRUE);
 
-  // Generate missing file
+  // Generate missing file.
   $msg = advagg_missing_generate();
 
   // If here send out fast 404.
@@ -24,7 +24,7 @@ function advagg_missing_aggregate() {
 /**
  * Generates a missing CSS/JS file and send it to client.
  *
- * @return
+ * @return string
  *   text if bundle couldn't be generated.
  */
 function advagg_missing_generate() {
@@ -77,7 +77,7 @@ function advagg_missing_generate() {
 
   // Redirect and try again on failure.
   if (empty($created)) {
-    $redirect_counter++;
+    ++$redirect_counter;
     $uri .= '?redirect_counter=' . $redirect_counter;
     header('Location: ' . $uri, TRUE, 307);
     exit();
@@ -95,13 +95,13 @@ function advagg_missing_generate() {
 /**
  * Send the css/js file to the client.
  *
- * @param $files_to_save
+ * @param array $files_to_save
  *   Array of filenames and data.
- * @param $uri
+ * @param string $uri
  *   Requested filename.
- * @param $created
+ * @param bool $created
  *   If file was created in a different thread.
- * @param $type
+ * @param string $type
  *   css or js
  */
 function advagg_missing_send_saved_file($files_to_save, $uri, $created, $type, $redirect_counter) {
@@ -131,10 +131,10 @@ function advagg_missing_send_saved_file($files_to_save, $uri, $created, $type, $
   if ($return_compressed) {
     foreach ($files_to_save as $uri => $data) {
       // See if this uri contains .gz near the end of it.
-      $pos = strripos($uri, '.gz', 91 + strlen(ADVAGG_SPACE)*3);
+      $pos = strripos($uri, '.gz', 91 + strlen(ADVAGG_SPACE) * 3);
       if (!empty($pos)) {
         $len = strlen($uri);
-        if ($pos == $len-3) {
+        if ($pos == $len - 3) {
           // .gz file exists, send it out.
           header('Content-Encoding: gzip');
           break;
@@ -152,6 +152,7 @@ function advagg_missing_send_saved_file($files_to_save, $uri, $created, $type, $
     header($_SERVER['SERVER_PROTOCOL'] . " 200 OK");
 
     // Insure the Last-Modified header is set so 304's work correctly.
+    // @ignore druplart_andor_assignment
     if (file_exists($uri) && $filemtime = @filemtime($uri)) {
       header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T', $filemtime));
     }
@@ -169,7 +170,7 @@ function advagg_missing_send_saved_file($files_to_save, $uri, $created, $type, $
   }
   else {
     // Redirect and try again on failure.
-    $redirect_counter++;
+    ++$redirect_counter;
     $uri .= '?redirect_counter=' . $redirect_counter;
     header('Location: ' . $uri, TRUE, 307);
     exit();
@@ -181,6 +182,7 @@ function advagg_missing_send_saved_file($files_to_save, $uri, $created, $type, $
  */
 function advagg_missing_set_farfuture_headers() {
   // Hat tip to the CDN module for the far future headers.
+  // @ignore sniffer_commenting_inlinecomment_spacingafter
 
   // Browsers that implement the W3C Access Control specification might refuse
   // to use certain resources such as fonts if those resources violate the
@@ -213,12 +215,12 @@ function advagg_missing_set_farfuture_headers() {
 /**
  * Given a filename create that file.
  *
- * @param $filename
+ * @param string $filename
  *   Just the filename no path information.
- * @param $no_alters
+ * @param bool $no_alters
  *   Set to TRUE to do the bare amount of processing on the file.
  *
- * @return
+ * @return mixed
  *   On failure a string saying why it failed.
  *   On success the $files_to_save array.
  */
@@ -252,15 +254,24 @@ function advagg_missing_create_file($filename, $no_alters = FALSE) {
   }
 
   // Return data.
-  return array($files_to_save, $type, $aggregate_filenames_hash, $aggregate_contents_hash, $aggregate_settings, $files);
+  return array(
+    $files_to_save,
+    $type,
+    $aggregate_filenames_hash,
+    $aggregate_contents_hash,
+    $aggregate_settings,
+    $files,
+  );
 }
 
 /**
- * Generate .htaccess rules and place them in advagg dir
+ * Generate .htaccess rules and place them in advagg dir.
  *
- * @param $files_to_save
- *   array of files that where saved..
- * @param $force
+ * @param array $files_to_save
+ *   array of files that where saved.
+ * @param string $type
+ *   css or js
+ * @param array $force
  *   force recreate the .htaccess file.
  */
 function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
@@ -269,6 +280,7 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
     $content_type = 'javascript';
   }
 
+  // @ignore style_lowercase_html:35
   $data  = "\n";
   $data .= "<FilesMatch \"^${type}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}.${type}(\.gz)?\">\n";
   $data .= "  # No mod_headers\n";
@@ -320,10 +332,10 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
 /**
  * Given a filename return the type and 2 hashes.
  *
- * @param $filename
+ * @param string $filename
  *   Just the filename no path information.
  *
- * @return
+ * @return mixed
  *   On failure a string saying why it failed.
  *   On success array($ext, $aggregate_hash, $files_hash).
  */
@@ -334,18 +346,18 @@ function advagg_get_hashes_from_filename($filename) {
   }
 
   // Get the extension.
-  $ext = substr($filename, strpos($filename, '.', 131 + strlen(ADVAGG_SPACE)*3) + 1);
+  $ext = substr($filename, strpos($filename, '.', 131 + strlen(ADVAGG_SPACE) * 3) + 1);
 
   // Set extraction points.
   if ($ext == 'css') {
     $aggregate_filenames_start = 3 + strlen(ADVAGG_SPACE);
-    $aggregate_contents_start = 46 + strlen(ADVAGG_SPACE)*2;
-    $hooks_hashes_start = 89 + strlen(ADVAGG_SPACE)*3;
+    $aggregate_contents_start = 46 + strlen(ADVAGG_SPACE) * 2;
+    $hooks_hashes_start = 89 + strlen(ADVAGG_SPACE) * 3;
   }
   elseif ($ext == 'js') {
     $aggregate_filenames_start = 2 + strlen(ADVAGG_SPACE);
-    $aggregate_contents_start = 45 + strlen(ADVAGG_SPACE)*2;
-    $hooks_hashes_start = 88 + strlen(ADVAGG_SPACE)*3;
+    $aggregate_contents_start = 45 + strlen(ADVAGG_SPACE) * 2;
+    $hooks_hashes_start = 88 + strlen(ADVAGG_SPACE) * 3;
   }
   else {
     return t('Wrong file type.');
@@ -362,17 +374,22 @@ function advagg_get_hashes_from_filename($filename) {
     return t('Bad hooks hashes value.');
   }
 
-  return array($ext, $aggregate_filenames_hash, $aggregate_contents_hash, $aggregate_settings);
+  return array(
+    $ext,
+    $aggregate_filenames_hash,
+    $aggregate_contents_hash,
+    $aggregate_settings,
+  );
 }
 
 /**
  * Get the files that belong inside of this aggregate.
  *
- * @param $filetype
+ * @param string $type
  *   css or js.
- * @param $aggregate_filenames_hash
+ * @param string $aggregate_filenames_hash
  *   Hash of the groupings of files.
- * @param $aggregate_contents_hash
+ * @param string $aggregate_contents_hash
  *   Hash of the files contents.
  *
  * @return array
@@ -411,11 +428,12 @@ function advagg_get_files_from_hashes($type, $aggregate_filenames_hash, $aggrega
 /**
  * Given a list of files, grab their contents and glue it into one big string.
  *
- * @param $files
+ * @param array $files
  *   array of filenames.
- * @param $aggregate_settings
+ * @param array $aggregate_settings
  *   array of settings.
- * @return
+ *
+ * @return string
  *   string containing all the files.
  */
 function advagg_get_css_aggregate_contents($files, $aggregate_settings) {
@@ -471,9 +489,9 @@ function advagg_get_css_aggregate_contents($files, $aggregate_settings) {
             }
 
             // Get current media queries for this media block.
-            $media_rules = substr($css_rules, 6, $start-6);
+            $media_rules = substr($css_rules, 6, $start - 6);
             // Get everything else besides top level media query.
-            $css_selectors_rules = substr($css_rules, $start+1, $end-($start+1));
+            $css_selectors_rules = substr($css_rules, $start + 1, $end - ($start + 1));
 
             // Add in main media rule if needed.
             if (strpos($media_rules, $settings['media']) === FALSE) {
@@ -565,11 +583,12 @@ function advagg_get_css_aggregate_contents($files, $aggregate_settings) {
 /**
  * Given a list of files, grab their contents and glue it into one big string.
  *
- * @param $files
+ * @param array $files
  *   array of filenames.
- * @param $aggregate_settings
+ * @param array $aggregate_settings
  *   array of settings.
- * @return
+ *
+ * @return string
  *   string containing all the files.
  */
 function advagg_get_js_aggregate_contents($files, $aggregate_settings) {
@@ -605,13 +624,13 @@ function advagg_get_js_aggregate_contents($files, $aggregate_settings) {
 /**
  * Save an aggregate given a filename, the files included in it, and the type.
  *
- * @param $filename
+ * @param string $filename
  *   Just the filename no path information.
- * @param $files
+ * @param array $files
  *   array of filenames.
- * @param $type
+ * @param string $type
  *   css or js
- * @param $aggregate_settings
+ * @param array $aggregate_settings
  *   array of settings.
  *
  * @return array
@@ -677,12 +696,12 @@ function advagg_save_aggregate($filename, $files, $type, $aggregate_settings) {
  *
  * This will use the rename operation ensuring atomic file operations.
  *
- * @param $uri
+ * @param string $uri
  *   A string containing the destination location. This must be a stream wrapper
  *   URI.
- * @param $data
+ * @param string $data
  *   A string containing the contents of the file.
- * @param $overwrite
+ * @param bool $overwrite
  *   Bool, set to TRUE to overwrite a file.
  */
 function advagg_save_data($uri, $data, $overwrite = FALSE) {
@@ -701,6 +720,7 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   // the same directory and then rename it to the destination. A temporary file
   // is needed if the directory is mounted on a separate machine; thus ensuring
   // the rename command stays local.
+  // @ignore sniffer_commenting_inlinecomment_spacingafter
 
   // Get a temporary filename in the destination directory.
   $temporary_file = drupal_tempnam(drupal_dirname($uri), 'file');
@@ -728,7 +748,7 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
 /**
  * Send out a fast 404 and exit.
  *
- * @param $msg
+ * @param string $msg
  *   Small message reporting why the file didn't get created.
  */
 function advagg_missing_fast404($msg = '') {
@@ -756,22 +776,23 @@ function advagg_missing_fast404($msg = '') {
 /**
  * Read the atime value for the given aggregate.
  *
- * @param $aggregate_filenames_hash
+ * @param string $aggregate_filenames_hash
  *   Hash of the groupings of files.
- * @param $aggregate_contents_hash
+ * @param string $aggregate_contents_hash
  *   Hash of the files contents.
- * @param $uri
+ * @param string $uri
  *   URI pointing to the aggregate file.
  *
- * @return
- *   drupal_write_record().
+ * @return mixed
+ *   File atime or FALSE if not found.
  */
 function advagg_get_atime($aggregate_filenames_hash, $aggregate_contents_hash, $uri) {
   // Try to use the cache to avoid hitting the database with a select query.
   $cache_id = 'advagg:db:' . $aggregate_filenames_hash . ADVAGG_SPACE . $aggregate_contents_hash;
-  if ($cache = cache_get($cache_id, 'cache_advagg_info')) {
+  $cache = cache_get($cache_id, 'cache_advagg_info');
+  if ($cache) {
     // If the atime in the cache is less than 12 hours old, use that.
-    if (!empty($cache->data['atime']) && $cache->data['atime'] > REQUEST_TIME - (12*60*60)) {
+    if (!empty($cache->data['atime']) && $cache->data['atime'] > REQUEST_TIME - (12 * 60 * 60)) {
       return $cache->data['atime'];
     }
   }
@@ -802,7 +823,8 @@ function advagg_get_atime($aggregate_filenames_hash, $aggregate_contents_hash, $
  *
  * @param string $css
  *   String of CSS.
- * @return
+ *
+ * @return array
  *   array of css with only media queries.
  */
 function advagg_parse_media_blocks($css) {
@@ -827,7 +849,7 @@ function advagg_parse_media_blocks($css) {
     // Push bracket onto stack.
     array_push($s, $css[$i]);
     // Move past first bracket.
-    $i++;
+    ++$i;
 
     // Find the closing bracket for the @media statement.
     while (!empty($s)) {
@@ -839,12 +861,12 @@ function advagg_parse_media_blocks($css) {
       elseif ($css[$i] == "}") {
         array_pop($s);
       }
-      $i++;
+      ++$i;
     }
 
     // Get CSS before @media and store it.
     if ($last_start != $start) {
-      $insert = trim(substr($css, $last_start, $start-$last_start));
+      $insert = trim(substr($css, $last_start, $start - $last_start));
       if (!empty($insert)) {
         $media_blocks[] = $insert;
       }
@@ -866,4 +888,3 @@ function advagg_parse_media_blocks($css) {
 
   return $media_blocks;
 }
-

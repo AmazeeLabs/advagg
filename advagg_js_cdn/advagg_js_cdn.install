@@ -10,7 +10,7 @@
  */
 function advagg_js_cdn_requirements($phase) {
   $requirements = array();
-  // Ensure translations don't break at install time
+  // Ensure translations don't break at install time.
   $t = get_t();
 
   if ($phase == 'runtime') {

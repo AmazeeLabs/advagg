@@ -189,20 +189,22 @@ function advagg_module_implements_alter(&$implementations, $hook) {
  */
 function advagg_system_info_alter(&$info, $file, $type) {
   static $config_path;
-  // Get advagg config path
+  // Get advagg config path.
   if (!isset($config_path)) {
     $config_path = advagg_admin_config_root_path();
   }
 
   // Replace advagg path.
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:2
+  // @ignore sniffer_whitespace_closebracketspacing_closingwhitespace:8
   if (   !empty($info['configure'])
       && strpos($info['configure'], '/advagg') !== FALSE
       && ((
-            !empty($info['dependencies'])
+          !empty($info['dependencies'])
         && is_array($info['dependencies'])
         && in_array('advagg', $info['dependencies'])
-      ) || $file->name == 'advagg' )
-        ) {
+        ) || $file->name == 'advagg' )
+      ) {
     $pos = strpos($info['configure'], '/advagg') + 7;
     $substr = substr($info['configure'], 0, $pos);
     $info['configure'] = str_replace($substr, $config_path . '/advagg', $info['configure']);
@@ -225,6 +227,12 @@ function advagg_permission() {
  * Implements hook_file_url_alter().
  */
 function advagg_file_url_alter(&$original_uri) {
+  // Ignore coder warnings.
+  // @ignore sniffer_commenting_inlinecomment_spacingbefore:10
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:11
+  // @ignore sniffer_whitespace_closebracketspacing_closingwhitespace:19
+  // @ignore sniffer_commenting_inlinecomment_spacingafter
+
   // Do nothing if
   //  in maintenance_mode
   //  CDN module does not exist
@@ -244,7 +252,6 @@ function advagg_file_url_alter(&$original_uri) {
 
   // Remove cdn/farfuture/BASE64/prefix:value/ from the URI.
   $original_uri = preg_replace('/cdn\/farfuture\/[A-Za-z0-9-_]{43}\/[A-Za-z]+\:[A-Za-z0-9-_]+\//', '', $original_uri);
-  return;
 }
 
 /**
@@ -255,9 +262,8 @@ function advagg_menu() {
   $file_path = drupal_get_path('module', 'advagg');
   $config_path = advagg_admin_config_root_path();
 
-  $items = array();
   $items[$css_path[1] . '/%'] = array(
-    'title' => "Generate css aggregate",
+    'title' => "Generate CSS Aggregate",
     'page callback' => 'advagg_missing_aggregate',
     'type' => MENU_CALLBACK,
     'access callback' => TRUE,
@@ -265,7 +271,7 @@ function advagg_menu() {
     'file' => 'advagg.missing.inc',
   );
   $items[$js_path[1] . '/%'] = array(
-    'title' => "Generate js aggregate",
+    'title' => "Generate JS Aggregate",
     'page callback' => 'advagg_missing_aggregate',
     'type' => MENU_CALLBACK,
     'access callback' => TRUE,
@@ -319,8 +325,9 @@ function advagg_menu() {
   return $items;
 }
 
+// @ignore sniffer_commenting_functioncomment_hookparamdoc:7
 /**
- * Implement hook_cron().
+ * Implements hook_cron().
  *
  * This will be ran once a day at most.
  *
@@ -347,10 +354,11 @@ function advagg_cron($bypass_time_check = FALSE) {
   return $return;
 }
 
+// @ignore sniffer_commenting_functioncomment_hookparamdoc:5
 /**
  * Implements hook_flush_caches().
  *
- * @param $all_bins
+ * @param bool $all_bins
  *   TRUE: Get all advagg cache bins
  */
 function advagg_flush_caches($all_bins = FALSE) {
@@ -373,9 +381,6 @@ function advagg_flush_caches($all_bins = FALSE) {
 
 /**
  * Implements hook_element_info_alter().
- *
- * @param $type
- *   Configuration array.
  */
 function advagg_element_info_alter(&$type) {
   // Swap in our own aggregation callback.
@@ -404,9 +409,6 @@ function advagg_element_info_alter(&$type) {
  * Implements hook_theme_registry_alter().
  *
  * Replace template_process_html with _advagg_process_html
- *
- * @param $theme_registry
- *   The existing theme registry data structure.
  */
 function advagg_theme_registry_alter(&$theme_registry) {
   if (!isset($theme_registry['html'])) {
@@ -442,6 +444,11 @@ function advagg_ajax_render_alter(&$commands) {
     if (!is_array($values) || empty($values['command'])) {
       continue;
     }
+
+    // Ignore coder warnings.
+    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:22
+    // @ignore sniffer_whitespace_closebracketspacing_closingwhitespace:25
+    // @ignore sniffer_commenting_inlinecomment_spacingafter
 
     if (   $values['command'] == 'settings'
         && is_array($values['settings'])
@@ -585,7 +592,7 @@ function advagg_preprocess_html() {
     '#tag' => 'meta',
     '#attributes' => array(
       'http-equiv' => 'X-UA-Compatible',
-      'content' =>  'IE=edge,chrome=1',
+      'content' => 'IE=edge,chrome=1',
     ),
     '#weight' => '-99999',
     '#prefix' => '<!--[if IE]>',
@@ -598,9 +605,9 @@ function advagg_preprocess_html() {
 
 // Core CSS/JS override functions.
 /**
- * #pre_render callback so elements can be modified before they are rendered.
+ * Callback for pre_render so elements can be modified before they are rendered.
  *
- * @param $elements
+ * @param array $elements
  *   A render array containing:
  *   - #items: The JavaScript items as returned by drupal_add_js() and
  *     altered by drupal_get_js().
@@ -610,7 +617,7 @@ function advagg_preprocess_html() {
  *   - #aggregate_callback: A function to call to aggregate the items within
  *     the groups arranged by the #group_callback function.
  *
- * @return
+ * @return array
  *   A render array that will render to a string of JavaScript tags.
  */
 function advagg_modify_js_pre_render($elements) {
@@ -631,9 +638,9 @@ function advagg_modify_js_pre_render($elements) {
 }
 
 /**
- * #pre_render callback so elements can be modified before they are rendered.
+ * Callback for pre_render so elements can be modified before they are rendered.
  *
- * @param $elements
+ * @param array $elements
  *   A render array containing:
  *   - #items: The CSS items as returned by drupal_add_css() and
  *     altered by drupal_get_css().
@@ -643,7 +650,7 @@ function advagg_modify_js_pre_render($elements) {
  *   - #aggregate_callback: A function to call to aggregate the items within
  *     the groups arranged by the #group_callback function.
  *
- * @return
+ * @return array
  *   A render array that will render to a string of JavaScript tags.
  */
 function advagg_modify_css_pre_render($elements) {
@@ -683,7 +690,7 @@ function advagg_modify_css_pre_render($elements) {
  * other unnecessary content. Additionally, this functions aggregates inline
  * content together, regardless of the site-wide aggregation setting.
  *
- * @param $css_groups
+ * @param array $css_groups
  *   An array of CSS groups as returned by drupal_group_css(). This function
  *   modifies the group's 'data' property for each group that is aggregated.
  *
@@ -719,13 +726,13 @@ function _advagg_aggregate_css(&$css_groups) {
           $files_to_aggregate[$gap_counter][$key] = $group;
         }
         else {
-          $gap_counter++;
+          ++$gap_counter;
         }
         break;
 
       // Aggregate all inline CSS content into the group's data property.
       case 'inline':
-        $gap_counter++;
+        ++$gap_counter;
         $css_groups[$key]['data'] = '';
         foreach ($group['items'] as $item) {
           $css_groups[$key]['data'] .= drupal_load_stylesheet_content($item['data'], $item['preprocess']);
@@ -734,7 +741,7 @@ function _advagg_aggregate_css(&$css_groups) {
 
       // Create a gap for external CSS.
       case 'external':
-        $gap_counter++;
+        ++$gap_counter;
         break;
     }
   }
@@ -743,6 +750,7 @@ function _advagg_aggregate_css(&$css_groups) {
     $hooks_hash = advagg_get_current_hooks_hash();
     $css_hash = drupal_hash_base64(serialize($files_to_aggregate));
     $cache_id = 'advagg:css:' . $hooks_hash . ':' . $css_hash;
+    // @ignore druplart_andor_assignment
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1 && $cache = cache_get($cache_id, 'cache_advagg_aggregates')) {
       $plans = $cache->data;
     }
@@ -770,7 +778,7 @@ function _advagg_aggregate_css(&$css_groups) {
  * download, it also compresses the aggregate files by removing comments,
  * whitespace, and other unnecessary content.
  *
- * @param $js_groups
+ * @param array $js_groups
  *   An array of JavaScript groups as returned by drupal_group_js(). For each
  *   group that is aggregated, this function sets the value of the group's
  *   'data' key to the URI of the aggregate file.
@@ -812,18 +820,18 @@ function _advagg_aggregate_js(&$js_groups) {
             $files_to_aggregate[$gap_counter][$key] = $group;
           }
           else {
-            $gap_counter++;
+            ++$gap_counter;
           }
           break;
 
         // Create a gap for inline JS.
         case 'inline':
-          $gap_counter++;
+          ++$gap_counter;
           break;
 
         // Create a gap for external JS.
         case 'external':
-          $gap_counter++;
+          ++$gap_counter;
           break;
       }
     }
@@ -833,6 +841,7 @@ function _advagg_aggregate_js(&$js_groups) {
     $hooks_hash = advagg_get_current_hooks_hash();
     $js_hash = drupal_hash_base64(serialize($files_to_aggregate));
     $cache_id = 'advagg:js:' . $hooks_hash . ':' . $js_hash;
+    // @ignore druplart_andor_assignment
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1 && $cache = cache_get($cache_id, 'cache_advagg_aggregates')) {
       $plans = $cache->data;
     }
@@ -933,8 +942,9 @@ function _advagg_process_html(&$variables) {
           $data = $options;
           $options = NULL;
         }
-        // In some cases, the first parameter ($data) is an array. Arrays can't be
-        // passed as keys in PHP, so we have to get $data from the value array.
+        // In some cases, the first parameter ($data) is an array. Arrays can't
+        // be passed as keys in PHP, so we have to get $data from the value
+        // array.
         if (is_numeric($data)) {
           $data = $options['data'];
           unset($options['data']);
@@ -968,7 +978,7 @@ function _advagg_process_html(&$variables) {
   }
 
   // JS needs hacks.
-  // Clear out all old scripts
+  // Clear out all old scripts.
   if (variable_get('advagg_clear_scripts', ADVAGG_CLEAR_SCRIPTS)) {
     $variables['scripts'] = '';
   }
@@ -1053,15 +1063,15 @@ function _advagg_process_html(&$variables) {
  * is to add another element to the $javascript array, deriving from
  * drupal_js_defaults(). See locale_js_alter() for an example of this.
  *
- * @param $javascript
+ * @param array $javascript
  *   (optional) An array with all JavaScript code. Defaults to the default
  *   JavaScript array for the given scope.
- * @param $skip_alter
+ * @param bool $skip_alter
  *   (optional) If set to TRUE, this function skips calling drupal_alter() on
  *   $javascript, useful when the calling function passes a $javascript array
  *   that has already been altered.
  *
- * @return
+ * @return array
  *   The raw JavaScript array.
  *
  * @see drupal_add_js()
@@ -1099,18 +1109,18 @@ function advagg_get_full_js($javascript = NULL, $skip_alter = FALSE) {
  * is to add another element to the $javascript array, deriving from
  * drupal_js_defaults(). See locale_js_alter() for an example of this.
  *
- * @param $scope
+ * @param string $scope
  *   (optional) The scope for which the JavaScript rules should be returned.
  *   Defaults to 'header'.
- * @param $javascript
+ * @param array $javascript
  *   (optional) An array with all JavaScript code. Defaults to the default
  *   JavaScript array for the given scope.
- * @param $skip_alter
+ * @param bool $skip_alter
  *   (optional) If set to TRUE, this function skips calling drupal_alter() on
  *   $javascript, useful when the calling function passes a $javascript array
  *   that has already been altered.
  *
- * @return
+ * @return string
  *   All JavaScript code segments and includes for the scope as HTML tags.
  *
  * @see drupal_add_js()
@@ -1160,7 +1170,7 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
           unset($settings_js);
           break;
         }
-        $counter++;
+        ++$counter;
       }
     }
     if (!empty($settings_js)) {
@@ -1224,10 +1234,10 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
 /**
  * Callback for array_filter. Will return FALSE if strlen < 3.
  *
- * @param $array_value
+ * @param string $array_value
  *   A value from an array.
  *
- * @return
+ * @return bool
  *   TRUE or FALSE.
  */
 function advagg_remove_short_keys($array_value) {
@@ -1242,10 +1252,10 @@ function advagg_remove_short_keys($array_value) {
 /**
  * Get all javascript scopes set in the $javascript array.
  *
- * @param $javascript
+ * @param array $javascript
  *   An array with all JavaScript code.
  *
- * @return
+ * @return array
  *   Array of scopes that are currently being used.
  */
 function advagg_get_js_scopes($javascript) {
@@ -1257,7 +1267,7 @@ function advagg_get_js_scopes($javascript) {
   // Filter out elements of the given scope.
   $scopes = array();
   foreach ($javascript as $key => $item) {
-    // skip if the scope is not set.
+    // Skip if the scope is not set.
     if (!is_array($item) || empty($item['scope'])) {
       continue;
     }
@@ -1285,10 +1295,11 @@ function advagg_get_js_scopes($javascript) {
 /**
  * Apply the advagg changes to the $css_js_groups array.
  *
- * @param $css_js_groups
+ * @param array $css_js_groups
  *   An array of CSS or JS groups as returned by drupal_group_css/js().
- * @param $plans
+ * @param array $plans
  *   An array of changes to do to the $css_js_groups array.
+ *
  * @return array
  *   New version of $css_js_groups.
  */
@@ -1300,12 +1311,13 @@ function advagg_merge_plans($css_js_groups, $plans) {
       // Remove files from the old css/js array.
       $file_removed = FALSE;
       foreach ($css_js_groups[$key]['items'] as $k => $values) {
+        // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
         if (   is_array($values)
             && array_key_exists('data', $values)
             && is_array($plan['items']['files'])
             && is_string($values['data'])
             && array_key_exists($values['data'], $plan['items']['files'])
-              ) {
+            ) {
           unset($css_js_groups[$key]['items'][$k]);
           $file_removed = TRUE;
         }
@@ -1315,7 +1327,7 @@ function advagg_merge_plans($css_js_groups, $plans) {
       if ($file_removed && !$plan_added) {
         $step = 0;
         do {
-          $step++;
+          ++$step;
           $insert_key = '' . floatval($key) . '.' . $step;
         } while (array_key_exists($insert_key, $css_js_groups));
         $css_js_groups[(string) $insert_key] = $plan;
@@ -1332,15 +1344,16 @@ function advagg_merge_plans($css_js_groups, $plans) {
 
     if (!$plan_added) {
       foreach ($css_js_groups as $key => $group) {
+        // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
         if (   empty($group['items']['aggregate_filenames_hash'])
             || $group['items']['aggregate_filenames_hash'] != $plan['items']['aggregate_filenames_hash']
             || empty($group['items']['aggregate_contents_hash'])
             || $group['items']['aggregate_contents_hash'] != $plan['items']['aggregate_contents_hash']
-              ) {
+            ) {
           continue;
         }
 
-        // Insert a unique key
+        // Insert a unique key.
         do {
           $key = '' . floatval($key) + 0.01;
         } while (array_key_exists((string) $key, $css_js_groups) || array_key_exists((string) $key, $used_keys));
@@ -1376,11 +1389,12 @@ function advagg_enabled() {
   }
   else {
     // Allow for AdvAgg to be enabled per request.
+    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
     if (   isset($_GET['advagg'])
         && $_GET['advagg'] == 1
         && !defined('MAINTENANCE_MODE')
         && user_access('bypass advanced aggregation')
-          ) {
+        ) {
       $GLOBALS['conf']['advagg_enabled'] = TRUE;
       $GLOBALS['conf']['preprocess_css'] = TRUE;
       $GLOBALS['conf']['preprocess_js'] = TRUE;
@@ -1392,7 +1406,8 @@ function advagg_enabled() {
     }
     // Only run code below if advagg is enabled.
     if (variable_get('advagg_enabled', ADVAGG_ENABLED)) {
-      // Don't use AdvAgg or preprocessing functions if the disable cookie is set.
+      // Do not use AdvAgg or preprocessing functions if the disable cookie is
+      // set.
       $cookie_name = 'AdvAggDisabled';
       $key = drupal_hash_base64(drupal_get_private_key());
       if (!empty($_COOKIE[$cookie_name]) && $_COOKIE[$cookie_name] == $key) {
@@ -1418,35 +1433,39 @@ function advagg_enabled() {
         }
       }
       // Disable advagg if requested.
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
       if (   isset($_GET['advagg'])
           && $_GET['advagg'] == -1
           && user_access('bypass advanced aggregation')
-            ) {
+          ) {
         $GLOBALS['conf']['advagg_enabled'] = FALSE;
         $GLOBALS['conf']['preprocess_css'] = FALSE;
         $GLOBALS['conf']['preprocess_js'] = FALSE;
       }
       // Disable core preprocessing if requested.
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
       if (   isset($_GET['advagg-core'])
           && $_GET['advagg-core'] == 0
           && user_access('bypass advanced aggregation')
-            ) {
+          ) {
         $GLOBALS['conf']['preprocess_css'] = FALSE;
         $GLOBALS['conf']['preprocess_js'] = FALSE;
       }
       // Enable core preprocessing if requested.
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
       if (   isset($_GET['advagg-core'])
           && $_GET['advagg-core'] == 1
           && user_access('bypass advanced aggregation')
-            ) {
+          ) {
         $GLOBALS['conf']['preprocess_css'] = TRUE;
         $GLOBALS['conf']['preprocess_js'] = TRUE;
       }
       // Enable debugging if requested.
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
       if (   isset($_GET['advagg-debug'])
           && $_GET['advagg-debug'] == 1
           && user_access('bypass advanced aggregation')
-            ) {
+          ) {
         $GLOBALS['conf']['advagg_debug'] = TRUE;
       }
     }
@@ -1468,7 +1487,7 @@ function advagg_admin_config_root_path() {
 /**
  * Get an array of all hooks and settings that affect aggregated files contents.
  *
- * @return
+ * @return array
  *   array('variables' => array(...), 'hooks' => array(...))
  */
 function advagg_current_hooks_hash_array() {
@@ -1485,7 +1504,8 @@ function advagg_current_hooks_hash_array() {
       'advagg_global_counter' => advagg_get_global_counter(),
       'base_path' => $GLOBALS['base_path'],
       'advagg_ie_css_selector_limiter' => variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER),
-      'advagg_scripts_scope_anywhere' => variable_get('advagg_scripts_scope_anywhere', ADVAGG_SCRIPTS_SCOPE_ANYWHERE)
+      'advagg_scripts_scope_anywhere' => variable_get('advagg_scripts_scope_anywhere', ADVAGG_SCRIPTS_SCOPE_ANYWHERE),
+      'language' => isset($GLOBALS['language']->language) ? $GLOBALS['language']->language : '',
     ),
     'hooks' => advagg_hooks_implemented(FALSE),
   );
@@ -1516,10 +1536,10 @@ function advagg_get_current_hooks_hash() {
     // Save into variables for verification purposes later on if not found.
     $settings = advagg_get_hash_settings($current_hash);
     if (empty($settings) && lock_acquire(__FUNCTION__, 5)) {
-      // Save new hash into
+      // Save new hash into.
       advagg_set_hash_settings($current_hash, $aggregate_settings);
 
-      // Release lock
+      // Release lock.
       lock_release(__FUNCTION__);
     }
   }
@@ -1530,7 +1550,7 @@ function advagg_get_current_hooks_hash() {
 /**
  * Store settings associated with hash.
  *
- * @return
+ * @return MergeQuery
  *   value from db_merge
  */
 function advagg_set_hash_settings($hash, $settings) {
@@ -1543,9 +1563,10 @@ function advagg_set_hash_settings($hash, $settings) {
 /**
  * Get back what hooks are implemented.
  *
- * @param $all
+ * @param bool $all
  *   If TRUE get all hooks related to css/js files.
  *   if FALSE get only the subset of hooks that alter the filename/contents.
+ *
  * @return array
  *   List of hooks and what modules have implemented them.
  */
@@ -1577,7 +1598,7 @@ function advagg_hooks_implemented($all = TRUE) {
   drupal_alter('advagg_hooks_implemented', $hooks, $all);
 
   // Cache module_implements as this will load up .inc files.
-  $cid = 'advagg_hooks_implemented:' . (int)$all . ':' . drupal_hash_base64(serialize($hooks));
+  $cid = 'advagg_hooks_implemented:' . (int) $all . ':' . drupal_hash_base64(serialize($hooks));
   $cache = cache_get($cid, 'cache_bootstrap');
   if (!empty($cache->data)) {
     $hooks = $cache->data;
@@ -1595,10 +1616,11 @@ function advagg_hooks_implemented($all = TRUE) {
 /**
  * Returns the hashes settings.
  *
- * @param $name
+ * @param string $hash
  *   The name of the variable to return.
- * @return
- *   The settings array or FALSE if not found.
+ *
+ * @return array
+ *   The settings array or an empty array if not found.
  */
 function advagg_get_hash_settings($hash) {
   $settings = db_select('advagg_aggregates_hashes', 'aah')
@@ -1607,16 +1629,19 @@ function advagg_get_hash_settings($hash) {
     ->execute()
     ->fetchField();
 
-  return !empty($settings) ? unserialize($settings) : FALSE;
+  return !empty($settings) ? unserialize($settings) : array();
 }
 
+// @ignore production_code:20
 /**
  * Get the CSS & JS path for advagg.
  *
- * @param $reset
+ * @param bool $reset
  *   Set to TRUE to reset the static variables.
- * @return
- *   Example below:
+ *
+ * @return array
+ *   Example return below:
+ * @code
  *   array(
  *     array(
  *       public://advagg_css,
@@ -1627,6 +1652,7 @@ function advagg_get_hash_settings($hash) {
  *       sites/default/files/advagg_js,
  *     ),
  *   )
+ * @endcode
  */
 function advagg_get_root_files_dir($reset = FALSE) {
   $css_paths = &drupal_static(__FUNCTION__ . '_css');
@@ -1661,8 +1687,9 @@ function advagg_get_root_files_dir($reset = FALSE) {
 /**
  * Builds the requested CSS/JS aggregates.
  *
- * @param $filenames
+ * @param array $filenames
  *   Array of AdvAgg filenames to generate.
+ *
  * @return array
  *   Array keyed by filename, value is result from advagg_missing_create_file().
  */
@@ -1731,6 +1758,7 @@ function advagg_build_ajax_js_css() {
         }
       }
       // Ensure that the page doesn't reload what it already has.
+      // @ignore security_17
       $items[$type] = array_diff_key($items[$type], $_POST['ajax_page_state'][$type]);
     }
   }
@@ -1752,10 +1780,10 @@ function advagg_build_ajax_js_css() {
 /**
  * Given the type lets us know if advagg is enabled or disabled.
  *
- * @param $type
+ * @param string $type
  *   css or js.
  *
- * @return
+ * @return bool
  *   TRUE or FALSE
  */
 function advagg_file_aggregation_enabled($type) {
@@ -1776,12 +1804,12 @@ function advagg_file_aggregation_enabled($type) {
 /**
  * Update the atime value in the advagg_aggregates_versions table.
  *
- * @param $aggregate_filenames_hash
+ * @param string $aggregate_filenames_hash
  *   Hash of the groupings of files.
- * @param $aggregate_contents_hash
+ * @param string $aggregate_contents_hash
  *   Hash of the files contents.
  *
- * @return
+ * @return bool
  *   TRUE if a write to the DB was done.
  */
 function advagg_update_atime($aggregate_filenames_hash, $aggregate_contents_hash) {
@@ -1796,9 +1824,10 @@ function advagg_update_atime($aggregate_filenames_hash, $aggregate_contents_hash
   );
 
   // Use the cache to avoid hitting the database.
-  if ($cache = cache_get($cache_id, 'cache_advagg_info')) {
+  $cache = cache_get($cache_id, 'cache_advagg_info');
+  if ($cache) {
     // See if the atime value needs to be updated;
-    if (!empty($cache->data['atime']) && $cache->data['atime'] > REQUEST_TIME - (12*60*60)) {
+    if (!empty($cache->data['atime']) && $cache->data['atime'] > REQUEST_TIME - (12 * 60 * 60)) {
       // If atime is less than 12 hours old, do nothing.
       return $write_done;
     }
@@ -1836,9 +1865,7 @@ function advagg_update_atime($aggregate_filenames_hash, $aggregate_contents_hash
 /**
  * Return the advagg_global_counter variable.
  *
- * @todo Allow this value to be kept in sync across a multisite.
- *
- * @return
+ * @return int
  *   Int value.
  */
 function advagg_get_global_counter() {
@@ -1858,7 +1885,7 @@ function advagg_admin_flush_cache() {
 
 // Exact Copies of core functions from patches.
 /**
- * #pre_render callback to add elements needed for JavaScript to be rendered.
+ * Callback for pre_render to add elements needed for JavaScript to be rendered.
  *
  * This function evaluates the aggregation enabled/disabled condition on a group
  * by group basis by testing whether an aggregate file has been made for the
@@ -1866,7 +1893,7 @@ function advagg_admin_flush_cache() {
  * this function to work correctly even if modules have implemented custom
  * logic for grouping and aggregating files.
  *
- * @param $element
+ * @param array $elements
  *   A render array containing:
  *   - #items: The JavaScript items as returned by drupal_add_js() and
  *     altered by drupal_get_js().
@@ -1876,7 +1903,7 @@ function advagg_admin_flush_cache() {
  *   - #aggregate_callback: A function to call to aggregate the items within
  *     the groups arranged by the #group_callback function.
  *
- * @return
+ * @return array
  *   A render array that will render to a string of JavaScript tags.
  *
  * @see drupal_get_js()
@@ -2038,11 +2065,11 @@ function advagg_pre_render_scripts($elements) {
  * same type and browsers, if needed to accommodate other items in
  * between.
  *
- * @param $javascript
+ * @param array $javascript
  *   An array of JavaScript items, as returned by drupal_add_js(), but after
  *   alteration performed by drupal_get_js().
  *
- * @return
+ * @return array
  *   An array of JavaScript groups. Each group contains the same keys (e.g.,
  *   'data', etc.) as a JavaScript item from the $javascript parameter, with the
  *   value of each key applying to the group as a whole. Each group also
@@ -2077,7 +2104,12 @@ function advagg_group_js($javascript) {
         // Help ensure maximum reuse of aggregate files by only grouping
         // together items that share the same 'group' value and 'every_page'
         // flag. See drupal_add_js() for details about that.
-        $group_keys = $item['preprocess'] ? array($item['type'], $item['group'], $item['every_page'], $item['browsers']) : FALSE;
+        $group_keys = $item['preprocess'] ? array(
+          $item['type'],
+          $item['group'],
+          $item['every_page'],
+          $item['browsers'],
+        ) : FALSE;
         break;
 
       case 'external':
@@ -2096,7 +2128,7 @@ function advagg_group_js($javascript) {
     // If the group keys don't match the most recent group we're working with,
     // then a new group must be made.
     if ($group_keys !== $current_group_keys) {
-      $index++;
+      ++$index;
       // Initialize the new group with the same properties as the first item
       // being placed into it. The item's 'data' and 'weight' properties are
       // unique to the item and should not be carried over to the group.

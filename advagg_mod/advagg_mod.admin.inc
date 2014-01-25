@@ -24,10 +24,10 @@ function advagg_mod_admin_settings_form() {
     '#title' => t('Move JS to the footer'),
     '#default_value' => variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER),
     '#options' => array(
-        0 => t('Disabled'),
-        1 => t('All but JavaScript Libraries'),
-        2 => t('All'),
-      ),
+      0 => t('Disabled'),
+      1 => t('All but JavaScript Libraries'),
+      2 => t('All'),
+    ),
     '#description' => t("If you have JavaScript inline in the body of your document, such as if you are displaying ads, you may need to keep Drupal JS Libraries in the head instead of moving them to the footer. This will keep all JS added with the JS_LIBRARY group in the head while still moving all other JavaScript to the footer."),
   );
   $form['js']['advagg_mod_js_preprocess'] = array(
@@ -81,8 +81,10 @@ function advagg_mod_admin_settings_form() {
     '#type' => 'checkbox',
     '#title' => t('Enable preprocess on all CSS'),
     '#default_value' => variable_get('advagg_mod_css_preprocess', ADVAGG_MOD_CSS_PREPROCESS),
-    '#description' => module_exists('advagg_bundler') ? t('You might want to increase the <a href="@link">CSS Bundles Per Page</a> if this is checked.', array('@link' => url($config_path . '/advagg/bundler'))) : t(''),
+    // @ignore security_fapi_title
+    '#description' => module_exists('advagg_bundler') ? t('You might want to increase the <a href="@link">CSS Bundles Per Page</a> if this is checked.', array('@link' => url($config_path . '/advagg/bundler'))) : '',
   );
+  // @ignore sniffer_commenting_inlinecomment_spacingbefore:3
   // Only test the translate option if
   //  the locale function is defined OR
   //  the locale_custom_strings variable is not empty.
@@ -141,10 +143,14 @@ function advagg_mod_admin_settings_form() {
   }
   else {
     $options = array(
-//       BLOCK_VISIBILITY_NOTLISTED => t('All pages except those listed'),
+      // BLOCK_VISIBILITY_NOTLISTED => t('All pages except those listed'),
       BLOCK_VISIBILITY_LISTED => t('Only the listed pages'),
     );
-    $description = t("Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. Example paths are %blog for the blog page and %blog-wildcard for every personal blog. %front is the front page.", array('%blog' => 'blog', '%blog-wildcard' => 'blog/*', '%front' => '<front>'));
+    $description = t("Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. Example paths are %blog for the blog page and %blog-wildcard for every personal blog. %front is the front page.", array(
+      '%blog' => 'blog',
+      '%blog-wildcard' => 'blog/*',
+      '%front' => '<front>',
+    ));
 
     if (module_exists('php') && $access) {
       $options += array(BLOCK_VISIBILITY_PHP => t('Pages on which this PHP code returns <code>TRUE</code> (experts only)'));
@@ -208,9 +214,10 @@ function advagg_mod_admin_settings_form_validate($form, &$form_state) {
   // Prepare directory.
   $css_dir = $multisite_dir . '/advagg_css';
   $js_dir = $multisite_dir . '/advagg_js';
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
   if (   !file_prepare_directory($css_dir, FILE_CREATE_DIRECTORY)
       || !file_prepare_directory($js_dir, FILE_CREATE_DIRECTORY)
-        ) {
+      ) {
     if (!is_dir($multisite_dir) || !is_writable($multisite_dir)) {
       form_set_error('advagg_mod_unified_multisite_dir', t('%dir is not a directory or can not be written to. The shared directory needs to have the same permissions as the "Public file system path" found on the <a href="@file_system_link">File System configuration page</a>.', array(
         '%dir' => $multisite_dir,
@@ -244,7 +251,7 @@ function advagg_mod_admin_settings_form_submit($form, &$form_state) {
 /**
  * Test all CSS files seeing if any string translations do anything.
  *
- * @return
+ * @return array
  *   An array with the filename key and the before => after translation value.
  */
 function advagg_mod_admin_test_css_files() {
@@ -287,7 +294,7 @@ function advagg_mod_admin_test_css_files() {
 
     foreach ($matches[1] as $value) {
       // Skip if equal to ; or }.
-      if ($value == ';' || $value = '}') {
+      if ($value == ';' || $value == '}') {
         continue;
       }
       // Remove quotes for t function.
@@ -303,6 +310,7 @@ function advagg_mod_admin_test_css_files() {
         continue;
       }
       // Run t function.
+      // @ignore sniffer_semantics_functioncall_notliteralstring
       $after = t($before);
 
       // Only include it if strings are different.
