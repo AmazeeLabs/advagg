@@ -473,6 +473,8 @@ function advagg_generate_groups($files_to_aggregate) {
   $scope = '';
   $browsers = array();
   $selector_count = 0;
+  // Get CSS limit value.
+  $limit_value = variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE);
   foreach ($files_to_aggregate as $data) {
     foreach ($data as $values) {
 
@@ -488,7 +490,7 @@ function advagg_generate_groups($files_to_aggregate) {
           $ext = isset($file_info['fileext']) ? $file_info['fileext'] : pathinfo($file_info['data'], PATHINFO_EXTENSION);
           if ($ext == 'css') {
             $selector_count += $file_info['linecount'];
-            if ($selector_count > 4095) {
+            if ($selector_count > $limit_value) {
               $changed = TRUE;
               $selector_count = $file_info['linecount'];
             }

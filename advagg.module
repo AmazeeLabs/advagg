@@ -52,6 +52,11 @@ define('ADVAGG_COMBINE_CSS_MEDIA', FALSE);
 define('ADVAGG_IE_CSS_SELECTOR_LIMITER', FALSE);
 
 /**
+ * The value the IE css selector should use
+ */
+define('ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE', 4095);
+
+/**
  * Default location of AdvAgg configuration items.
  */
 define('ADVAGG_ADMIN_CONFIG_ROOT_PATH', 'admin/config/development/performance');
@@ -1504,6 +1509,7 @@ function advagg_current_hooks_hash_array() {
       'advagg_global_counter' => advagg_get_global_counter(),
       'base_path' => $GLOBALS['base_path'],
       'advagg_ie_css_selector_limiter' => variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER),
+      'advagg_ie_css_selector_limiter_value' => variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE),
       'advagg_scripts_scope_anywhere' => variable_get('advagg_scripts_scope_anywhere', ADVAGG_SCRIPTS_SCOPE_ANYWHERE),
       'language' => isset($GLOBALS['language']->language) ? $GLOBALS['language']->language : '',
     ),
