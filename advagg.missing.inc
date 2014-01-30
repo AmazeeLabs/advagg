@@ -402,6 +402,7 @@ function advagg_get_files_from_hashes($type, $aggregate_filenames_hash, $aggrega
     ->condition('af.filetype', $type);
   // Create join query for the advagg_aggregates table.
   $subquery_aggregates = db_select('advagg_aggregates', 'aa')
+    ->condition('aa.aggregate_filenames_hash', $aggregate_filenames_hash)
     ->fields('aa');
 
   // Create main query for the advagg_aggregates_versions table.
