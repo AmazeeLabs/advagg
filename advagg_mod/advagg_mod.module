@@ -221,7 +221,16 @@ function advagg_mod_js_alter(&$js) {
 }
 
 /**
- * Implements hook_js_alter().
+ * Rearrange CSS/JS so that aggregates are better grouped.
+ *
+ * This can move all external assets to the top, thus in one group.
+ * This can move all inline assets to the bottom, thus in one group.
+ * This can move all browser conditional assets together.
+ *
+ * @param array $array
+ *   The CSS or JS array.
+ * @param string $type
+ *   css or js.
  */
 function advagg_mod_sort_css_js(&$array, $type) {
   if (   ($type == 'js' && variable_get('advagg_mod_js_adjust_sort_external', ADVAGG_MOD_JS_ADJUST_SORT_EXTERNAL))
