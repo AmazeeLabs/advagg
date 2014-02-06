@@ -40,7 +40,7 @@ function advagg_css_cdn_css_alter(&$css) {
     if (   variable_get('advagg_css_cdn_jquery_ui', ADVAGG_CSS_CDN_JQUERY_UI)
         && array_key_exists($name, $ui_mapping)
         && $css[$name]['type'] == 'file'
-          ) {
+        ) {
       $css[$name]['data'] = '//ajax.googleapis.com/ajax/libs/jqueryui/' . $jquery_ui_version . '/themes/base/jquery.' . $ui_mapping[$name] . '.css';
       $css[$name]['type'] = 'external';
 
@@ -125,7 +125,7 @@ function advagg_css_cdn_advagg_css_groups_alter(&$css_groups, $preprocess_css) {
           || $group['media'] != $target['media']
           || $group['preprocess'] != $target['preprocess']
           || !empty($diff)
-            ) {
+          ) {
         if (!empty($last_group)) {
           $diff = array_merge(array_diff($last_group['browsers'], $target['browsers']), array_diff($target['browsers'], $last_group['browsers']));
           // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:8
@@ -136,7 +136,7 @@ function advagg_css_cdn_advagg_css_groups_alter(&$css_groups, $preprocess_css) {
               || $last_group['media'] != $target['media']
               || $last_group['preprocess'] != $target['preprocess']
               || !empty($diff)
-                ) {
+              ) {
             // Insert New.
             $css_groups[$kill_key] = array(
               'group' => $target['group'],
