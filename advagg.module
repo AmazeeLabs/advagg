@@ -1321,10 +1321,25 @@ function advagg_merge_plans($css_js_groups, $plans) {
             && array_key_exists('data', $values)
             && is_array($plan['items']['files'])
             && is_string($values['data'])
-            && array_key_exists($values['data'], $plan['items']['files'])
             ) {
-          unset($css_js_groups[$key]['items'][$k]);
-          $file_removed = TRUE;
+          // If the CSS is a split file, the first file is very meaningful, and
+          // is probably the only file.
+          $first_file = reset($plan['items']['files']);
+          if (array_key_exists($values['data'], $plan['items']['files'])) {
+            unset($css_js_groups[$key]['items'][$k]);
+            $file_removed = TRUE;
+          }
+          // This part will try to add each split part matching the original CSS
+          // path and only remove the original group if the current part is the
+          // last part.
+          elseif (!empty($first_file['split'])) {
+            if ($values['data'] == $first_file['split_original']) {
+              if (!empty($first_file['split_last_part'])) {
+                unset($css_js_groups[$key]['items'][$k]);
+              }
+              $file_removed = TRUE;
+            }
+          }
         }
       }
 

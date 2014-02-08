@@ -481,21 +481,10 @@ function advagg_generate_groups($files_to_aggregate) {
       // Group into the biggest buckets possible.
       $onload = array();
       foreach ($values['items'] as $file_info) {
+        $parts = array();
         // Check to see if media, browsers, defer, async, cache, or scope has
         // changed from the previous run of this loop.
         $changed = FALSE;
-        if (variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER)) {
-          $file_info += advagg_get_info_on_file($file_info['data']);
-          // Prevent CSS rules exceeding 4095 due to limits with IE9 and below.
-          $ext = isset($file_info['fileext']) ? $file_info['fileext'] : pathinfo($file_info['data'], PATHINFO_EXTENSION);
-          if ($ext == 'css') {
-            $selector_count += $file_info['linecount'];
-            if ($selector_count > $limit_value) {
-              $changed = TRUE;
-              $selector_count = $file_info['linecount'];
-            }
-          }
-        }
         if (isset($file_info['media'])) {
           if (variable_get('advagg_combine_css_media', ADVAGG_COMBINE_CSS_MEDIA)) {
             $file_info['media_query'] = $file_info['media'];
@@ -531,13 +520,42 @@ function advagg_generate_groups($files_to_aggregate) {
         if (isset($file_info['onload'])) {
           $onload[] = trim(rtrim($file_info['onload'], ';'));
         }
+        if (variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER)) {
+          $file_info += advagg_get_info_on_file($file_info['data']);
+          // Prevent CSS rules exceeding 4095 due to limits with IE9 and below.
+          $ext = isset($file_info['fileext']) ? $file_info['fileext'] : pathinfo($file_info['data'], PATHINFO_EXTENSION);
+          if ($ext == 'css') {
+            $selector_count += $file_info['linecount'];
+            if ($selector_count > 4095) {
+              $changed = TRUE;
+              $selector_count = $file_info['linecount'];
+
+              // Break large file into multiple small files
+              if ($file_info['linecount'] > 4095) {
+                $parts = advagg_split_css_file($file_info);
+              }
+            }
+          }
+        }
 
         // If one of the above options changed, it needs to be in a different
         // aggregate.
-        if ($changed) {
-          ++$count;
+        if (!empty($parts)) {
+          $onload_local = array_filter(array_unique($onload));
+          foreach ($parts as $part) {
+            $count++;
+            $groups[$location][$count][] = $part;
+            if (!empty($onload_local)) {
+              $groups[$location][$count][0]['onload'] = implode(';', $onload) . ';';
+            }
+          }
         }
-        $groups[$location][$count][] = $file_info;
+        else {
+          if ($changed) {
+            $count++;
+          }
+          $groups[$location][$count][] = $file_info;
+        }
       }
       $onload = array_filter(array_unique($onload));
       if (!empty($onload)) {
@@ -548,6 +566,222 @@ function advagg_generate_groups($files_to_aggregate) {
     ++$location;
   }
   return $groups;
+}
+
+/**
+ * Given a file info array it will split the file up.
+ *
+ * @param array $file_info
+ *   File info array from advagg_get_info_on_file().
+ *
+ * @return array
+ *   array array with advagg_get_info_on_file data & split data.
+ */
+function advagg_split_css_file($file_info) {
+  // Make advagg_parse_media_blocks() available.
+  module_load_include('inc', 'advagg', 'advagg.missing');
+
+  // Get the CSS file and break up by media queries.
+  $file_contents = file_get_contents($file_info['data']);
+  $media_blocks = advagg_parse_media_blocks($file_contents);
+
+  // Get 98% of the advagg_ie_css_selector_limiter_value; usually 4013.
+  $selector_split_value = (int) max(floor(variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE) * 0.98), 100);
+  $part_selector_count = 0;
+  $major_chunks = array();
+  $counter = 0;
+  // Group media queries together.
+  foreach ($media_blocks as $media_block) {
+    $matched = array();
+    // @ignore sniffer_files_linelength_toolong:2
+    // Get the number of selectors.
+    // http://stackoverflow.com/questions/12567000/regex-matching-for-counting-css-selectors/12567381#12567381
+    $selector_count = preg_match_all('/\{.+?\}|,/s', $media_block, $matched);
+    $part_selector_count += $selector_count;
+
+    if ($part_selector_count > $selector_split_value) {
+      if (isset($major_chunks[$counter])) {
+        ++$counter;
+        $major_chunks[$counter] = $media_block;
+      }
+      else {
+        $major_chunks[$counter] = $media_block;
+      }
+      ++$counter;
+      $part_selector_count = 0;
+    }
+    else {
+      if (isset($major_chunks[$counter])) {
+        $major_chunks[$counter] .= "\n" . $media_block;
+      }
+      else {
+        $major_chunks[$counter] = $media_block;
+      }
+    }
+  }
+
+  $parts = array();
+  $overall_split = 0;
+  $split_at = $selector_split_value;
+  foreach ($major_chunks as $chunk_key => $chunks) {
+    $last_chunk = FALSE;
+    if (count($major_chunks)-1 == $chunk_key) {
+      $last_chunk = TRUE;
+    }
+
+    // Get the number of selectors.
+    $matches = array();
+    $selector_count = preg_match_all('/\{.+?\}|,/s', $chunks, $matches);
+
+    // Pass through if selector count is low.
+    if ($selector_count < $selector_split_value) {
+      $overall_split += $selector_count;
+      if ($last_chunk) {
+        $file_info['split_last_part'] = TRUE;
+      }
+      $parts[] = advagg_create_subfile($chunks, $overall_split, $file_info);
+      continue;
+    }
+
+    $media_query = '';
+    if (strpos($chunks, '@media') !== FALSE) {
+      $media_query_pos = strpos($chunks, '{');
+      $media_query = substr($chunks, 0, $media_query_pos);
+      $chunks = substr($chunks, $media_query_pos+1);
+    }
+
+    // Split CSS into selector chunks.
+    $split = preg_split('/(\{.+?\}|,)/si', $chunks, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+    // Setup and handle media queries.
+    $new_css_chunk = array(0 => '');
+    $selector_chunk_counter = 0;
+    $counter = 0;
+    if (!empty($media_query)) {
+      $new_css_chunk[0] = $media_query . '{';
+      $new_css_chunk[1] = '';
+      ++$selector_chunk_counter;
+      ++$counter;
+    }
+    // Have the key value be the running selector count and put split array semi
+    // back together.
+    foreach ($split as $value) {
+      $new_css_chunk[$counter] .= $value;
+      if (strpos($value, '}') === FALSE) {
+        ++$selector_chunk_counter;
+      }
+      else {
+        if ($counter + 1 < $selector_chunk_counter) {
+          $selector_chunk_counter += ($counter - $selector_chunk_counter + 1) / 2;
+        }
+        $counter = $selector_chunk_counter;
+        if (!isset($new_css_chunk[$counter])) {
+          $new_css_chunk[$counter] = '';
+        }
+      }
+    }
+
+    // Group selectors.
+    $first = TRUE;
+    while (!empty($new_css_chunk)) {
+      // Find where to split the array.
+      $string_to_write = '';
+      while (array_key_exists($split_at, $new_css_chunk) === FALSE) {
+        --$split_at;
+      }
+
+      // Combine parts of the so that it can be saved to disk.
+      foreach ($new_css_chunk as $key => $value) {
+        $string_to_write .= $value;
+        unset($new_css_chunk[$key]);
+        if ($key == $split_at) {
+          $overall_split = $split_at;
+          $split_at += $selector_split_value;
+          break;
+        }
+      }
+
+      // Handle media queries.
+      if (!empty($media_query)) {
+        // See if brackets need a new line.
+        if (strpos($string_to_write, "\n") === 0) {
+          $open_bracket = '{';
+        }
+        else {
+          $open_bracket = "{\n";
+        }
+        if (strrpos($string_to_write, "\n") === strlen($string_to_write)) {
+          $close_bracket = '}';
+        }
+        else {
+          $close_bracket = "\n}";
+        }
+
+        // Fix syntax around media queries.
+        if ($first) {
+          $string_to_write .= $close_bracket;
+        }
+        elseif (empty($new_css_chunk)) {
+          $string_to_write = $media_query . $open_bracket . $string_to_write;
+        }
+        else {
+          $string_to_write = $media_query . $open_bracket . $string_to_write . $close_bracket;
+        }
+      }
+      // Handle the last split part.
+      if (empty($new_css_chunk) && $last_chunk) {
+        $file_info['split_last_part'] = TRUE;
+      }
+      // Write the data.
+      $parts[] = advagg_create_subfile($string_to_write, $overall_split, $file_info);
+      $first = FALSE;
+    }
+  }
+  return $parts;
+}
+
+/**
+ * Write CSS parts to disk; used when CSS selectors in one file is > 4096.
+ *
+ * @param string $css
+ *   CSS data to write to disk.
+ * @param int $overall_split
+ *   Running count of what selector we are from the original file.
+ * @param array $file_info
+ *   File info array from advagg_get_info_on_file().
+ *
+ * @return array
+ *   array with advagg_get_info_on_file data & split data.
+ */
+function advagg_create_subfile($css, $overall_split, $file_info) {
+  static $parts_uri;
+  static $parts_path;
+  if (!isset($parts_uri)) {
+    list($css_path, $js_path) = advagg_get_root_files_dir();
+    $parts_uri = $css_path[0] . '/parts';
+    $parts_path = $css_path[1] . '/parts';
+
+    // Create the public://advagg_css/parts dir.
+    file_prepare_directory($parts_uri, FILE_CREATE_DIRECTORY);
+
+    // Make advagg_save_data() available.
+    module_load_include('inc', 'advagg', 'advagg.missing');
+  }
+
+  // Write the current chunk of the CSS into a file
+  $new_filename = str_ireplace('.css', '.' . $overall_split . '.css', $file_info['data']);
+  $part_uri = $parts_uri . '/' . $new_filename;
+  $dirname = drupal_dirname($part_uri);
+  file_prepare_directory($dirname, FILE_CREATE_DIRECTORY);
+  advagg_save_data($part_uri, $css, TRUE);
+
+  // Get info on the file that was just created.
+  $part = advagg_get_info_on_file($parts_path . '/' . $new_filename) + $file_info;
+  $part['split'] = TRUE;
+  $part['split_location'] = $overall_split;
+  $part['split_original'] = $file_info['data'];
+
+  return $part;
 }
 
 /**
@@ -696,6 +930,13 @@ function advagg_load_css_stylesheet($file, $optimize, $aggregate_settings = NULL
 
   // Get the parent directory of this file, relative to the Drupal root.
   $css_base_url = substr($file, 0, strrpos($file, '/'));
+  $url_parts = explode('advagg_css/parts/', $css_base_url);
+  // If this CSS file is actually a part of a previously split larger CSS file,
+  // don't use it to construct relative paths within the CSS file for
+  // 'url( ... )' bits.
+  if (count($url_parts) === 2) {
+    $css_base_url = $url_parts[1];
+  }
   _advagg_build_css_path(NULL, $css_base_url . '/');
 
   // Anchor all paths in the CSS with its base URL, ignoring external and
