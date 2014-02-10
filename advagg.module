@@ -346,6 +346,14 @@ function advagg_cron($bypass_time_check = FALSE) {
   }
   variable_set('advagg_cron_timestamp', REQUEST_TIME);
 
+  // Remove expired locks from the semaphore database table.
+  // Let expiration times vary by 5 minutes.
+  $fuzz_factor = 300;
+  db_delete('semaphore')
+    ->condition('name', db_like('advagg_') . '%', 'LIKE')
+    ->condition('expire', REQUEST_TIME - $fuzz_factor, '<')
+    ->execute();
+
   $return = array();
   // Clear out all stale advagg aggregated files.
   module_load_include('inc', 'advagg', 'advagg.cache');
