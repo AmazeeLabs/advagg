@@ -410,6 +410,59 @@ function advagg_update_7202(&$sandbox) {
 }
 
 /**
+ * Implements hook_update_N().
+ *
+ * Update the .htaccess file in the advagg directories.
+ */
+function advagg_update_7203(&$sandbox) {
+  // Make sure the advagg_get_root_files_dir() function is available.
+  drupal_load('module', 'advagg');
+
+  // Get paths to .htaccess file.
+  list($css_path, $js_path) = advagg_get_root_files_dir();
+  $files['css'] = $css_path[0] . '/.htaccess';
+  $files['js'] = $js_path[0] . '/.htaccess';
+
+  // Check for old .htaccess files.
+  $something_done = FALSE;
+  foreach ($files as $type => $uri) {
+    if (!file_exists($uri)) {
+      unset($files[$type]);
+    }
+    $contents = file_get_contents($uri);
+    // Remove old .htaccess file.
+    if (strpos($contents, 'ForceType') !== FALSE) {
+      drupal_unlink($uri);
+      $something_done = TRUE;
+    }
+  }
+
+  // Create the new .htaccess file.
+  $new_htaccess = FALSE;
+  if (!empty($files) && $something_done && variable_get('advagg_htaccess_check_generate', ADVAGG_HTACCESS_CHECK_GENERATE)) {
+    // Make the advagg_htaccess_check_generate() function available.
+    module_load_include('inc', 'advagg', 'advagg.missing');
+    foreach ($files as $type => $uri) {
+      advagg_htaccess_check_generate(array($uri => $type), $type, TRUE);
+      $new_htaccess = TRUE;
+    }
+  }
+
+  // Output info.
+  if ($something_done) {
+    if ($new_htaccess) {
+      return t('Removed the old .htaccess file and put in a new one.');
+    }
+    else {
+      return t('Removed the old .htaccess file.');
+    }
+  }
+  else {
+    return t('Nothing needed to be done.');
+  }
+}
+
+/**
  * Implements hook_requirements().
  */
 function advagg_requirements($phase) {
@@ -949,15 +1002,28 @@ function advagg_install_check_via_http(&$requirements) {
           $modules = apache_get_modules();
         }
 
-        if (empty($request->headers['content-type']) || strpos($request->headers['content-type'], 'text/' . $content_type) === FALSE) {
+        if ($type == 'css' && (empty($request->headers['content-type']) || strpos($request->headers['content-type'], 'text/' . $content_type) === FALSE)) {
+          // Recommend servers configuration be adjusted.
+          $requirements['advagg_' . $type . '_type' . $key] = array(
+            'title' => $t('Adv CSS/JS Agg - Content-Type'),
+            'severity' => REQUIREMENT_WARNING,
+            'value' => $t('The wrong Content-Type is being sent by your web server.'),
+            'description' => $t('The web servers configuration will need to be adjusted. Was looking for <code>@typematch</code>, actually got <code>@received</code>.', array(
+              '@typematch' => 'text/' . $content_type,
+              '@received' => isset($request->headers['content-type']) ? $request->headers['content-type'] : 'NULL',
+            )),
+          );
+        }
+
+        if ($type == 'js' && (empty($request->headers['content-type']) || strpos($request->headers['content-type'], 'application/' . $content_type) === FALSE)) {
           // Recommend servers configuration be adjusted.
           $requirements['advagg_' . $type . '_type' . $key] = array(
             'title' => $t('Adv CSS/JS Agg - Content-Type'),
             'severity' => REQUIREMENT_WARNING,
             'value' => $t('The wrong Content-Type is being sent by your web server.'),
             'description' => $t('The web servers configuration will need to be adjusted. Was looking for <code>@typematch</code>, actually got <code>@received</code>. You might need to apply the drupal core patch located here <a href="@url">@url</a>.', array(
-              '@url' => 'https://drupal.org/node/1440534',
-              '@typematch' => 'text/' . $content_type,
+              '@url' => 'https://drupal.org/node/2193333#comment-8469991',
+              '@typematch' => 'application/' . $content_type,
               '@received' => isset($request->headers['content-type']) ? $request->headers['content-type'] : 'NULL',
             )),
           );

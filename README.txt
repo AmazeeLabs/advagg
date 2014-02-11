@@ -351,10 +351,14 @@ core .htaccess file (located at the webroot level).
         </IfModule>
       </IfModule>
     </FilesMatch>
+    # Force advagg .js file to have the type of application/javascript.
+    <FilesMatch "^js__[A-Za-z0-9-_]{43}__[A-Za-z0-9-_]{43}__[A-Za-z0-9-_]{43}.js(\.gz)?">
+      ForceType application/javascript
+    </FilesMatch>
 
 
 If pages on the site stop working correctly or looks broken after Advanced
 CSS/JS Aggregation is enabled, the first step should be to validate the
 individual CSS and/or JS files using the included advagg_validator module -
 something as simple as an errant unfinished comment in one file may cause entire
-files to be ignored.
+aggregates of files to be ignored.

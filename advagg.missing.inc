@@ -161,7 +161,7 @@ function advagg_missing_send_saved_file($files_to_save, $uri, $created, $type, $
       header("Content-Type: text/css");
     }
     elseif ($type == 'js') {
-      header("Content-Type: text/javascript; charset=UTF-8");
+      header("Content-Type: application/javascript; charset=UTF-8");
     }
     header('X-AdvAgg: Generated file at ' . REQUEST_TIME);
 
@@ -306,7 +306,12 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
   $data .= "    # Do not use etags for cache validation.\n";
   $data .= "    Header unset ETag\n";
   $data .= "    # Serve correct content type.\n";
-  $data .= "    Header set Content-Type text/${content_type}\n";
+  if ($type == 'css') {
+    $data .= "    Header set Content-Type text/${content_type}\n";
+  }
+  else {
+    $data .= "    Header set Content-Type application/${content_type}\n";
+  }
   $data .= "    <IfModule !mod_expires.c>\n";
   $data .= "      # Set a far future Cache-Control header to 52 weeks.\n";
   $data .= "      Header set Cache-Control \"max-age=31449600, no-transform, public\"\n";
@@ -315,6 +320,12 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
   $data .= "      Header append Cache-Control \"no-transform, public\"\n";
   $data .= "    </IfModule>\n";
   $data .= "  </IfModule>\n";
+  if ($type == 'css') {
+    $data .= "  ForceType text/${content_type} .js\n"
+  }
+  else
+    $data .= "  ForceType application/${content_type} .js\n"
+  }
   $data .= "</FilesMatch>\n";
 
   foreach (array_keys($files_to_save) as $uri) {
