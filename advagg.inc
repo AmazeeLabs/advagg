@@ -882,7 +882,11 @@ function advagg_create_aggregate_files($plans) {
   }
 
   // If the httprl module exists and we want to use it.
-  if (module_exists('httprl') && variable_get('advagg_use_httprl', ADVAGG_USE_HTTPRL) && httprl_is_background_callback_capable()) {
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+  if (   module_exists('httprl')
+      && variable_get('advagg_use_httprl', ADVAGG_USE_HTTPRL)
+      && (is_callable('httprl_is_background_callback_capable') && httprl_is_background_callback_capable() || !is_callable('httprl_is_background_callback_capable'))
+      ) {
     // Setup callback options array; call function in the background.
     $callback_options = array(
       array(
