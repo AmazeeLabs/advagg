@@ -1206,23 +1206,24 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   $setting['ajaxPageState']['js'] = array_fill_keys(array_filter(array_keys($items), 'advagg_remove_short_keys'), 1);
   unset($setting['ajaxPageState']['js']['settings']);
   drupal_add_js($setting, 'setting');
-  // For performance reasons we store this locally.
-  if ($scope != 'header') {
-    if (!empty($javascript_settings_data)) {
-      foreach ($javascript_settings_data as $js_data) {
-        $items['settings']['data'][] = $js_data;
-      }
-      unset($javascript_settings_data);
+  // Move 'settings' javascript to the header region.
+  if ($scope == 'header' || ($scope == 'footer' && module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2) && !empty($javascript_settings_data)) {
+    foreach ($javascript_settings_data as $js_data) {
+      $items['settings']['data'][] = $js_data;
     }
+    $javascript_settings_data = array();
+  }
+  else {
     $javascript_settings_data[] = $setting;
   }
 
-  // If we're outputting the header scope, then this might be the final time
+  // If we're outputting the header scope, then this should be the final time
   // that drupal_get_js() is running, so add the setting to this output as well
   // as to the drupal_add_js() cache. If $items['settings'] doesn't exist, it's
   // because drupal_get_js() was intentionally passed a $javascript argument
   // stripped of settings, potentially in order to override how settings get
   // output, so in this case, do not add the setting to this output.
+  // Also output the settings if we have pushed all javascript to the footer.
   if (($scope == 'header' || ($scope == 'footer' && module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2)) && isset($items['settings'])) {
     $items['settings']['data'][] = $setting;
   }
@@ -1299,6 +1300,18 @@ function advagg_get_js_scopes($javascript) {
     $temp = $scopes['header'];
     unset($scopes['header']);
     $scopes['header'] = $temp;
+  }
+
+  // Process footer last if everything has been moved to the footer.
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+  if (   isset($scopes['footer'])
+      && count($scopes) > 1
+      && module_exists('advagg_mod')
+      && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2
+      ) {
+    $temp = $scopes['footer'];
+    unset($scopes['footer']);
+    $scopes['footer'] = $temp;
   }
 
   // Return the scopes.
