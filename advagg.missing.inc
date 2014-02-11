@@ -321,10 +321,10 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
   $data .= "    </IfModule>\n";
   $data .= "  </IfModule>\n";
   if ($type == 'css') {
-    $data .= "  ForceType text/${content_type} .js\n"
+    $data .= "  ForceType text/${content_type} .js\n";
   }
-  else
-    $data .= "  ForceType application/${content_type} .js\n"
+  else {
+    $data .= "  ForceType application/${content_type} .js\n";
   }
   $data .= "</FilesMatch>\n";
 
