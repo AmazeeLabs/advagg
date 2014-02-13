@@ -465,7 +465,7 @@ function advagg_update_7203(&$sandbox) {
 /**
  * Implements hook_update_N().
  *
- * Update the .htaccess file in the advagg directories.
+ * Remove empty temporary files left behind by AdvAgg.
  */
 function advagg_update_7204(&$sandbox) {
   // Make sure the advagg_get_root_files_dir() function is available.
