@@ -463,6 +463,59 @@ function advagg_update_7203(&$sandbox) {
 }
 
 /**
+ * Implements hook_update_N().
+ *
+ * Update the .htaccess file in the advagg directories.
+ */
+function advagg_update_7204(&$sandbox) {
+  // Make sure the advagg_get_root_files_dir() function is available.
+  drupal_load('module', 'advagg');
+
+  // Get the advagg paths.
+  $advagg_path = advagg_get_root_files_dir();
+
+  // Get the top level path.
+  $top_level = substr($advagg_path[0][0], 0, strpos($advagg_path[0][0], 'advagg_css'));
+
+  // Start timer.
+  timer_start(__FUNCTION__);
+
+  // Remove empty temp files from public://.
+  $files = file_scan_directory($top_level, '/file.*/', array(
+    'recurse' => FALSE,
+    'callback' => 'advagg_install_delete_empty_file_if_stale',
+  ));
+
+  // Stop timer.
+  $time = timer_stop(__FUNCTION__);
+  $time = round($time['time']/1000, 4);
+
+  // Output info.
+  if (count($files) > 0) {
+    return t('%count temporary files where removed in %time seconds' , array(
+      '%count' => count($files),
+      '%time' => $time,
+    ));
+  }
+  else {
+    return t('Nothing needed to be done.');
+  }
+}
+
+/**
+ * Callback to delete files if size == 0 & modified more than 60 seconds ago.
+ *
+ * @param string $uri
+ *   location of the file to check.
+ */
+function advagg_install_delete_empty_file_if_stale($uri) {
+  // Set stale file threshold to 60 seconds.
+  if (filesize($uri) == 0 && REQUEST_TIME - filemtime($uri) > 60) {
+    file_unmanaged_delete($uri);
+  }
+}
+
+/**
  * Implements hook_requirements().
  */
 function advagg_requirements($phase) {
