@@ -450,8 +450,14 @@ function advagg_ajax_render_alter(&$commands) {
     drupal_add_js_page_defaults();
   }
 
+  // Get Core JS.
+  list($styles, $core_scripts_header, $core_scripts_footer, $items, $settings) = advagg_build_ajax_js_css();
+
+  // Get AdvAgg JS.
+  $scripts_footer = advagg_get_js('footer', $items['js'], TRUE, TRUE);
+  $scripts_header = advagg_get_js('header', $items['js'], TRUE, TRUE);
+
   // Remove core JS.
-  list($styles, $scripts_header, $scripts_footer, $items, $settings) = advagg_build_ajax_js_css();
   foreach ($commands as $key => $values) {
     // Skip if not an array or not a command.
     if (!is_array($values) || empty($values['command'])) {
@@ -466,7 +472,7 @@ function advagg_ajax_render_alter(&$commands) {
     if (   $values['command'] == 'settings'
         && is_array($values['settings'])
         && !empty($values['merge'])
-          ) {
+        ) {
       // Remove JS settings.
       unset($commands[$key]);
       continue;
@@ -474,8 +480,8 @@ function advagg_ajax_render_alter(&$commands) {
     if (   $values['command'] == 'insert'
         && is_null($values['settings'])
         && $values['method'] == 'prepend'
-        && $values['data'] == $scripts_header
-          ) {
+        && $values['data'] == $core_scripts_header
+        ) {
       // Remove JS header.
       unset($commands[$key]);
       continue;
@@ -483,8 +489,8 @@ function advagg_ajax_render_alter(&$commands) {
     if (   $values['command'] == 'insert'
         && is_null($values['settings'])
         && $values['method'] == 'append'
-        && $values['data'] == $scripts_footer
-          ) {
+        && $values['data'] == $core_scripts_footer
+        ) {
       // Remove JS footer.
       unset($commands[$key]);
       continue;
@@ -492,8 +498,6 @@ function advagg_ajax_render_alter(&$commands) {
   }
 
   // Add in AdvAgg JS.
-  $scripts_footer = advagg_get_js('footer', $items['js'], TRUE);
-  $scripts_header = advagg_get_js('header', $items['js'], TRUE);
   $extra_commands = array();
   if (!empty($scripts_header)) {
     $extra_commands[] = ajax_command_prepend('head', $scripts_header);
@@ -1140,7 +1144,7 @@ function advagg_get_full_js($javascript = NULL, $skip_alter = FALSE) {
  * @see locale_js_alter()
  * @see drupal_js_defaults()
  */
-function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALSE) {
+function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALSE, $ajax = FALSE) {
   $javascript_settings_data = &drupal_static(__FUNCTION__, array());
   if (empty($javascript)) {
     return '';
@@ -1226,6 +1230,11 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   // Also output the settings if we have pushed all javascript to the footer.
   if (($scope == 'header' || ($scope == 'footer' && module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2)) && isset($items['settings'])) {
     $items['settings']['data'][] = $setting;
+  }
+
+  // Do not include jQuery.extend(Drupal.settings) if the output is ajax.
+  if ($ajax) {
+    unset($items['settings']['data']);
   }
 
   // Render the HTML needed to load the JavaScript.
@@ -2128,7 +2137,7 @@ function advagg_group_js($javascript) {
   // new group needs to be made for it.
   $current_group_keys = NULL;
   $index = -1;
-  foreach ($javascript as $item) {
+  foreach ($javascript as $key => $item) {
     // The browsers for which the JavaScript item needs to be loaded is part of
     // the information that determines when a new group is needed, but the order
     // of keys in the array doesn't matter, and we don't want a new group if all
@@ -2138,6 +2147,10 @@ function advagg_group_js($javascript) {
     }
     else {
       $item['browsers'] = array();
+    }
+
+    if (empty($item['type']) && $key == 'settings') {
+      $item['type'] = 'setting';
     }
 
     switch ($item['type']) {
