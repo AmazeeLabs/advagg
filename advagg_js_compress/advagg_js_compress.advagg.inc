@@ -180,6 +180,12 @@ function advagg_js_compress_prep(&$contents, $filename, $aggregate_settings, $ad
   $contents_before = $contents;
   $before = strlen($contents);
 
+  // Do not use jsmin() if the function can not be called.
+  if ($compressor == 3 && !function_exists('jsmin')) {
+    $compressor = 1;
+    watchdog('advagg_js_compress', 'The jsmin function does not exist. Using jsmin+.');
+  }
+
   // Try cache.
   $info = advagg_get_info_on_file($filename);
   $cache_id = 'advagg:js_compress:' . $compressor . ':' . $info['filename_hash'];
