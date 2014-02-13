@@ -735,10 +735,26 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   // @ignore sniffer_commenting_inlinecomment_spacingafter
 
   // Get a temporary filename in the destination directory.
-  $temporary_file = drupal_tempnam(drupal_dirname($uri), 'file');
+  $dir = drupal_dirname($uri) . '/';
+  $temporary_file = drupal_tempnam($dir, 'file_advagg_');
+  $temporary_file_copy = $temporary_file;
+
   // Get the extension of the original filename and append it to the temp file
   // name. Preserves the mime type in different stream wrapper implementations.
-  $temporary_file .= "." . pathinfo($uri, PATHINFO_EXTENSION);
+  $parts = pathinfo($uri);
+  $extension = '.' . $parts['extension'];
+  if ($extension == '.gz') {
+    $parts = pathinfo($parts['filename']);
+    $extension = '.' . $parts['extension'] . $extension;
+  }
+  // Also move temp file into the advagg dir.
+  $temporary_file = str_replace(substr($temporary_file, 0, strpos($temporary_file, 'file_advagg_')), $dir, $temporary_file) . $extension;
+
+  // Remove if rename failed.
+  if (!rename($temporary_file_copy, $temporary_file)) {
+    @unlink($temporary_file_copy);
+  }
+
   // Save to temporary filename in the destination directory.
   $filepath = file_unmanaged_save_data($data, $temporary_file, FILE_EXISTS_REPLACE);
 
