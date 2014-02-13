@@ -43,6 +43,13 @@ function advagg_enable() {
 
   // Flush menu cache on shutdown.
   register_shutdown_function('menu_rebuild');
+
+  // Set the advagg_needs_update variable if this is a major version update.
+  if (!db_table_exists('advagg_aggregates_versions')) {
+    variable_set('advagg_needs_update', TRUE);
+  } else {
+    variable_del('advagg_needs_update');
+  }
 }
 
 /**

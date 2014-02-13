@@ -101,6 +101,11 @@ define('ADVAGG_SCRIPTS_SCOPE_ANYWHERE', FALSE);
  */
 define('ADVAGG_CLEAR_SCRIPTS', TRUE);
 
+/**
+ * TRUE when db table 'advagg_aggregates_versions' is missing in advagg_enable.
+ */
+define('ADVAGG_NEEDS_UPDATE', FALSE);
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
@@ -193,9 +198,9 @@ function advagg_module_implements_alter(&$implementations, $hook) {
  * Implements hook_system_info_alter().
  */
 function advagg_system_info_alter(&$info, $file, $type) {
-  static $config_path;
+  $config_path = &drupal_static(__FUNCTION__);
   // Get advagg config path.
-  if (!isset($config_path)) {
+  if (empty($config_path)) {
     $config_path = advagg_admin_config_root_path();
   }
 
@@ -1430,11 +1435,23 @@ function advagg_merge_plans($css_js_groups, $plans) {
  *   The value of the advagg_enabled variable.
  */
 function advagg_enabled() {
+  $init = &drupal_static(__FUNCTION__);
+
+  if (!empty($init)) {
+    return variable_get('advagg_enabled', ADVAGG_ENABLED);
+  }
+
+  $init = TRUE;
   // Disable AdvAgg if module needs to be upgraded from 1.x to 2.x.
-  if (!db_table_exists('advagg_aggregates_versions')) {
-    $GLOBALS['conf']['advagg_enabled'] = FALSE;
-    if (user_access('administer site configuration')) {
-      drupal_set_message(t('Please run <a href="@link">database updates</a>. AdvAgg will remain disabled until done.', array('@link' => url('update.php'))), 'error');
+  if (variable_get('advagg_needs_update', ADVAGG_NEEDS_UPDATE)) {
+    if (!db_table_exists('advagg_aggregates_versions')) {
+      $GLOBALS['conf']['advagg_enabled'] = FALSE;
+      if (user_access('administer site configuration')) {
+        drupal_set_message(t('Please run <a href="@link">database updates</a>. AdvAgg will remain disabled until done.', array('@link' => url('update.php'))), 'error');
+      }
+    }
+    else {
+      variable_del('advagg_needs_update');
     }
   }
   else {
