@@ -64,6 +64,39 @@ function advagg_admin_settings_form($form, $form_state) {
     '#options' => $options,
     '#description' => t('Development will scan all files for a change on every page load. Disabled is useful for testing hook_alters for CSS/JS. Normal is should be fine for all use cases. Aggressive might break depending on how various hook_alter for CSS/JS are implemented. As a reference, core takes about 7 ms to run.'),
   );
+  // Show msg about the jquery update compression setting.
+  if (module_exists('jquery_update')) {
+    if (variable_get('jquery_update_compression_type', 'min') == 'min') {
+      $form['global']['dev_container'] = array(
+        '#type' => 'container',
+        '#states' => array(
+          'visible' => array(
+            ':input[name="advagg_cache_level"]' => array('value' => '-1'),
+          ),
+        ),
+      );
+      $form['global']['dev_container']['advagg_jquery_update_development'] = array(
+        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compressiong level</a> to "Development" as well. ', array(
+          '!url' => url('admin/config/development/jquery_update'),
+        )) . '</p>',
+      );
+    }
+    else {
+      $form['global']['prod_container'] = array(
+        '#type' => 'container',
+        '#states' => array(
+          'visible' => array(
+            ':input[name="advagg_cache_level"]' => array('value' => '3'),
+          ),
+        ),
+      );
+      $form['global']['prod_container']['advagg_jquery_update_development'] = array(
+        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compressiong level</a> to "Production" as well. ', array(
+          '!url' => url('admin/config/development/jquery_update'),
+        )) . '</p>',
+      );
+    }
+  }
 
   $form['css'] = array(
     '#type' => 'fieldset',
