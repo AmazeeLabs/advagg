@@ -192,7 +192,7 @@ function advagg_insert_update_files($files, $type) {
       unset($file_exists['changes']);
 
       // If something is different, update.
-      $diff = array_diff($record, $file_exists);
+      $diff = array_diff_assoc($record, $file_exists);
       if (!empty($diff)) {
         $diff['changes'] = $changes + 1;
         $diff['filename_hash'] = $record['filename_hash'];
@@ -495,7 +495,7 @@ function advagg_generate_groups($files_to_aggregate) {
           }
         }
         if (isset($file_info['browsers'])) {
-          $diff = array_merge(array_diff($file_info['browsers'], $browsers), array_diff($browsers, $file_info['browsers']));
+          $diff = array_merge(array_diff_assoc($file_info['browsers'], $browsers), array_diff_assoc($browsers, $file_info['browsers']));
           if (!empty($diff)) {
             $changed = TRUE;
             $browsers = $file_info['browsers'];

@@ -345,7 +345,7 @@ function hook_advagg_css_groups_alter(&$css_groups, $preprocess_css) {
       }
     }
     else {
-      $diff = array_merge(array_diff($group['browsers'], $target['browsers']), array_diff($target['browsers'], $group['browsers']));
+      $diff = array_merge(array_diff_assoc($group['browsers'], $target['browsers']), array_diff_assoc($target['browsers'], $group['browsers']));
       // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
       if (   $group['type'] != $target['type']
           || $group['group'] != $target['group']
@@ -356,7 +356,7 @@ function hook_advagg_css_groups_alter(&$css_groups, $preprocess_css) {
           || !empty($diff)
           ) {
         if (!empty($last_group)) {
-          $diff = array_merge(array_diff($last_group['browsers'], $target['browsers']), array_diff($target['browsers'], $last_group['browsers']));
+          $diff = array_merge(array_diff_assoc($last_group['browsers'], $target['browsers']), array_diff_assoc($target['browsers'], $last_group['browsers']));
           // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
           if (   $last_group['type'] != $target['type']
               || $last_group['group'] != $target['group']
