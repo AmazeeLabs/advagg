@@ -280,7 +280,7 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
     $content_type = 'javascript';
   }
 
-  // @ignore style_lowercase_html:35
+  // @ignore style_lowercase_html:45
   $data  = "\n";
   $data .= "<FilesMatch \"^${type}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}.${type}(\.gz)?\">\n";
   $data .= "  # No mod_headers\n";

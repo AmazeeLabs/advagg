@@ -47,7 +47,8 @@ function advagg_enable() {
   // Set the advagg_needs_update variable if this is a major version update.
   if (!db_table_exists('advagg_aggregates_versions')) {
     variable_set('advagg_needs_update', TRUE);
-  } else {
+  }
+  else {
     variable_del('advagg_needs_update');
   }
 }
@@ -364,11 +365,11 @@ function advagg_update_7204(&$sandbox) {
 
   // Stop timer.
   $time = timer_stop(__FUNCTION__);
-  $time = round($time['time']/1000, 4);
+  $time = round($time['time'] / 1000, 4);
 
   // Output info.
   if (count($files) > 0) {
-    return t('%count temporary files where removed in %time seconds' , array(
+    return t('%count temporary files where removed in %time seconds', array(
       '%count' => count($files),
       '%time' => $time,
     ));
@@ -385,8 +386,8 @@ function advagg_update_7204(&$sandbox) {
  * usage of ForceType from update 7203.
  */
 function advagg_update_7205(&$sandbox) {
-  $output = t('First pattern results: ') . advagg_install_update_htaccess('ForceType text/css .js');
-  $output .= ' ' . t('Second pattern results: ') . advagg_install_update_htaccess('ForceType application/javascript .js');
+  $output = t('First pattern results:') . ' ' . advagg_install_update_htaccess('ForceType text/css .js');
+  $output .= ' ' . t('Second pattern results:') . ' ' . advagg_install_update_htaccess('ForceType application/javascript .js');
   return $output;
 }
 
@@ -408,7 +409,7 @@ function advagg_install_delete_empty_file_if_stale($uri) {
  *
  * @param string $has_string
  *   If the .htaccess file contains this string it will be removed & recreated.
- * @param string $has_string
+ * @param string $does_not_have_string
  *   If the .htaccess file does not contains this string it will be removed &
  *   recreated.
  *

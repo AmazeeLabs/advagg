@@ -530,7 +530,7 @@ function advagg_generate_groups($files_to_aggregate) {
               $changed = TRUE;
               $selector_count = $file_info['linecount'];
 
-              // Break large file into multiple small files
+              // Break large file into multiple small files.
               if ($file_info['linecount'] > 4095) {
                 $parts = advagg_split_css_file($file_info);
               }
@@ -543,7 +543,7 @@ function advagg_generate_groups($files_to_aggregate) {
         if (!empty($parts)) {
           $onload_local = array_filter(array_unique($onload));
           foreach ($parts as $part) {
-            $count++;
+            ++$count;
             $groups[$location][$count][] = $part;
             if (!empty($onload_local)) {
               $groups[$location][$count][0]['onload'] = implode(';', $onload) . ';';
@@ -552,7 +552,7 @@ function advagg_generate_groups($files_to_aggregate) {
         }
         else {
           if ($changed) {
-            $count++;
+            ++$count;
           }
           $groups[$location][$count][] = $file_info;
         }
@@ -625,7 +625,7 @@ function advagg_split_css_file($file_info) {
   $split_at = $selector_split_value;
   foreach ($major_chunks as $chunk_key => $chunks) {
     $last_chunk = FALSE;
-    if (count($major_chunks)-1 == $chunk_key) {
+    if (count($major_chunks) - 1 == $chunk_key) {
       $last_chunk = TRUE;
     }
 
@@ -647,7 +647,7 @@ function advagg_split_css_file($file_info) {
     if (strpos($chunks, '@media') !== FALSE) {
       $media_query_pos = strpos($chunks, '{');
       $media_query = substr($chunks, 0, $media_query_pos);
-      $chunks = substr($chunks, $media_query_pos+1);
+      $chunks = substr($chunks, $media_query_pos + 1);
     }
 
     // Split CSS into selector chunks.
@@ -768,7 +768,7 @@ function advagg_create_subfile($css, $overall_split, $file_info) {
     module_load_include('inc', 'advagg', 'advagg.missing');
   }
 
-  // Write the current chunk of the CSS into a file
+  // Write the current chunk of the CSS into a file.
   $new_filename = str_ireplace('.css', '.' . $overall_split . '.css', $file_info['data']);
   $part_uri = $parts_uri . '/' . $new_filename;
   $dirname = drupal_dirname($part_uri);
