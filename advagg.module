@@ -118,11 +118,59 @@ function advagg_url_inbound_alter(&$path, $original_path, $path_language) {
     return;
   }
 
-  // If requested path was for an advagg file but now it is something else
-  // switch is back to the requested path.
+  // Setup static so we only need to run the logic once.
+  $already_ran = &drupal_static(__FUNCTION__);
+  if (!isset($already_ran)) {
+    $already_ran = array();
+  }
   $request_path = request_path();
-  if ($path != $request_path && preg_match('/^.*\/advagg_(j|cs)s\/(j|cs)s' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}\.(j|cs)s.*$/', $request_path)) {
-    $path = $request_path;
+
+  // Set the path again if we already did this alter.
+  if (array_key_exists($request_path, $already_ran)) {
+    $path = $already_ran[$request_path];
+    return;
+  }
+
+  // If requested path was for an advagg file but now it is something else
+  // switch is back to the advagg file.
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:2
+  if (   !empty($path)
+      && $path != $request_path
+      && preg_match('/^.*\/advagg_(j|cs)s\/(j|cs)s' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}\.(j|cs)s.*$/', $request_path)
+      ) {
+    // Get the advagg paths.
+    $advagg_path = advagg_get_root_files_dir();
+
+    // Get the top level path.
+    $top_level = substr($advagg_path[0][1], 0, strpos($advagg_path[0][1], 'advagg_css'));
+
+    // Only change if it's an exact match.
+    $start = strpos($request_path, $top_level . 'advagg_');
+    if ($start === 0) {
+      // Set path to correct advagg path.
+      $path = substr($request_path, $start);
+      $already_ran[$request_path] = $path;
+    }
+    else {
+      // Put all languages prefixes into an array.
+      $language_list = language_list();
+      $prefixes = array();
+      foreach ($language_list as $lang) {
+        if ($lang->enabled && strpos($request_path, $lang->prefix) !== FALSE) {
+          $prefixes[$lang->prefix] = $lang->prefix;
+        }
+      }
+      if (!empty($prefixes)) {
+        // Remove all enabled languages prefixes from the beginning of the path.
+        $substr_to_shrink = substr($request_path, 0, $start);
+        foreach ($prefixes as $prefix) {
+          $substr_to_shrink = str_replace($prefix . '/', '', $substr_to_shrink);
+        }
+        // Set path to correct advagg path.
+        $path = $substr_to_shrink . substr($request_path, $start);
+        $already_ran[$request_path] = $path;
+      }
+    }
   }
 }
 
@@ -1573,7 +1621,6 @@ function advagg_current_hooks_hash_array() {
       'advagg_ie_css_selector_limiter' => variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER),
       'advagg_ie_css_selector_limiter_value' => variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE),
       'advagg_scripts_scope_anywhere' => variable_get('advagg_scripts_scope_anywhere', ADVAGG_SCRIPTS_SCOPE_ANYWHERE),
-      'language' => isset($GLOBALS['language']->language) ? $GLOBALS['language']->language : '',
     ),
     'hooks' => advagg_hooks_implemented(FALSE),
   );
