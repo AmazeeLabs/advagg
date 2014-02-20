@@ -309,164 +309,33 @@ function advagg_update_7200(&$sandbox) {
 }
 
 /**
- * Update the .htaccess file in the advagg directories.
- *
- * Remove Last-Modified Header.
- *
  * Implements hook_update_N().
+ *
+ * Update the .htaccess file in the advagg directories by removing the
+ * Last-Modified Header so far future 304's work correctly.
  */
 function advagg_update_7201(&$sandbox) {
-  // Make sure the advagg_get_root_files_dir() function is available.
-  drupal_load('module', 'advagg');
-
-  // Get paths to .htaccess file.
-  list($css_path, $js_path) = advagg_get_root_files_dir();
-  $files['css'] = $css_path[0] . '/.htaccess';
-  $files['js'] = $js_path[0] . '/.htaccess';
-
-  // Check for bad .htaccess files.
-  $something_done = FALSE;
-  foreach ($files as $type => $uri) {
-    if (!file_exists($uri)) {
-      unset($files[$type]);
-    }
-    $contents = file_get_contents($uri);
-    // Remove bad .htaccess file.
-    if (strpos($contents, 'Header set Last-Modified') !== FALSE) {
-      drupal_unlink($uri);
-      $something_done = TRUE;
-    }
-  }
-
-  // Create the new .htaccess file.
-  $new_htaccess = FALSE;
-  if (!empty($files) && $something_done && variable_get('advagg_htaccess_check_generate', ADVAGG_HTACCESS_CHECK_GENERATE)) {
-    // Make the advagg_htaccess_check_generate() function available.
-    module_load_include('inc', 'advagg', 'advagg.missing');
-    foreach ($files as $type => $uri) {
-      advagg_htaccess_check_generate(array($uri => $type), $type, TRUE);
-      $new_htaccess = TRUE;
-    }
-  }
-
-  // Output info.
-  if ($something_done) {
-    if ($new_htaccess) {
-      return t('Removed the old .htaccess file and put in a new one.');
-    }
-    else {
-      return t('Removed the old .htaccess file.');
-    }
-  }
-  else {
-    return t('Nothing needed to be done.');
-  }
+  return advagg_install_update_htaccess('Header set Last-Modified');
 }
 
 /**
  * Implements hook_update_N().
  *
- * Update the .htaccess file in the advagg directories.
+ * Update the .htaccess file in the advagg directories by removing the 480 week
+ * Far-Future code as it does not follow RFC 2616 14.21.
  */
 function advagg_update_7202(&$sandbox) {
-  // Make sure the advagg_get_root_files_dir() function is available.
-  drupal_load('module', 'advagg');
-
-  // Get paths to .htaccess file.
-  list($css_path, $js_path) = advagg_get_root_files_dir();
-  $files['css'] = $css_path[0] . '/.htaccess';
-  $files['js'] = $js_path[0] . '/.htaccess';
-
-  // Check for old .htaccess files.
-  $something_done = FALSE;
-  foreach ($files as $type => $uri) {
-    if (!file_exists($uri)) {
-      unset($files[$type]);
-    }
-    $contents = file_get_contents($uri);
-    // Remove old .htaccess file.
-    if (strpos($contents, '290304000') !== FALSE) {
-      drupal_unlink($uri);
-      $something_done = TRUE;
-    }
-  }
-
-  // Create the new .htaccess file.
-  $new_htaccess = FALSE;
-  if (!empty($files) && $something_done && variable_get('advagg_htaccess_check_generate', ADVAGG_HTACCESS_CHECK_GENERATE)) {
-    // Make the advagg_htaccess_check_generate() function available.
-    module_load_include('inc', 'advagg', 'advagg.missing');
-    foreach ($files as $type => $uri) {
-      advagg_htaccess_check_generate(array($uri => $type), $type, TRUE);
-      $new_htaccess = TRUE;
-    }
-  }
-
-  // Output info.
-  if ($something_done) {
-    if ($new_htaccess) {
-      return t('Removed the old .htaccess file and put in a new one.');
-    }
-    else {
-      return t('Removed the old .htaccess file.');
-    }
-  }
-  else {
-    return t('Nothing needed to be done.');
-  }
+  return advagg_install_update_htaccess('290304000');
 }
 
 /**
  * Implements hook_update_N().
  *
- * Update the .htaccess file in the advagg directories.
+ * Update the .htaccess file in the advagg directories by forceing .js files to
+ * be application/javascript so to follow RFC 4329 7.1
  */
 function advagg_update_7203(&$sandbox) {
-  // Make sure the advagg_get_root_files_dir() function is available.
-  drupal_load('module', 'advagg');
-
-  // Get paths to .htaccess file.
-  list($css_path, $js_path) = advagg_get_root_files_dir();
-  $files['css'] = $css_path[0] . '/.htaccess';
-  $files['js'] = $js_path[0] . '/.htaccess';
-
-  // Check for old .htaccess files.
-  $something_done = FALSE;
-  foreach ($files as $type => $uri) {
-    if (!file_exists($uri)) {
-      unset($files[$type]);
-    }
-    $contents = file_get_contents($uri);
-    // Remove old .htaccess file.
-    if (strpos($contents, 'ForceType') !== FALSE) {
-      drupal_unlink($uri);
-      $something_done = TRUE;
-    }
-  }
-
-  // Create the new .htaccess file.
-  $new_htaccess = FALSE;
-  if (!empty($files) && $something_done && variable_get('advagg_htaccess_check_generate', ADVAGG_HTACCESS_CHECK_GENERATE)) {
-    // Make the advagg_htaccess_check_generate() function available.
-    module_load_include('inc', 'advagg', 'advagg.missing');
-    foreach ($files as $type => $uri) {
-      advagg_htaccess_check_generate(array($uri => $type), $type, TRUE);
-      $new_htaccess = TRUE;
-    }
-  }
-
-  // Output info.
-  if ($something_done) {
-    if ($new_htaccess) {
-      return t('Removed the old .htaccess file and put in a new one.');
-    }
-    else {
-      return t('Removed the old .htaccess file.');
-    }
-  }
-  else {
-    return t('Nothing needed to be done.');
-  }
+  return advagg_install_update_htaccess('', 'ForceType');
 }
 
 /**
@@ -510,6 +379,18 @@ function advagg_update_7204(&$sandbox) {
 }
 
 /**
+ * Implements hook_update_N().
+ *
+ * Update the .htaccess file in the advagg directories in order to fix incorrect
+ * usage of ForceType from update 7203.
+ */
+function advagg_update_7205(&$sandbox) {
+  $output = t('First pattern results: ') . advagg_install_update_htaccess('ForceType text/css .js');
+  $output .= ' ' . t('Second pattern results: ') . advagg_install_update_htaccess('ForceType application/javascript .js');
+  return $output;
+}
+
+/**
  * Callback to delete files if size == 0 & modified more than 60 seconds ago.
  *
  * @param string $uri
@@ -519,6 +400,72 @@ function advagg_install_delete_empty_file_if_stale($uri) {
   // Set stale file threshold to 60 seconds.
   if (filesize($uri) == 0 && REQUEST_TIME - filemtime($uri) > 60) {
     file_unmanaged_delete($uri);
+  }
+}
+
+/**
+ * Callback to delete files if size == 0 & modified more than 60 seconds ago.
+ *
+ * @param string $has_string
+ *   If the .htaccess file contains this string it will be removed & recreated.
+ * @param string $has_string
+ *   If the .htaccess file does not contains this string it will be removed &
+ *   recreated.
+ *
+ * @return string
+ *   Translated string indicating what was done.
+ */
+function advagg_install_update_htaccess($has_string = '', $does_not_have_string = '') {
+  // Make sure the advagg_get_root_files_dir() function is available.
+  drupal_load('module', 'advagg');
+
+  // Get paths to .htaccess file.
+  list($css_path, $js_path) = advagg_get_root_files_dir();
+  $files['css'] = $css_path[0] . '/.htaccess';
+  $files['js'] = $js_path[0] . '/.htaccess';
+
+  // Check for old .htaccess files.
+  $something_done = FALSE;
+  foreach ($files as $type => $uri) {
+    if (!file_exists($uri)) {
+      unset($files[$type]);
+      continue;
+    }
+    $contents = file_get_contents($uri);
+    // Remove old .htaccess file if it has this string.
+    if (!empty($has_string) && strpos($contents, $has_string) !== FALSE) {
+      drupal_unlink($uri);
+      $something_done = TRUE;
+    }
+    // Remove old .htaccess file if it does not have this string.
+    if (!empty($does_not_have_string) && strpos($contents, $does_not_have_string) === FALSE) {
+      drupal_unlink($uri);
+      $something_done = TRUE;
+    }
+  }
+
+  // Create the new .htaccess file.
+  $new_htaccess = FALSE;
+  if (!empty($files) && $something_done && variable_get('advagg_htaccess_check_generate', ADVAGG_HTACCESS_CHECK_GENERATE)) {
+    // Make the advagg_htaccess_check_generate() function available.
+    module_load_include('inc', 'advagg', 'advagg.missing');
+    foreach ($files as $type => $uri) {
+      advagg_htaccess_check_generate(array($uri => $type), $type, TRUE);
+      $new_htaccess = TRUE;
+    }
+  }
+
+  // Output info.
+  if ($something_done) {
+    if ($new_htaccess) {
+      return t('Removed the old .htaccess file and put in a new one.');
+    }
+    else {
+      return t('Removed the old .htaccess file.');
+    }
+  }
+  else {
+    return t('Nothing needed to be done.');
   }
 }
 
