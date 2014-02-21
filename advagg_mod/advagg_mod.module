@@ -284,7 +284,12 @@ function advagg_mod_sort_css_js(&$array, $type) {
       }
     }
     // Sort the array so that it appears in the correct order.
-    uasort($external, 'drupal_sort_css_js');
+    if (is_callable('drupal_sort_css_js')) {
+      uasort($external, 'drupal_sort_css_js');
+    }
+    else {
+      advagg_drupal_sort_css_js_stable($external);
+    }
 
     // Group all external together.
     $offset = 0.0001;
@@ -348,7 +353,12 @@ function advagg_mod_sort_css_js(&$array, $type) {
       }
     }
     // Sort the array so that it appears in the correct order.
-    uasort($inline, 'drupal_sort_css_js');
+    if (is_callable('drupal_sort_css_js')) {
+      uasort($inline, 'drupal_sort_css_js');
+    }
+    else {
+      advagg_drupal_sort_css_js_stable($inline);
+    }
 
     // Group all inline together.
     $offset = 0.0001;
@@ -416,7 +426,13 @@ function advagg_mod_sort_css_js(&$array, $type) {
         }
 
         // Sort the array so that it appears in the correct order.
-        uasort($browsers, 'drupal_sort_css_js');
+        if (is_callable('drupal_sort_css_js')) {
+          uasort($browsers, 'drupal_sort_css_js');
+        }
+        else {
+          advagg_drupal_sort_css_js_stable($browsers);
+        }
+
 
         // Group all browsers together.
         $offset = 0.0001;

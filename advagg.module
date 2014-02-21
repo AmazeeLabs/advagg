@@ -1070,7 +1070,6 @@ function _advagg_process_html(&$variables) {
     $js_cache = array();
     $js_cache['scripts'] = '';
     $javascript = advagg_get_full_js($javascript);
-    uasort($javascript, 'drupal_sort_css_js');
     if (!empty($javascript)) {
       $scopes = advagg_get_js_scopes($javascript);
 
@@ -1079,6 +1078,8 @@ function _advagg_process_html(&$variables) {
         if (!$use) {
           continue;
         }
+        // advagg_get_js() will sort the JavaScript so that it appears in the
+        // correct order.
         $scripts = advagg_get_js($scope, $javascript);
         // Header scripts.
         if ($scope == 'header') {
@@ -1212,7 +1213,12 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   }
 
   // Sort the JavaScript so that it appears in the correct order.
-  uasort($items, 'drupal_sort_css_js');
+  if (is_callable('drupal_sort_css_js')) {
+    uasort($items, 'drupal_sort_css_js');
+  }
+  else {
+    advagg_drupal_sort_css_js_stable($items);
+  }
 
   // In Drupal 8, there's a JS_SETTING group for making setting variables
   // appear last after libraries have loaded. In Drupal 7, this is forced
@@ -2262,4 +2268,55 @@ function advagg_group_js($javascript) {
   }
 
   return $groups;
+}
+
+
+/**
+ * Stable sort for CSS and JS items.
+ *
+ * Preserves the order of items with equal sort criteria.
+ *
+ * The function will sort by:
+ * - $item['group'],      integer, ascending
+ * - $item['every_page'], boolean, first TRUE then FALSE
+ * - $item['weight'],     integer, ascending
+ *
+ * @param array &$items
+ *   Array of JS or CSS items, as in drupal_add_css() and drupal_add_js().
+ *   The array keys can be integers or strings. The items themselves are arrays.
+ *
+ * @see drupal_get_css()
+ * @see drupal_get_js()
+ * @see drupal_add_css()
+ * @see drupal_add_js()
+ * @see https://drupal.org/node/1388546
+ */
+function advagg_drupal_sort_css_js_stable(&$items) {
+  // Within a group, order all infrequently needed, page-specific files after
+  // common files needed throughout the website. Separating this way allows for
+  // the aggregate file generated for all of the common files to be reused
+  // across a site visit without being cut by a page using a less common file.
+  $nested = array();
+  foreach ($items as $key => $item) {
+    $nested[$item['group']][$item['every_page'] ? 1 : 0][$item['weight']][$key] = $item;
+  }
+  // First order by group, so that, for example, all items in the CSS_SYSTEM
+  // group appear before items in the CSS_DEFAULT group, which appear before
+  // all items in the CSS_THEME group. Modules may create additional groups by
+  // defining their own constants.
+  $sorted = array();
+  ksort($nested);
+  foreach ($nested as $group => $group_items) {
+    krsort($group_items);
+    foreach ($group_items as $ep => $ep_items) {
+      ksort($ep_items);
+      // Finally, order by weight.
+      foreach ($ep_items as $weight => $weight_items) {
+        foreach ($weight_items as $key => $item) {
+          $sorted[$key] = $item;
+        }
+      }
+    }
+  }
+  $items = $sorted;
 }
