@@ -13,6 +13,7 @@
  */
 function advagg_admin_settings_form($form, $form_state) {
   drupal_set_title(t('AdvAgg: Configuration'));
+  $config_path = advagg_admin_config_root_path();
 
   // Simple checkbox settings.
   $form['global'] = array(
@@ -53,7 +54,7 @@ function advagg_admin_settings_form($form, $form_state) {
   );
   $options = array(
     -1 => t('Development ~ 100ms'),
-    0 => t('Disabled ~ 70ms'),
+//     0 => t('Disabled ~ 70ms'),
     1 => t('Normal ~ 10ms'),
     3 => t('Aggressive ~ 4ms'),
   );
@@ -62,7 +63,11 @@ function advagg_admin_settings_form($form, $form_state) {
     '#title' => t('AdvAgg Cache Settings'),
     '#default_value' => variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL),
     '#options' => $options,
-    '#description' => t('Development will scan all files for a change on every page load. Disabled is useful for testing hook_alters for CSS/JS. Normal is should be fine for all use cases. Aggressive might break depending on how various hook_alter for CSS/JS are implemented. As a reference, core takes about 7 ms to run.'),
+    '#description' => t("As a reference, core takes about 7 ms to run. Development will scan all files for a change on every page load. Normal is should be fine for all use cases. Aggressive might break depending on how various hook_alter's for CSS/JS are implemented; to see what modules are using css/js_alter you can go to the <a href='@information'>Information Page</a> and under 'AdvAgg CSS/JS hooks implemented by modules' modules using both of these hooks will be listed near the bottom of that section; more information about the Aggressive setting can be found in the advagg README.txt file.", array(
+      '@information' => url($config_path . '/advagg/info', array(
+        'fragment' => 'edit-hooks-implemented',
+      )),
+    )),
   );
   // Show msg about the jquery update compression setting.
   if (module_exists('jquery_update')) {
@@ -86,7 +91,7 @@ function advagg_admin_settings_form($form, $form_state) {
         '#type' => 'container',
         '#states' => array(
           'visible' => array(
-            ':input[name="advagg_cache_level"]' => array('value' => '3'),
+            ':input[name="advagg_cache_level"]' => array('!value' => '-1'),
           ),
         ),
       );
