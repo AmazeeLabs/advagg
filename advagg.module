@@ -1630,6 +1630,10 @@ function advagg_current_hooks_hash_array() {
     ),
     'hooks' => advagg_hooks_implemented(FALSE),
   );
+  // Add in language if locale is enabled.
+  if (module_exists('locale')) {
+    $aggregate_settings['variables']['language'] = isset($GLOBALS['language']->language) ? $GLOBALS['language']->language : '';
+  }
 
   // Allow other modules to add in their own settings and hooks.
   // Call hook_advagg_current_hooks_hash_array_alter().
