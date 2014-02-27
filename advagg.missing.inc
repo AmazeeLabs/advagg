@@ -41,16 +41,23 @@ function advagg_missing_generate() {
   $filename = explode('?', $filename);
   $filename = array_shift($filename);
 
+  // Quit ASAP if filename does not match the AdvAgg pattern.
+  $data = advagg_get_hashes_from_filename($filename);
+  if (is_string($data) || !is_array($data)) {
+    return $data;
+  }
+
+  // Get lock so only one process will do the work.
   $lock_name = 'advagg_' . $filename;
   $uri = $GLOBALS['base_path'] . $_GET['q'];
   $created = FALSE;
   $files_to_save = array();
   if (lock_acquire($lock_name, 10) || $redirect_counter > 4) {
     if ($redirect_counter > 4) {
-      $return = advagg_missing_create_file($filename, TRUE);
+      $return = advagg_missing_create_file($filename, TRUE, $data);
     }
     else {
-      $return = advagg_missing_create_file($filename);
+      $return = advagg_missing_create_file($filename, FALSE, $data);
     }
     lock_release($lock_name);
     if (!is_array($return)) {
@@ -67,11 +74,8 @@ function advagg_missing_generate() {
     // be available in menu_execute_active_handler() resulting in a 404.
     lock_wait($lock_name, 10);
     if (file_exists($uri) && filesize($uri) > 0) {
-      $data = advagg_get_hashes_from_filename($filename);
-      if (is_array($data)) {
-        $type = $data[0];
-        $created = TRUE;
-      }
+      $type = $data[0];
+      $created = TRUE;
     }
   }
 
@@ -218,14 +222,18 @@ function advagg_missing_set_farfuture_headers() {
  * @param string $filename
  *   Just the filename no path information.
  * @param bool $no_alters
- *   Set to TRUE to do the bare amount of processing on the file.
+ *   (optional) Set to TRUE to do the bare amount of processing on the file.
+ * @param array $data
+ *   (optional) Output from advagg_get_hashes_from_filename().
  *
  * @return mixed
  *   On failure a string saying why it failed.
  *   On success the $files_to_save array.
  */
-function advagg_missing_create_file($filename, $no_alters = FALSE) {
-  $data = advagg_get_hashes_from_filename($filename);
+function advagg_missing_create_file($filename, $no_alters = FALSE, $data = array()) {
+  if (empty($data)) {
+    $data = advagg_get_hashes_from_filename($filename);
+  }
   if (is_array($data)) {
     list($type, $aggregate_filenames_hash, $aggregate_contents_hash, $aggregate_settings) = $data;
   }
@@ -272,7 +280,7 @@ function advagg_missing_create_file($filename, $no_alters = FALSE) {
  * @param string $type
  *   css or js
  * @param array $force
- *   force recreate the .htaccess file.
+ *   (optional) force recreate the .htaccess file.
  */
 function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
   $content_type = $type;
@@ -714,7 +722,7 @@ function advagg_save_aggregate($filename, $files, $type, $aggregate_settings) {
  * @param string $data
  *   A string containing the contents of the file.
  * @param bool $overwrite
- *   Bool, set to TRUE to overwrite a file.
+ *   (optional) Bool, set to TRUE to overwrite a file.
  */
 function advagg_save_data($uri, $data, $overwrite = FALSE) {
   // File already exists.
@@ -777,7 +785,7 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
  * Send out a fast 404 and exit.
  *
  * @param string $msg
- *   Small message reporting why the file didn't get created.
+ *   (optional) Small message reporting why the file didn't get created.
  */
 function advagg_missing_fast404($msg = '') {
   // Strip new lines and limit header message to 512 characters.
