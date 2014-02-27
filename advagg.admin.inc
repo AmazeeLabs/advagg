@@ -215,7 +215,7 @@ function advagg_admin_operations_form($form, $form_state) {
   $form['cron'] = array(
     '#type' => 'fieldset',
     '#title' => t('Cron Maintenance Tasks'),
-    '#description' => t('The following 3 operations are ran on cron but you can run them manually here.'),
+    '#description' => t('The following 4 operations are ran on cron but you can run them manually here.'),
   );
   $form['cron']['smart_file_flush'] = array(
     '#type' => 'fieldset',
