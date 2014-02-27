@@ -125,38 +125,53 @@ admin/config/development/performance/advagg
    http, https, or // change it to be type file. If type is file but it starts
    with http, https, or // change type to be external.
 
+Information page is located at:
+admin/config/development/performance/advagg/info
+This page provides debugging information. There are no configuration options
+here.
+ * Hook Theme Info: Displays the process_html order. Used for debugging.
+ * CSS files: Displays how often a file has changed.
+ * JS files: Displays how often a file has changed.
+ * Modules implementing AdvAgg CSS/JS hooks: Lets you know what modules are
+   using advagg.
+ * AdvAgg CSS/JS hooks implemented by modules: Lets you know what advagg hooks
+   are in use.
+ * Hooks And Variables Used In Hash: Show what is used to calculate the 3rd hash
+   of an aggregates filename.
+ * Get detailed info about an aggregate file: Look up detailed array about any
+   CSS or JS file listed.
+
 Operations page is located at:
 admin/config/development/performance/advagg/operations
- * Smart cache flush button. Scan all files referenced in aggregated files. If
-   any of them have changed, increment the counters containing that file and
-   rebuild the bundle.
- * Remove all stale files. Scan all files in the advagg_css/js directories and
-   remove the ones that have not been accessed in the last 30 days.
- * Clear missing files from the database. Scan for missing files and remove the
-   associated entries in the database.
- * Delete Unused Aggregates from the database. Delete aggregates that have not
-   been accessed in the last 6 weeks.
- * Aggregation Bypass Cookie. This will set or remove a cookie that disables
-   aggregation for the remainder of the browser session. It acts almost the same
-   as adding ?advagg=0 to every URL.
- * Drastic Measures.
-   * Clear all caches. Remove all data stored in the advagg cache bins.
-   * Remove all generated files. Remove all files in the advagg_css/js
-     directories.
-   * Force new aggregates. Force the creation of all new aggregates by
-     incrementing a global counter
+This is a collection of commands to control the cache and to manage testing of
+this module. In general this page is useful when troubleshooting some
+aggregation issues. For normal operations, you do not need to do anything on
+this page below the Smart Cache Flush. There are no configuration options here.
+ * Smart Cache Flush
+   * Flush AdvAgg Cache: Scan all files referenced in aggregated files. If
+     any of them have changed, increment the counters containing that file and
+     rebuild the bundle.
 
-Additional information is available at:
-admin/config/development/performance/advagg/info
- * Hook theme info. Displays the process_html order. Used for debugging.
- * CSS files. Displays how often a file has changed.
- * JS files. Displays how often a file has changed.
- * Modules implementing advagg hooks. Lets you know what modules are using
-   advagg.
- * AdvAgg CSS/JS hooks implemented by modules. Lets you know what advagg hooks
-   are in use.
- * Hooks and variables used in hash. Show what is used to calculate the 3rd hash
-   of an aggregates filename.
+ * Aggregation Bypass Cookie
+    * Toggle The "aggregation bypass cookie" For This Browser: This will set or
+      remove a cookie that disables aggregation for the remainder of the browser
+      session. It acts almost the same as adding ?advagg=0 to every URL.
+
+ * Cron Maintenance Tasks
+   * Remove All Stale Files: Scan all files in the advagg_css/js directories and
+     remove the ones that have not been accessed in the last 30 days.
+   * Clear Missing Files From the Database: Scan for missing files and remove
+     the associated entries in the database.
+   * Delete Unused Aggregates from Database: Delete aggregates that have not
+     been accessed in the last 6 weeks.
+   * Delete orphaned/expired advagg locks from the semaphore database table.
+
+ * Drastic Measures
+   * Clear All Caches: Remove all data stored in the advagg cache bins.
+   * Remove All Generated Files. Remove all files in the advagg_css/js
+     directories.
+   * Increment Global Counter: Force the creation of all new aggregates by
+     incrementing a global counter.
 
 Hidden Settings:
 The following settings are not configurable from the admin UI and must be set in

@@ -332,7 +332,7 @@ function advagg_update_7202(&$sandbox) {
 /**
  * Implements hook_update_N().
  *
- * Update the .htaccess file in the advagg directories by forceing .js files to
+ * Update the .htaccess file in the advagg directories by forcing .js files to
  * be application/javascript so to follow RFC 4329 7.1
  */
 function advagg_update_7203(&$sandbox) {
@@ -836,53 +836,9 @@ function advagg_install_check_via_http(&$requirements) {
       $url_path = $js_path[0];
       $file_path = $js_path[1];
     }
+    // Get filename.
+    $filename = advagg_install_get_first_advagg_file($file_path);
 
-    // Open the advagg directory.
-    $handle = opendir($file_path);
-    $counter = 0;
-    while (FALSE !== ($filename = readdir($handle))) {
-      // Skip over . and ..
-      if ($filename == '.' || $filename == '..') {
-        continue;
-      }
-
-      // Skip if filename is empty.
-      if (empty($filename)) {
-        continue;
-      }
-
-      // Skip if filename is not long enough,
-      $len = strlen($filename);
-      if ($len < 91 + strlen(ADVAGG_SPACE) * 3) {
-        continue;
-      }
-
-      // See if this uri contains .gz near the end of it.
-      $pos = strripos($filename, '.gz', 91 + strlen(ADVAGG_SPACE) * 3);
-      if (!empty($pos)) {
-        // If this is a .gz file skip.
-        if ($pos == $len - 3) {
-          continue;
-        }
-      }
-
-      $gzip_filename = readdir($handle);
-      if (variable_get('advagg_gzip', ADVAGG_GZIP)) {
-        // Skip if the next file is not a .gz file.
-        if (strcmp($filename . '.gz', $gzip_filename) !== 0) {
-          continue;
-        }
-      }
-      else {
-        // Skip if the next file is a .gz file.
-        if (strcmp($filename . '.gz', $gzip_filename) === 0) {
-          continue;
-        }
-      }
-
-      // All checked passed above, break out of loop.
-      break;
-    }
     // Skip if filename is empty.
     if (empty($filename)) {
       continue;
@@ -1148,4 +1104,64 @@ function advagg_install_check_via_http(&$requirements) {
       }
     }
   }
+}
+
+/**
+ * Given a advagg path this will return the first aggregate it can find.
+ *
+ * @param string $file_path
+ *   Path to the advagg css/js dir.
+ *
+ * @return string
+ *   Returns aggregate filename.
+ */
+function advagg_install_get_first_advagg_file($file_path) {
+  // Open the advagg directory.
+  $handle = opendir($file_path);
+  $counter = 0;
+  $filename = '';
+  while (FALSE !== ($filename = readdir($handle))) {
+    // Skip over . and ..
+    if ($filename == '.' || $filename == '..') {
+      continue;
+    }
+
+    // Skip if filename is empty.
+    if (empty($filename)) {
+      continue;
+    }
+
+    // Skip if filename is not long enough,
+    $len = strlen($filename);
+    if ($len < 91 + strlen(ADVAGG_SPACE) * 3) {
+      continue;
+    }
+
+    // See if this uri contains .gz near the end of it.
+    $pos = strripos($filename, '.gz', 91 + strlen(ADVAGG_SPACE) * 3);
+    if (!empty($pos)) {
+      // If this is a .gz file skip.
+      if ($pos == $len - 3) {
+        continue;
+      }
+    }
+
+    $gzip_filename = readdir($handle);
+    if (variable_get('advagg_gzip', ADVAGG_GZIP)) {
+      // Skip if the next file is not a .gz file.
+      if (strcmp($filename . '.gz', $gzip_filename) !== 0) {
+        continue;
+      }
+    }
+    else {
+      // Skip if the next file is a .gz file.
+      if (strcmp($filename . '.gz', $gzip_filename) === 0) {
+        continue;
+      }
+    }
+    // All checked passed above, break out of loop.
+    break;
+  }
+
+  return $filename;
 }

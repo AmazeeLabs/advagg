@@ -442,3 +442,19 @@ function advagg_remove_old_unused_aggregates() {
   // Return the total count of entires removed from the database.
   return $advagg_aggregates_versions_del + $advagg_aggregates_del;
 }
+
+/**
+ * Delete orphaned/expired advagg locks from the semaphore database table.
+ *
+ * @return int
+ *   Count of the number of rows removed from the databases.
+ */
+function advagg_cleanup_semaphore_table() {
+  // Let expiration times vary by 5 minutes.
+  $fuzz_factor = 300;
+  $results = db_delete('semaphore')
+    ->condition('name', db_like('advagg_') . '%', 'LIKE')
+    ->condition('expire', REQUEST_TIME - $fuzz_factor, '<')
+    ->execute();
+  return $results;
+}

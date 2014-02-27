@@ -81,7 +81,7 @@ function advagg_admin_settings_form($form, $form_state) {
         ),
       );
       $form['global']['dev_container']['advagg_jquery_update_development'] = array(
-        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compressiong level</a> to "Development" as well. ', array(
+        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compression level</a> to "Development" as well. ', array(
           '!url' => url('admin/config/development/jquery_update'),
         )) . '</p>',
       );
@@ -96,7 +96,7 @@ function advagg_admin_settings_form($form, $form_state) {
         ),
       );
       $form['global']['prod_container']['advagg_jquery_update_development'] = array(
-        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compressiong level</a> to "Production" as well. ', array(
+        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compression level</a> to "Production" as well. ', array(
           '!url' => url('admin/config/development/jquery_update'),
         )) . '</p>',
       );
@@ -174,8 +174,13 @@ function advagg_admin_settings_form($form, $form_state) {
 function advagg_admin_operations_form($form, $form_state) {
   drupal_set_title(t('AdvAgg: Operations'));
 
+  // Explain what can be done on this page.
+  $form['tip'] = array(
+    '#markup' => '<p>' . t('This is a collection of commands to control the cache and to manage testing of this module. In general this page is useful when troubleshooting some aggregation issues. For normal operations, you do not need to do anything on this page below the Smart Cache Flush. There are no configuration options here.') . '</p>',
+  );
+
   // Buttons to do stuff.
-  // Smart flushing.
+  // AdvAgg smart cache flushing.
   $form['smart_flush'] = array(
     '#type' => 'fieldset',
     '#title' => t('Smart Cache Flush'),
@@ -186,45 +191,6 @@ function advagg_admin_operations_form($form, $form_state) {
     '#value' => t('Flush AdvAgg Cache'),
     '#submit' => array('advagg_admin_flush_cache_button'),
   );
-  $form['smart_flush']['output'] = array(
-    '#markup' => '<p>' . t('The following 3 functions get ran on cron but you can run them manually here.') . '</p>',
-  );
-  $form['smart_flush']['smart_file_flush'] = array(
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#title' => t('Clear All Stale Files'),
-    '#description' => t('Remove all stale files. Scan all files in the advagg_css/js directories and remove the ones that have not been accessed in the last 30 days.'),
-  );
-  $form['smart_flush']['smart_file_flush']['advagg_flush_stale_files'] = array(
-    '#type' => 'submit',
-    '#value' => t('Remove All Stale Files'),
-    '#submit' => array('advagg_admin_flush_stale_files_button'),
-  );
-  $form['smart_flush']['remove_missing_files'] = array(
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#title' => t('Clear Missing Files From Database'),
-    '#description' => t('Scan for missing files and remove the associated entries in the database.'),
-  );
-  $form['smart_flush']['remove_missing_files']['advagg_remove_missing_files_from_db'] = array(
-    '#type' => 'submit',
-    '#value' => t('Clear Missing Files From Database'),
-    '#submit' => array('advagg_admin_remove_missing_files_from_db_button'),
-  );
-  $form['smart_flush']['remove_old_aggregates'] = array(
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#title' => t('Delete Unused Aggregates From Database'),
-    '#description' => t('Delete aggregates that have not been accessed in the last 6 weeks.'),
-  );
-  $form['smart_flush']['remove_old_aggregates']['advagg_remove_old_unused_aggregates'] = array(
-    '#type' => 'submit',
-    '#value' => t('Delete Unused Aggregates From Database'),
-    '#submit' => array('advagg_admin_remove_old_unused_aggregates_button'),
-  );
 
   // Set/Remove Bypass Cookie.
   $form['bypass'] = array(
@@ -234,7 +200,7 @@ function advagg_admin_operations_form($form, $form_state) {
   );
   $form['bypass']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Toggle the "aggregation bypass cookie" for this browser'),
+    '#value' => t('Toggle The "aggregation bypass cookie" For This Browser'),
     '#attributes' => array('onclick' => 'javascript:return advagg_toggle_cookie()'),
     '#submit' => array('advagg_admin_toggle_bypass_cookie'),
   );
@@ -244,6 +210,61 @@ function advagg_admin_operations_form($form, $form_state) {
     'type' => 'setting',
   );
   $form['#attached']['js'][] = drupal_get_path('module', 'advagg') . '/advagg.admin.js';
+
+  // Smart flushing.
+  $form['cron'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Cron Maintenance Tasks'),
+    '#description' => t('The following 3 operations are ran on cron but you can run them manually here.'),
+  );
+  $form['cron']['smart_file_flush'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Clear All Stale Files'),
+    '#description' => t('Remove all stale files. Scan all files in the advagg_css/js directories and remove the ones that have not been accessed in the last 30 days.'),
+  );
+  $form['cron']['smart_file_flush']['advagg_flush_stale_files'] = array(
+    '#type' => 'submit',
+    '#value' => t('Remove All Stale Files'),
+    '#submit' => array('advagg_admin_flush_stale_files_button'),
+  );
+  $form['cron']['remove_missing_files'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Clear Missing Files From Database'),
+    '#description' => t('Scan for missing files and remove the associated entries in the database.'),
+  );
+  $form['cron']['remove_missing_files']['advagg_remove_missing_files_from_db'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clear Missing Files From Database'),
+    '#submit' => array('advagg_admin_remove_missing_files_from_db_button'),
+  );
+  $form['cron']['remove_old_aggregates'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Delete Unused Aggregates From Database'),
+    '#description' => t('Delete aggregates that have not been accessed in the last 6 weeks.'),
+  );
+  $form['cron']['remove_old_aggregates']['advagg_remove_old_unused_aggregates'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete Unused Aggregates From Database'),
+    '#submit' => array('advagg_admin_remove_old_unused_aggregates_button'),
+  );
+  $form['cron']['cleanup_semaphore_table'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Delete Orphaned Semaphore Locks'),
+    '#description' => t('Delete orphaned/expired advagg locks from the semaphore database table.'),
+  );
+  $form['cron']['cleanup_semaphore_table']['advagg_cleanup_semaphore_table'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete Unused Aggregates From Database'),
+    '#submit' => array('advagg_admin_cleanup_semaphore_table_button'),
+  );
 
   // Hide drastic measures as they should not be done unless you really need it.
   $form['drastic_measures'] = array(
@@ -302,10 +323,16 @@ function advagg_admin_operations_form($form, $form_state) {
 function advagg_admin_info_form($form, $form_state) {
   drupal_set_title(t('AdvAgg: Information'));
 
-  // Get all hooks.
+  // Explain what can be done on this page.
+  $form['tip'] = array(
+    '#markup' => '<p>' . t('This page provides debugging information. There are no configuration options here.') . '</p>',
+  );
+
+  // Get all hooks & variables.
   drupal_theme_initialize();
   $core_hooks = theme_get_registry();
   $advagg_hooks = advagg_hooks_implemented();
+  list($css_path, $js_path) = advagg_get_root_files_dir();
 
   // Output html process functions hooks.
   $form['info'] = array(
@@ -321,6 +348,7 @@ function advagg_admin_info_form($form, $form_state) {
 
   // Get all parent css and js files.
   $types = array('css', 'js');
+  $css_file = '';
   foreach ($types as $type) {
     $form[$type] = array(
       '#type' => 'fieldset',
@@ -334,6 +362,10 @@ function advagg_admin_info_form($form, $form_state) {
       ->condition('filetype', $type)
       ->execute();
     while ($row = $results->fetchAssoc()) {
+      if (empty($css_file) && $type == 'css') {
+        $css_file = basename($row['filename']);
+      }
+
       $form[$type][$row['filename_hash']] = array(
         '#markup' => '<div>' . format_plural($row['changes'], 'changed 1 time - %file<br />', 'changed %changes times - %file<br /></div>', array(
           '%changes' => $row['changes'],
@@ -435,14 +467,21 @@ function advagg_admin_info_form($form, $form_state) {
     '#value' => t('Lookup Details'),
     '#submit' => array('advagg_admin_get_file_info_submit'),
     '#validate' => array('advagg_admin_get_file_info_validate'),
-    "#ajax" => array(
-      "callback" => "advagg_admin_get_file_info_callback",
-      "wrapper" => "advagg-file-info-ajax",
-      "effect" => "fade",
+    '#ajax' => array(
+      'callback' => 'advagg_admin_get_file_info_callback',
+      'wrapper' => 'advagg-file-info-ajax',
+      'effect' => 'fade',
     ),
   );
-  $form['get_info_about_agg']["wrapper"] = array(
-    "#markup" => "<div id='advagg-file-info-ajax'></div>",
+  module_load_include('install', 'advagg', 'advagg');
+  $form['get_info_about_agg']['tip'] = array(
+    '#markup' => '<p>' . t('Takes input like "@css_file" or a full aggregate name like "@advagg_js"', array(
+      '@css_file' => $css_file,
+      '@advagg_js' => advagg_install_get_first_advagg_file($js_path[1]),
+    )) . '</p>',
+  );
+  $form['get_info_about_agg']['wrapper'] = array(
+    '#markup' => "<div id='advagg-file-info-ajax'></div>",
   );
 
   return $form;
@@ -546,7 +585,10 @@ function advagg_admin_get_file_info($filename) {
   module_load_include('inc', 'advagg', 'advagg.missing');
   module_load_include('inc', 'advagg', 'advagg');
 
-  $data = advagg_get_hashes_from_filename($filename);
+  // Strip quotes and trim.
+  $filename = trim(str_replace(array('"', "'"), '', $filename));
+
+  $data = advagg_get_hashes_from_filename(basename($filename));
   $output = array();
   if (is_array($data)) {
     list($type, $aggregate_filenames_hash, $aggregate_contents_hash, $aggregate_settings) = $data;
@@ -698,5 +740,21 @@ function advagg_admin_remove_old_unused_aggregates_button() {
   }
   else {
     drupal_set_message(t('Some old and unused aggregates were found. A total of %count database entries were removed.', array('%count' => $count)));
+  }
+}
+
+/**
+ * Delete orphaned/expired advagg locks from the semaphore database table.
+ */
+function advagg_admin_cleanup_semaphore_table_button() {
+  module_load_include('inc', 'advagg', 'advagg.cache');
+
+  // Delete orphaned/expired advagg locks from the semaphore database table.
+  $count = advagg_cleanup_semaphore_table();
+  if (empty($count)) {
+    drupal_set_message(t('No orphaned advagg semaphore database table locks discovered. Nothing was deleted.'));
+  }
+  else {
+    drupal_set_message(t('Some orphaned advagg semaphore database table locks discovered were found. A total of %count database entries were removed.', array('%count' => $count)));
   }
 }

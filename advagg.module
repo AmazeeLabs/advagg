@@ -358,17 +358,6 @@ function advagg_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
-  $items[$config_path . '/advagg/operations'] = array(
-    'title' => 'Perform An Operation',
-    'description' => 'Flush caches, set the bypass cookie, take drastic actions.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('advagg_admin_operations_form'),
-    'type' => MENU_LOCAL_TASK,
-    'access arguments' => array('administer site configuration'),
-    'file path' => $file_path,
-    'file' => 'advagg.admin.inc',
-    'weight' => -9,
-  );
   $items[$config_path . '/advagg/info'] = array(
     'title' => 'Information',
     'description' => 'More detailed information about advagg.',
@@ -378,7 +367,18 @@ function advagg_menu() {
     'access arguments' => array('administer site configuration'),
     'file path' => $file_path,
     'file' => 'advagg.admin.inc',
-    'weight' => -8,
+    'weight' => 18,
+  );
+  $items[$config_path . '/advagg/operations'] = array(
+    'title' => 'Operations',
+    'description' => 'Flush caches, set the bypass cookie, take drastic actions.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('advagg_admin_operations_form'),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer site configuration'),
+    'file path' => $file_path,
+    'file' => 'advagg.admin.inc',
+    'weight' => 20,
   );
   return $items;
 }
@@ -399,14 +399,6 @@ function advagg_cron($bypass_time_check = FALSE) {
   }
   variable_set('advagg_cron_timestamp', REQUEST_TIME);
 
-  // Remove expired locks from the semaphore database table.
-  // Let expiration times vary by 5 minutes.
-  $fuzz_factor = 300;
-  db_delete('semaphore')
-    ->condition('name', db_like('advagg_') . '%', 'LIKE')
-    ->condition('expire', REQUEST_TIME - $fuzz_factor, '<')
-    ->execute();
-
   $return = array();
   // Clear out all stale advagg aggregated files.
   module_load_include('inc', 'advagg', 'advagg.cache');
@@ -417,6 +409,9 @@ function advagg_cron($bypass_time_check = FALSE) {
 
   // Remove unused aggregates.
   $return[] = advagg_remove_old_unused_aggregates();
+
+  // Remove expired locks from the semaphore database table.
+  $return[] = advagg_cleanup_semaphore_table();
   return $return;
 }
 
