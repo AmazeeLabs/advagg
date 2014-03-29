@@ -598,8 +598,16 @@ function advagg_admin_get_file_info($filename) {
     $data['files'] = $files;
 
     // Get detailed info on each file.
+    $files_info_filenames = array();
     foreach ($data['files'] as $filename => &$info) {
-      $info += advagg_get_info_on_file($filename);
+      $files_info_filenames[] = $filename;
+    }
+
+    // Get filesystem data.
+    $files_info = advagg_get_info_on_files($files_info_filenames);
+
+    foreach ($data['files'] as $filename => &$info) {
+      $info += $files_info[$filename];
       if (module_exists('advagg_bundler')) {
         $bundler = advagg_bundler_analysis($filename);
         $info['group_hash'] = $bundler['group_hash'];

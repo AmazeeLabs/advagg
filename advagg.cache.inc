@@ -22,10 +22,18 @@ function advagg_scan_for_changes() {
     ->execute();
   if (!empty($result)) {
     module_load_include('inc', 'advagg', 'advagg');
+    $filenames = array();
+
+    $data = array();
     foreach ($result as $row) {
-      $row = (array) $row;
-      // Get filesystem data.
-      $info = advagg_get_info_on_file($row['filename'], TRUE);
+      $filenames[] = $row->filename;
+      $data[$row->filename] = (array) $row;
+    }
+
+    // Get filesystem data.
+    $files_info = advagg_get_info_on_files($filenames, TRUE);
+    foreach ($files_info as $info) {
+      $row = $data[$info['data']];
 
       // Select the keys to compare.
       $keys_to_compare = array(

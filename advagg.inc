@@ -111,18 +111,23 @@ function advagg_insert_aggregate($files, $aggregate_filenames_hash) {
   // Record if a database write was done.
   $write_done = FALSE;
 
+  // Check if the aggregate is in the database.
+  $files_in_db = array();
+  $query = db_select('advagg_aggregates', 'aa')
+    ->fields('aa', array('filename_hash'))
+    ->condition('aggregate_filenames_hash', $aggregate_filenames_hash)
+    ->orderBy('aa.porder', 'ASC')
+    ->execute();
+  foreach ($query as $row) {
+    $files_in_db[$row->filename_hash] = (array) $row;
+  }
+
   $count = 0;
   foreach ($files as $file_meta_data) {
     ++$count;
-    // Check if the aggregate is in the database.
-    $file_exists = db_select('advagg_aggregates', 'aa')
-      ->fields('aa')
-      ->condition('aggregate_filenames_hash', $aggregate_filenames_hash)
-      ->condition('filename_hash', $file_meta_data['filename_hash'])
-      ->execute()
-      ->fetchAssoc();
-    // Skip if it already exists.
-    if (!empty($file_exists)) {
+
+    // Skip if the file already exists in the aggregate.
+    if (!empty($files_in_db[$file_meta_data['filename_hash']])) {
       continue;
     }
 
@@ -161,6 +166,22 @@ function advagg_insert_update_files($files, $type) {
   // Record if a database write was done.
   $write_done = FALSE;
 
+  $filename_hashes = array();
+  foreach ($files as $file_meta_data) {
+    $filename_hashes[] = $file_meta_data['filename_hash'];
+  }
+
+  $files_in_db = array();
+  if (!empty($filename_hashes)) {
+    $query = db_select('advagg_files', 'af')
+      ->fields('af')
+      ->condition('filename_hash', $filename_hashes)
+      ->execute();
+    foreach ($query as $row) {
+      $files_in_db[$row->filename] = (array) $row;
+    }
+  }
+
   foreach ($files as $filename => $file_meta_data) {
     // Create record.
     $record = array(
@@ -174,12 +195,7 @@ function advagg_insert_update_files($files, $type) {
     );
 
     // Check the file in the database.
-    $file_exists = db_select('advagg_files', 'af')
-      ->fields('af')
-      ->condition('filename_hash', $file_meta_data['filename_hash'])
-      ->execute()
-      ->fetchAssoc();
-    if (empty($file_exists)) {
+    if (empty($files_in_db[$filename])) {
       // Insert into database.
       $record['changes'] = 1;
       if (drupal_write_record('advagg_files', $record)) {
@@ -188,11 +204,11 @@ function advagg_insert_update_files($files, $type) {
     }
     else {
       // Take changes counter out of the diff equation.
-      $changes = $file_exists['changes'];
-      unset($file_exists['changes']);
+      $changes = $files_in_db[$filename]['changes'];
+      unset($files_in_db[$filename]['changes']);
 
       // If something is different, update.
-      $diff = array_diff_assoc($record, $file_exists);
+      $diff = array_diff_assoc($record, $files_in_db[$filename]);
       if (!empty($diff)) {
         $diff['changes'] = $changes + 1;
         $diff['filename_hash'] = $record['filename_hash'];
@@ -275,9 +291,18 @@ function advagg_get_aggregate_info_from_files($type, $files_with_meta_data) {
   $filename_hashes = array();
   $content_hashes = array();
   $filenames = array();
+
+  $files_info_filenames = array();
+  foreach ($files_with_meta_data as $info) {
+    $files_info_filenames[] = $info['data'];
+  }
+
+  // Get filesystem data.
+  $files_info = advagg_get_info_on_files($files_info_filenames);
+
   foreach ($files_with_meta_data as $info) {
     $filename = $info['data'];
-    $info += advagg_get_info_on_file($filename);
+    $info += $files_info[$filename];
     // Skip if file doesn't exist.
     if (empty($info['content_hash'])) {
       continue;
@@ -299,6 +324,129 @@ function advagg_get_aggregate_info_from_files($type, $files_with_meta_data) {
     $aggregate_filenames_hash,
     $aggregate_contents_hash,
   );
+}
+
+function advagg_get_info_on_files($files, $bypass_cache = FALSE) {
+  $filename_hashes = &drupal_static('advagg_get_info_on_file');
+
+  $cache_ids = array();
+  $data = array();
+  foreach ($files as $file) {
+    $hash = drupal_hash_base64($file);
+    $data[$file]['filename'] = $file;
+    $data[$file]['filename_hash'] = drupal_hash_base64($file);
+    $data[$file]['cache_id'] = 'advagg:file:' . $hash;
+    $cache_ids[] = $data[$file]['cache_id'];
+  }
+
+  // Use caching to avoid hitting disk if possible.
+  $return = array();
+  if (!$bypass_cache) {
+    foreach ($data as $info) {
+      // Try static cache first.
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+      if (   !empty($filename_hashes)
+          && array_key_exists($info['cache_id'], $filename_hashes)
+          && !empty($filename_hashes[$info['cache_id']])
+          ) {
+        $return[$info['filename']] = $filename_hashes[$info['cache_id']];
+        $key = array_search($info['cache_id'], $cache_ids);
+        if ($key !== FALSE) {
+          unset($cache_ids[$key]);
+        }
+      }
+    }
+    if (empty($cache_ids)) {
+      return $return;
+    }
+
+    // Try cache back-end next.
+    $cache_hits = cache_get_multiple($cache_ids, 'cache_advagg_info');
+    if (!empty($cache_hits)) {
+      foreach ($cache_hits as $hit) {
+        $return[$hit->data['data']] = $hit->data;
+        $filename_hashes[$hit->cid] = $hit->data;
+        $key = array_search($hit->cid, $cache_ids);
+        if ($key !== FALSE) {
+          unset($cache_ids[$key]);
+        }
+      }
+    }
+    if (empty($cache_ids)) {
+      return $return;
+    }
+    $cache_id = reset($cache_ids);
+  }
+  else {
+    // Sill load cached data for advagg contrib if cache was bypassed.
+    $cache_hits = cache_get_multiple($cache_ids, 'cache_advagg_info');
+    if (!empty($cache_hits)) {
+      foreach ($cache_hits as $hit) {
+        $filename_hashes[$hit->cid] = $hit->data;
+      }
+    }
+  }
+
+  foreach ($data as $info) {
+    $cache_id = $info['cache_id'];
+    $filename_hash = $info['filename_hash'];
+    $filename = $info['filename'];
+
+    // @ignore sniffer_controlstructures_controlsignature
+    if (empty($filename_hashes[$cache_id]) || !is_array($filename_hashes[$cache_id]))  {
+      $filename_hashes[$cache_id] = array();
+    }
+
+    // Clear PHP's internal file status cache.
+    advagg_clearstatcache($filename);
+
+    // Remove file in the cache if it does not exist.
+    if (!file_exists($filename)) {
+      cache_clear_all($cache_id, 'cache_advagg_info', FALSE);
+      // Return filename_hash & data. Empty values for the other keys.
+      $return[$filename] = array(
+        'filesize' => 0,
+        'mtime' => 0,
+        'filename_hash' => $filename_hash,
+        'content_hash' => '',
+        'linecount' => 0,
+        'data' => $filename,
+      );
+      continue;
+    }
+
+    // Get the file contents.
+    $file_contents = file_get_contents($filename);
+
+    $ext = pathinfo($filename, PATHINFO_EXTENSION);
+    if ($ext == 'css') {
+      // Get the number of selectors.
+      // @ignore sniffer_files_linelength_toolong
+      // http://stackoverflow.com/questions/12567000/regex-matching-for-counting-css-selectors/12567381#12567381
+      $linecount = preg_match_all('/\{.+?\}|,/s', $file_contents, $matched);
+    }
+    else {
+      // Get the number of lines.
+      $linecount = substr_count($file_contents, "\n");
+    }
+
+    // Build meta data array and set cache.
+    $filename_hashes[$cache_id] = array_merge($filename_hashes[$cache_id], array(
+      'filesize' => filesize($filename),
+      'mtime' => @filemtime($filename),
+      'filename_hash' => $filename_hash,
+      'content_hash' => drupal_hash_base64($file_contents),
+      'linecount' => $linecount,
+      'data' => $filename,
+      'fileext' => $ext,
+    ));
+    if (!$bypass_cache) {
+      cache_set($cache_id, $filename_hashes[$cache_id], 'cache_advagg_info', CACHE_PERMANENT);
+    }
+    $return[$filename] = $filename_hashes[$cache_id];
+  }
+
+  return $return;
 }
 
 /**
@@ -327,6 +475,7 @@ function advagg_get_info_on_file($filename, $bypass_cache = FALSE) {
 
   // Use caching to avoid hitting disk if possible.
   $cache_id = 'advagg:file:' . $filename_hash;
+
   if (!$bypass_cache) {
     // Try static cache first.
     // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
@@ -475,6 +624,20 @@ function advagg_generate_groups($files_to_aggregate) {
   $selector_count = 0;
   // Get CSS limit value.
   $limit_value = variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE);
+
+  if (variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER)) {
+    foreach ($files_to_aggregate as $data) {
+      foreach ($data as $values) {
+        foreach ($values['items'] as $file_info) {
+          $filenames[] = $file_info['data'];
+        }
+      }
+    }
+
+    // Get filesystem data.
+    $files_info = advagg_get_info_on_files($filenames, TRUE);
+  }
+
   foreach ($files_to_aggregate as $data) {
     foreach ($data as $values) {
 
@@ -521,7 +684,7 @@ function advagg_generate_groups($files_to_aggregate) {
           $onload[] = trim(rtrim($file_info['onload'], ';'));
         }
         if (variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER)) {
-          $file_info += advagg_get_info_on_file($file_info['data']);
+          $file_info += $files_info[$file_info['data']];
           // Prevent CSS rules exceeding 4095 due to limits with IE9 and below.
           $ext = isset($file_info['fileext']) ? $file_info['fileext'] : pathinfo($file_info['data'], PATHINFO_EXTENSION);
           if ($ext == 'css') {
