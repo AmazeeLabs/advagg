@@ -689,12 +689,12 @@ function advagg_generate_groups($files_to_aggregate) {
           $ext = isset($file_info['fileext']) ? $file_info['fileext'] : pathinfo($file_info['data'], PATHINFO_EXTENSION);
           if ($ext == 'css') {
             $selector_count += $file_info['linecount'];
-            if ($selector_count > 4095) {
+            if ($selector_count > $limit_value) {
               $changed = TRUE;
               $selector_count = $file_info['linecount'];
 
               // Break large file into multiple small files.
-              if ($file_info['linecount'] > 4095) {
+              if ($file_info['linecount'] > $limit_value) {
                 $parts = advagg_split_css_file($file_info);
               }
             }

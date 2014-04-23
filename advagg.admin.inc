@@ -133,7 +133,7 @@ function advagg_admin_settings_form($form, $form_state) {
     '#type' => 'textfield',
     '#title' => t('The selector count the IE CSS limiter should use'),
     '#default_value' => variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE),
-    '#description' => t('Internet Explorer before version 10; IE9, IE8, IE7, & IE6 all have 4095 as the limit for the maximum number of css selectors that can be in a file. Use this field to modify the value used 4095 sometimes may be still be too many with media queries.'),
+    '#description' => t('Internet Explorer before version 10; IE9, IE8, IE7, & IE6 all have 4095 as the limit for the maximum number of css selectors that can be in a file. Use this field to modify the value used; 4095 sometimes may be still be too many with media queries.'),
     '#states' => array(
       'visible' => array(
         '#edit-advagg-ie-css-selector-limiter' => array('checked' => TRUE),
