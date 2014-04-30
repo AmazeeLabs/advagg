@@ -189,6 +189,7 @@ function advagg_hook_info() {
     'advagg_changed_files',
     'advagg_scan_for_changes',
     'advagg_context_alter',
+    'advagg_get_info_on_files_alter',
   );
   $hooks = array();
   foreach ($advagg_hooks as $hook) {
@@ -399,6 +400,9 @@ function advagg_cron($bypass_time_check = FALSE) {
   }
   variable_set('advagg_cron_timestamp', REQUEST_TIME);
 
+  // Flush the cache_advagg_info cache bin.
+  cache_clear_all(NULL, 'cache_advagg_info');
+
   $return = array();
   // Clear out all stale advagg aggregated files.
   module_load_include('inc', 'advagg', 'advagg.cache');
@@ -433,10 +437,10 @@ function advagg_flush_caches($all_bins = FALSE) {
   $flushed = advagg_push_new_changes();
 
   // Get list of cache bins to clear.
-  $bins = array(
-    'cache_advagg_aggregates',
-    'cache_advagg_info',
-  );
+  $bins = array('cache_advagg_aggregates');
+  if ($all_bins) {
+    $bins[] = 'cache_advagg_info';
+  }
   return $bins;
 }
 
@@ -1710,6 +1714,7 @@ function advagg_hooks_implemented($all = TRUE) {
       'advagg_js_groups_alter' => array(),
       'advagg_modify_css_pre_render_alter' => array(),
       'advagg_modify_js_pre_render_alter' => array(),
+      'advagg_get_info_on_files_alter' => array(),
       'js_alter' => array(),
       'css_alter' => array(),
     );
@@ -1973,7 +1978,9 @@ function advagg_update_atime($aggregate_filenames_hash, $aggregate_contents_hash
   $cache->data['atime'] = REQUEST_TIME;
 
   // Write to the cache.
-  cache_set($cache_id, $cache->data, 'cache_advagg_info', CACHE_PERMANENT);
+  // CACHE_PERMANENT isn't good here. Use 2 weeks from now + 0-45 days.
+  // The random 0 to 45 day addition is to prevent a cache stampeed.
+  cache_set($cache_id, $cache->data, 'cache_advagg_info', round(REQUEST_TIME + 1209600 + mt_rand(0, 3888000), -3));
 
   // Release Lock.
   lock_release($cache_id);

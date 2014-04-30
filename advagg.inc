@@ -326,99 +326,105 @@ function advagg_get_aggregate_info_from_files($type, $files_with_meta_data) {
   );
 }
 
-function advagg_get_info_on_files($files, $bypass_cache = FALSE) {
-  $filename_hashes = &drupal_static('advagg_get_info_on_file');
+function &advagg_load_files_info_into_static_cache($files) {
+  // Get the static cache of this data.
+  $cached_data = &drupal_static('advagg_get_info_on_file');
 
+  // Get that staticly cached data for all the given files.
   $cache_ids = array();
-  $data = array();
   foreach ($files as $file) {
-    $hash = drupal_hash_base64($file);
-    $data[$file]['filename'] = $file;
-    $data[$file]['filename_hash'] = drupal_hash_base64($file);
-    $data[$file]['cache_id'] = 'advagg:file:' . $hash;
-    $cache_ids[] = $data[$file]['cache_id'];
+    $cache_id = 'advagg:file:' . drupal_hash_base64($file);
+    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+    if (   !empty($cached_data)
+        && !empty($cached_data[$cache_id])
+        ) {
+      // Make sure the cache_id is included.
+      $cached_data[$cache_id]['cache_id'] = $cache_id;
+    }
+    else {
+      $cache_ids[$file] = $cache_id;
+    }
   }
+  // Get info from the cache back-end next.
+  if (!empty($cache_ids)) {
+    $values = array_values($cache_ids);
+    $cache_hits = cache_get_multiple($values, 'cache_advagg_info');
+    if (!empty($cache_hits)) {
+      foreach ($cache_hits as $hit) {
+        if (!empty($hit->data['data'])) {
+          // Make sure the cache_id is included.
+          $hit->data['cache_id'] = $hit->cid;
+          // Add to static cache.
+          $cached_data[$hit->cid] = $hit->data;
+        }
+      }
+    }
+  }
+  return $cached_data;
+}
 
-  // Use caching to avoid hitting disk if possible.
+/**
+ * Given a filename calculate various hashes and gather meta data.
+ *
+ * @param array $files
+ *   Array; array of filenames containing path information as well.
+ * @param bool $bypass_cache
+ *   Bool: TRUE to bypass the cache.
+ *
+ * @return array
+ *   $return['filename'] which contains
+ * @code
+ *   'filesize' => filesize($filename),
+ *   'mtime' => @filemtime($filename),
+ *   'filename_hash' => $filename_hash,
+ *   'content_hash' => drupal_hash_base64($file_contents),
+ *   'linecount' => $linecount,
+ *   'data' => $filename,
+ *   'fileext' => $ext,
+ * @endcode
+ */
+function advagg_get_info_on_files($files, $bypass_cache = FALSE, $run_alter = TRUE) {
+  // Get the cached data.
+  $cached_data = &advagg_load_files_info_into_static_cache($files);
+
+  // Get basic info on the files.
   $return = array();
-  if (!$bypass_cache) {
-    foreach ($data as $info) {
-      // Try static cache first.
-      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-      if (   !empty($filename_hashes)
-          && array_key_exists($info['cache_id'], $filename_hashes)
-          && !empty($filename_hashes[$info['cache_id']])
-          ) {
-        $return[$info['filename']] = $filename_hashes[$info['cache_id']];
-        $key = array_search($info['cache_id'], $cache_ids);
-        if ($key !== FALSE) {
-          unset($cache_ids[$key]);
-        }
-      }
-    }
-    if (empty($cache_ids)) {
-      return $return;
-    }
-
-    // Try cache back-end next.
-    $cache_hits = cache_get_multiple($cache_ids, 'cache_advagg_info');
-    if (!empty($cache_hits)) {
-      foreach ($cache_hits as $hit) {
-        $return[$hit->data['data']] = $hit->data;
-        $filename_hashes[$hit->cid] = $hit->data;
-        $key = array_search($hit->cid, $cache_ids);
-        if ($key !== FALSE) {
-          unset($cache_ids[$key]);
-        }
-      }
-    }
-    if (empty($cache_ids)) {
-      return $return;
-    }
-    $cache_id = reset($cache_ids);
-  }
-  else {
-    // Sill load cached data for advagg contrib if cache was bypassed.
-    $cache_hits = cache_get_multiple($cache_ids, 'cache_advagg_info');
-    if (!empty($cache_hits)) {
-      foreach ($cache_hits as $hit) {
-        $filename_hashes[$hit->cid] = $hit->data;
-      }
-    }
-  }
-
-  foreach ($data as $info) {
-    $cache_id = $info['cache_id'];
-    $filename_hash = $info['filename_hash'];
-    $filename = $info['filename'];
-
-    // @ignore sniffer_controlstructures_controlsignature
-    if (empty($filename_hashes[$cache_id]) || !is_array($filename_hashes[$cache_id]))  {
-      $filename_hashes[$cache_id] = array();
+  foreach ($files as $file) {
+    $filename_hash = drupal_hash_base64($file);
+    $cache_id = 'advagg:file:' . $filename_hash;
+    // If we are not bypassing the cache add cached data
+    if (   $bypass_cache == FALSE
+        && is_array($cached_data)
+        && array_key_exists($cache_id, $cached_data)
+        ) {
+      $return[$file] = $cached_data[$cache_id];
+      continue;
     }
 
     // Clear PHP's internal file status cache.
-    advagg_clearstatcache($filename);
+    advagg_clearstatcache($file);
 
     // Remove file in the cache if it does not exist.
-    if (!file_exists($filename)) {
+    if (!file_exists($file)) {
       cache_clear_all($cache_id, 'cache_advagg_info', FALSE);
       // Return filename_hash & data. Empty values for the other keys.
-      $return[$filename] = array(
+      $return[$file] = array(
         'filesize' => 0,
         'mtime' => 0,
         'filename_hash' => $filename_hash,
         'content_hash' => '',
         'linecount' => 0,
-        'data' => $filename,
+        'data' => $file,
+        'cache_id' => $cache_id,
+        '#no_cache' => TRUE,
       );
       continue;
     }
 
     // Get the file contents.
-    $file_contents = file_get_contents($filename);
+    $file_contents = file_get_contents($file);
 
-    $ext = pathinfo($filename, PATHINFO_EXTENSION);
+    $ext = pathinfo($file, PATHINFO_EXTENSION);
     if ($ext == 'css') {
       // Get the number of selectors.
       // @ignore sniffer_files_linelength_toolong
@@ -431,19 +437,42 @@ function advagg_get_info_on_files($files, $bypass_cache = FALSE) {
     }
 
     // Build meta data array and set cache.
-    $filename_hashes[$cache_id] = array_merge($filename_hashes[$cache_id], array(
-      'filesize' => filesize($filename),
-      'mtime' => @filemtime($filename),
+    $return[$file] = array(
+      'filesize' => filesize($file),
+      'mtime' => @filemtime($file),
       'filename_hash' => $filename_hash,
       'content_hash' => drupal_hash_base64($file_contents),
       'linecount' => $linecount,
-      'data' => $filename,
+      'data' => $file,
       'fileext' => $ext,
-    ));
-    if (!$bypass_cache) {
-      cache_set($cache_id, $filename_hashes[$cache_id], 'cache_advagg_info', CACHE_PERMANENT);
+      'cache_id' => $cache_id,
+    );
+    if (isset($cached_data[$cache_id])) {
+      $return[$file] += $cached_data[$cache_id];
     }
-    $return[$filename] = $filename_hashes[$cache_id];
+  }
+
+  if ($run_alter) {
+    // Run hook so other modules can modify the data on these files.
+    // Call hook_advagg_get_info_on_files_alter().
+    drupal_alter('advagg_get_info_on_files', $return, $cached_data, $bypass_cache);
+
+    // Set the cache and populate return array.
+    foreach ($return as $info) {
+      // If no cache is empty add/update the cached entry.
+      // Update the cache if it is new or something changed.
+      if (   empty($info['#no_cache'])
+          && !empty($info['cache_id'])
+          && (empty($cached_data[$info['cache_id']]) || $info !== $cached_data[$info['cache_id']])
+          ) {
+        // CACHE_PERMANENT isn't good here. Use 2 weeks from now + 0-45 days.
+        // The random 0 to 45 day addition is to prevent a cache stampeed.
+        cache_set($info['cache_id'], $info, 'cache_advagg_info', round(REQUEST_TIME + 1209600 + mt_rand(0, 3888000), -3));
+      }
+
+      // Update static cache.
+      $cached_data[$info['cache_id']] = $info;
+    }
   }
 
   return $return;
@@ -455,10 +484,12 @@ function advagg_get_info_on_files($files, $bypass_cache = FALSE) {
  * @param string $filename
  *   String; filename containing path information
  * @param bool $bypass_cache
- *   Bool: TRUE to bypass the cache; this will not do a cache_set as well.
+ *   (optional) Bool: TRUE to bypass the cache.
+ * @param bool $run_alter
+ *   (optional) Bool: FALSE to not run drupal_alter.
  *
  * @return array
- *   $filename_hashes[$cache_id] which contains
+ *   Array containing key value pairs.
  * @code
  *   'filesize' => filesize($filename),
  *   'mtime' => @filemtime($filename),
@@ -469,87 +500,9 @@ function advagg_get_info_on_files($files, $bypass_cache = FALSE) {
  *   'fileext' => $ext,
  * @endcode
  */
-function advagg_get_info_on_file($filename, $bypass_cache = FALSE) {
-  $filename_hash = drupal_hash_base64($filename);
-  $filename_hashes = &drupal_static('advagg_get_info_on_file');
-
-  // Use caching to avoid hitting disk if possible.
-  $cache_id = 'advagg:file:' . $filename_hash;
-
-  if (!$bypass_cache) {
-    // Try static cache first.
-    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-    if (   !empty($filename_hashes)
-        && array_key_exists($cache_id, $filename_hashes)
-        && !empty($filename_hashes[$cache_id])
-        ) {
-      return $filename_hashes[$cache_id];
-    }
-
-    // Try cache back-end next.
-    $cache = cache_get($cache_id, 'cache_advagg_info');
-    if (!empty($cache->data)) {
-      return $cache->data;
-    }
-  }
-  else {
-    // Sill load cached data for advagg contrib.
-    $cache = cache_get($cache_id, 'cache_advagg_info');
-    if (!empty($cache->data)) {
-      $filename_hashes[$cache_id] = $cache->data;
-    }
-  }
-  // @ignore sniffer_controlstructures_controlsignature
-  if (empty($filename_hashes[$cache_id]) || !is_array($filename_hashes[$cache_id]))  {
-    $filename_hashes[$cache_id] = array();
-  }
-
-  // Clear PHP's internal file status cache.
-  advagg_clearstatcache($filename);
-
-  // Remove file in the cache if it does not exist.
-  if (!file_exists($filename)) {
-    cache_clear_all($cache_id, 'cache_advagg_info', FALSE);
-    // Return filename_hash & data. Empty values for the other keys.
-    return array(
-      'filesize' => 0,
-      'mtime' => 0,
-      'filename_hash' => $filename_hash,
-      'content_hash' => '',
-      'linecount' => 0,
-      'data' => $filename,
-    );
-  }
-
-  // Get the file contents.
-  $file_contents = file_get_contents($filename);
-
-  $ext = pathinfo($filename, PATHINFO_EXTENSION);
-  if ($ext == 'css') {
-    // Get the number of selectors.
-    // @ignore sniffer_files_linelength_toolong
-    // http://stackoverflow.com/questions/12567000/regex-matching-for-counting-css-selectors/12567381#12567381
-    $linecount = preg_match_all('/\{.+?\}|,/s', $file_contents, $matched);
-  }
-  else {
-    // Get the number of lines.
-    $linecount = substr_count($file_contents, "\n");
-  }
-
-  // Build meta data array and set cache.
-  $filename_hashes[$cache_id] = array_merge($filename_hashes[$cache_id], array(
-    'filesize' => filesize($filename),
-    'mtime' => @filemtime($filename),
-    'filename_hash' => $filename_hash,
-    'content_hash' => drupal_hash_base64($file_contents),
-    'linecount' => $linecount,
-    'data' => $filename,
-    'fileext' => $ext,
-  ));
-  if (!$bypass_cache) {
-    cache_set($cache_id, $filename_hashes[$cache_id], 'cache_advagg_info', CACHE_PERMANENT);
-  }
-  return $filename_hashes[$cache_id];
+function advagg_get_info_on_file($filename, $bypass_cache = FALSE, $run_alter = TRUE) {
+  $files_info = advagg_get_info_on_files(array($filename), $bypass_cache, $run_alter);
+  return $files_info[$filename];
 }
 
 /**
@@ -788,6 +741,7 @@ function advagg_split_css_file($file_info) {
   $split_at = $selector_split_value;
   foreach ($major_chunks as $chunk_key => $chunks) {
     $last_chunk = FALSE;
+    $file_info['split_last_part'] = FALSE;
     if (count($major_chunks) - 1 == $chunk_key) {
       $last_chunk = TRUE;
     }
@@ -936,13 +890,22 @@ function advagg_create_subfile($css, $overall_split, $file_info) {
   $part_uri = $parts_uri . '/' . $new_filename;
   $dirname = drupal_dirname($part_uri);
   file_prepare_directory($dirname, FILE_CREATE_DIRECTORY);
-  advagg_save_data($part_uri, $css, TRUE);
 
   // Get info on the file that was just created.
   $part = advagg_get_info_on_file($parts_path . '/' . $new_filename) + $file_info;
   $part['split'] = TRUE;
   $part['split_location'] = $overall_split;
   $part['split_original'] = $file_info['data'];
+
+  // Overwrite/create file if hash doesn't match.
+  $hash = drupal_hash_base64($css);
+  if ($part['content_hash'] != $hash) {
+    advagg_save_data($part_uri, $css, TRUE);
+    $part = advagg_get_info_on_file($parts_path . '/' . $new_filename, TRUE) + $file_info;
+    $part['split'] = TRUE;
+    $part['split_location'] = $overall_split;
+    $part['split_original'] = $file_info['data'];
+  }
 
   return $part;
 }

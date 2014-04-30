@@ -719,65 +719,56 @@ function advagg_mod_match_path($pages, $visibility) {
  * @param string $filename
  *   filename or full URL.
  * @param string $type
- *   file or external
+ *   (optional) file or external
  *
  * @return array
  *   Returns an array stating if this JS file contains drupal or jquery.
  *
  * @see block_block_list_alter()
  */
-function advagg_mod_js_contains_jquery_drupal($filename, $type) {
-  module_load_include('inc', 'advagg', 'advagg');
-  $info = advagg_get_info_on_file($filename);
-
-  if (empty($info['advagg_mod']['contents'])) {
-    if ($type == 'file') {
-      $contents = file_get_contents($filename);
+function advagg_mod_js_contains_jquery_drupal($filename, $type = '') {
+  if (   $type == 'external'
+      || strpos($filename, 'http://') === 0
+      || strpos($filename, 'https://') === 0
+      || strpos($filename, '//') === 0
+      ) {
+    $result = drupal_http_request($filename);
+    if (($result->code == 200 || (isset($result->redirect_code) && $result->redirect_code == 200)) && !empty($result->data)) {
+      $contents = $result->data;
     }
-    if ($type == 'external') {
-      $result = drupal_http_request($filename);
-      if (($result->code == 200 || (isset($result->redirect_code) && $result->redirect_code == 200)) && !empty($result->data)) {
-        $contents = $result->data;
-      }
-    }
-
-    if (!empty($contents) && stripos($contents, 'drupal.') !== FALSE) {
-      $info['advagg_mod']['contents']['drupal'] = TRUE;
-      if (stripos($contents, 'drupal.settings.') !== FALSE) {
-        $info['advagg_mod']['contents']['drupal.settings'] = TRUE;
-      }
-      else {
-        $info['advagg_mod']['contents']['drupal.settings'] = FALSE;
-      }
-      if (stripos($contents, 'drupal.behaviors.') !== FALSE) {
-        $info['advagg_mod']['contents']['drupal.behaviors'] = TRUE;
-      }
-      else {
-        $info['advagg_mod']['contents']['drupal.behaviors'] = FALSE;
-      }
-    }
-    else {
-      $info['advagg_mod']['contents']['drupal'] = FALSE;
-      $info['advagg_mod']['contents']['drupal.settings'] = FALSE;
-      $info['advagg_mod']['contents']['drupal.behaviors'] = FALSE;
-    }
-    if (!empty($contents) && stripos($contents, 'jquery') !== FALSE) {
-      $info['advagg_mod']['contents']['jquery'] = TRUE;
-    }
-    else {
-      $info['advagg_mod']['contents']['jquery'] = FALSE;
-    }
-
-    // Cache info.
-    $filename_hashes = &drupal_static('advagg_get_info_on_file');
-    $cache_id = 'advagg:file:' . $info['filename_hash'];
-
-    // Save results.
-    $filename_hashes[$cache_id] = $info;
-    cache_set($cache_id, $info, 'cache_advagg_info', CACHE_PERMANENT);
+  }
+  else {
+    $contents = file_get_contents($filename);
   }
 
-  return array($info['advagg_mod']['contents']['drupal'], $info['advagg_mod']['contents']['jquery']);
+  $results = array();
+  if (!empty($contents) && stripos($contents, 'drupal.') !== FALSE) {
+    $results['contents']['drupal'] = TRUE;
+    if (stripos($contents, 'drupal.settings.') !== FALSE) {
+      $results['contents']['drupal.settings'] = TRUE;
+    }
+    else {
+      $results['contents']['drupal.settings'] = FALSE;
+    }
+    if (stripos($contents, 'drupal.behaviors.') !== FALSE) {
+      $results['contents']['drupal.behaviors'] = TRUE;
+    }
+    else {
+      $results['contents']['drupal.behaviors'] = FALSE;
+    }
+  }
+  else {
+    $results['contents']['drupal'] = FALSE;
+    $results['contents']['drupal.settings'] = FALSE;
+    $results['contents']['drupal.behaviors'] = FALSE;
+  }
+  if (!empty($contents) && stripos($contents, 'jquery') !== FALSE) {
+    $results['contents']['jquery'] = TRUE;
+  }
+  else {
+    $results['contents']['jquery'] = FALSE;
+  }
+  return $results;
 }
 
 /**
@@ -805,6 +796,8 @@ function advagg_remove_js_if_not_used(&$js) {
   $include_jquery = FALSE;
   $include_drupal = FALSE;
 
+  module_load_include('inc', 'advagg', 'advagg');
+
   // Look at each JavaScript entry.
   foreach ($js as $name => &$values) {
     if ($values['type'] == 'file' || $values['type'] == 'external') {
@@ -816,7 +809,13 @@ function advagg_remove_js_if_not_used(&$js) {
         }
       }
       if (!$skip) {
-        list($drupal, $jquery) = advagg_mod_js_contains_jquery_drupal($name, $values['type']);
+        $info = advagg_get_info_on_file($name);
+        if (!isset($info['advagg_mod'])) {
+          $info['advagg_mod'] = advagg_mod_js_contains_jquery_drupal($name, $values['type']);
+        }
+        $drupal = $info['advagg_mod']['contents']['drupal'];
+        $jquery = $info['advagg_mod']['contents']['jquery'];
+
         if ($drupal) {
           $include_jquery = TRUE;
           $include_drupal = TRUE;
