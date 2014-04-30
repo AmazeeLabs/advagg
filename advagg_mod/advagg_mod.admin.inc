@@ -128,19 +128,19 @@ function advagg_mod_admin_settings_form() {
     '#type' => 'checkbox',
     '#title' => t('Move all external CSS to the top of the execution order'),
     '#default_value' => variable_get('advagg_mod_css_adjust_sort_external', ADVAGG_MOD_CSS_ADJUST_SORT_EXTERNAL),
-    '#description' => t('This is experimental. This will group all external CSS files to be above all other CSS.'),
+    '#description' => t('This will group all external CSS files to be above all other CSS.'),
   );
   $form['css']['adjust_sort']['advagg_mod_css_adjust_sort_inline'] = array(
     '#type' => 'checkbox',
     '#title' => t('Move all inline CSS to the bottom of the execution order'),
     '#default_value' => variable_get('advagg_mod_css_adjust_sort_inline', ADVAGG_MOD_CSS_ADJUST_SORT_INLINE),
-    '#description' => t('This is experimental. This will group all inline CSS to be below all other CSS.'),
+    '#description' => t('This will group all inline CSS to be below all other CSS.'),
   );
   $form['css']['adjust_sort']['advagg_mod_css_adjust_sort_browsers'] = array(
     '#type' => 'checkbox',
     '#title' => t('Move all browser conditional CSS to the bottom of the group'),
     '#default_value' => variable_get('advagg_mod_css_adjust_sort_browsers', ADVAGG_MOD_CSS_ADJUST_SORT_BROWSERS),
-    '#description' => t('This is experimental. This will group all browser conditional CSS to be in the lowest group of that conditional rule.'),
+    '#description' => t('This will group all browser conditional CSS to be in the lowest group of that conditional rule.'),
   );
 
   $form['landing_page'] = array(
