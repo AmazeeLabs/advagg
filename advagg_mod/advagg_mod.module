@@ -183,6 +183,7 @@ function advagg_mod_js_alter(&$js) {
   if (variable_get('advagg_mod_js_preprocess', ADVAGG_MOD_JS_PREPROCESS)) {
     foreach ($js as $name => &$values) {
       $values['preprocess'] = TRUE;
+      $values['cache'] = TRUE;
     }
   }
 
