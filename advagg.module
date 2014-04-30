@@ -2079,7 +2079,7 @@ function advagg_pre_render_scripts($elements) {
     // script element for this file.
     if (isset($group['type']) && $group['type'] == 'file' && isset($group['data'])) {
       $element = $element_defaults;
-      $element['#attributes']['src'] = file_create_url($group['data']);
+      $element['#attributes']['src'] = file_create_url($group['data']) . ($group['cache'] ? '' : '?' . REQUEST_TIME);
       $element['#browsers'] = $group['browsers'];
       if (!empty($group['defer'])) {
         $element['#attributes']['defer'] = 'defer';

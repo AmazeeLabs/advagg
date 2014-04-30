@@ -982,6 +982,7 @@ function advagg_build_aggregate_plans($files_to_aggregate, $type) {
       'async' => isset($first['async']) ? $first['async'] : '',
       'onload' => isset($first['onload']) ? $first['onload'] : '',
       'browsers' => isset($first['browsers']) ? $first['browsers'] : array(),
+      'cache' => isset($first['cache']) ? $first['cache'] : TRUE,
       'type' => $first['type'],
       'items' => $values,
       'filepath' => $path . '/' . $agg_filename,
