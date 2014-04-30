@@ -595,6 +595,27 @@ function advagg_requirements($phase) {
     );
   }
 
+  // Make hook_element_info_alter worked.
+  $styles_info = element_info('styles');
+  $scripts_info = element_info('scripts');
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+  if (   empty($styles_info['#pre_render'])
+      || !is_array($styles_info['#pre_render'])
+      || !in_array('advagg_modify_css_pre_render', $styles_info['#pre_render'])
+      || empty($scripts_info['#pre_render'])
+      || !is_array($scripts_info['#pre_render'])
+      || !in_array('advagg_modify_js_pre_render', $scripts_info['#pre_render'])
+      ) {
+    $requirements['advagg_hook_element_info_alter'] = array(
+      'title' => $t('Adv CSS/JS Agg - element_info'),
+      'severity' => REQUIREMENT_WARNING,
+      'value' => $t('Flush your caches.'),
+      'description' => $t('You need to flush your cache_bootstrap cache bin as advagg_hook_element_info_alter() is not working correctly. This can be done near the top of the <a href="@performance">performance page</a> under Clear cache.', array(
+        '@performance' => url('admin/config/development/performance'),
+      )),
+    );
+  }
+
   // Make sure some modules have the correct patches installed.
   if (module_exists('css_emimage')) {
     $file_path = drupal_get_path('module', 'css_emimage');
