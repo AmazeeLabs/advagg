@@ -1229,7 +1229,7 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
     $settings_js = array();
     foreach (array_keys($items) as $key) {
       if ($items[$key]['type'] == 'setting') {
-        $settings_js[] = $items[$key];
+        $settings_js[$key] = $items[$key];
         unset($items[$key]);
       }
     }
