@@ -32,15 +32,15 @@ function advagg_insert_update_db($files, $type, $root) {
     // Build lock name variable.
     $lock_name = 'advagg_insert_update_db:' . $values['aggregate_filenames_hash'] . ADVAGG_SPACE . $values['aggregate_contents_hash'];
 
-    // If lock is already acquired, return here.
-    if (!lock_acquire($lock_name, 5)) {
-      continue;
-    }
-
     // Insert files into the advagg_files table if it doesn't exist.
     // Update if needed.
     if (advagg_insert_update_files($values['files'], $type)) {
       $write_done = TRUE;
+    }
+
+    // If lock is already acquired, return here.
+    if (!lock_acquire($lock_name, 5)) {
+      continue;
     }
 
     // Insert aggregate into the advagg_aggregates table if it doesn't exist.
@@ -183,6 +183,12 @@ function advagg_insert_update_files($files, $type) {
   }
 
   foreach ($files as $filename => $file_meta_data) {
+    // Build lock name variable.
+    $lock_name = 'advagg_insert_update_files:' . $filename;
+    if (!lock_acquire($lock_name, 5)) {
+      continue;
+    }
+
     // Create record.
     $record = array(
       'filename' => $filename,
@@ -217,6 +223,9 @@ function advagg_insert_update_files($files, $type) {
         }
       }
     }
+
+    // Release Lock.
+    lock_release($lock_name);
   }
   return $write_done;
 }
