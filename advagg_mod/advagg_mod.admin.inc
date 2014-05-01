@@ -142,6 +142,20 @@ function advagg_mod_admin_settings_form() {
     '#default_value' => variable_get('advagg_mod_css_adjust_sort_browsers', ADVAGG_MOD_CSS_ADJUST_SORT_BROWSERS),
     '#description' => t('This will group all browser conditional CSS to be in the lowest group of that conditional rule.'),
   );
+  $form['css']['expert'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Experimental Settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['css']['expert']['advagg_mod_css_defer'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Deferred CSS Execution: Use JS to load CSS'),
+    '#default_value' => variable_get('advagg_mod_css_defer', ADVAGG_MOD_CSS_DEFER),
+    '#description' => t('This will try to optimize CSS delivery by using JavaScript to load the CSS. This might break CSS on different browsers; only use after extensive testing! <a href="@link">More Info</a>', array(
+      '@link' => 'http://stackoverflow.com/questions/19374843/css-delivery-optimization-how-to-defer-css-loading',
+    )),
+  );
 
   $form['landing_page'] = array(
     '#type' => 'fieldset',

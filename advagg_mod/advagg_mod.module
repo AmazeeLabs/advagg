@@ -71,6 +71,12 @@ define('ADVAGG_MOD_CSS_ADJUST_SORT_INLINE', FALSE);
  */
 define('ADVAGG_MOD_CSS_ADJUST_SORT_BROWSERS', FALSE);
 
+/**
+ * Default value to use JavaScript to defer CSS loading.
+ */
+define('ADVAGG_MOD_CSS_DEFER', FALSE);
+
+
 // Core hook implementations.
 /**
  * Implements hook_init().
@@ -296,7 +302,7 @@ function advagg_mod_sort_css_js(&$array, $type) {
     $offset = 0.0001;
     $weight += -1;
     foreach ($external as $key => $value) {
-      if (isset($value['moveable']) && empty($value['moveable'])) {
+      if (isset($value['movable']) && empty($value['movable'])) {
         $array[$key] = $value;
         continue;
       }
@@ -365,7 +371,7 @@ function advagg_mod_sort_css_js(&$array, $type) {
     $offset = 0.0001;
     $weight += 1;
     foreach ($inline as $key => $value) {
-      if (isset($value['moveable']) && empty($value['moveable'])) {
+      if (isset($value['movable']) && empty($value['movable'])) {
         $array[$key] = $value;
         continue;
       }
@@ -438,7 +444,7 @@ function advagg_mod_sort_css_js(&$array, $type) {
         // Group all browsers together.
         $offset = 0.0001;
         foreach ($browsers as $key => $value) {
-          if (isset($value['moveable']) && empty($value['moveable'])) {
+          if (isset($value['movable']) && empty($value['movable'])) {
             $array[$key] = $value;
             continue;
           }
@@ -542,7 +548,55 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
       }
     }
   }
+}
 
+/**
+ * Implements hook_advagg_modify_css_pre_render_alter().
+ */
+function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
+  if (module_exists('advagg') && !advagg_enabled()) {
+    return;
+  }
+
+  // Do not use defer/async shim if JS is inlined.
+  if (!variable_get('advagg_mod_css_defer', ADVAGG_MOD_CSS_DEFER)) {
+    return;
+  }
+
+  $embed_prefix = "\n<!--//--><![CDATA[//><!--\n";
+  $embed_suffix = "\n//--><!]]>\n";
+
+  // Add js loader function.
+  $js_element = array(
+    '#type' => 'html_tag',
+    '#tag' => 'script',
+    '#value_prefix' => $embed_prefix,
+    '#value' =>
+"  // Used to defer the loading of stylesheets.
+  function loadStyleSheet(src) {
+    if (document.createStyleSheet) {
+      document.createStyleSheet(src);
+    }
+    else {
+      var stylesheet = document.createElement('link');
+      stylesheet.href = src;
+      stylesheet.rel = 'stylesheet';
+      stylesheet.type = 'text/css';
+      document.getElementsByTagName('head')[0].appendChild(stylesheet);
+    }
+  }",
+    '#value_suffix' => $embed_suffix,
+    '#attributes' => array(
+      'type' => 'text/javascript',
+    ),
+  );
+  array_unshift($elements, $js_element);
+
+  // Wrap old CSS in noscript tags.
+  foreach ($children as &$values) {
+    $values['#prefix'] = '<script type="text/javascript">loadStyleSheet("' . $values['#attributes']['href'] . '")</script><noscript>' . "\n";
+    $values['#suffix'] = '</noscript>';
+  }
 }
 
 /**
