@@ -75,7 +75,13 @@ function advagg_mod_admin_settings_form() {
     '#type' => 'fieldset',
     '#title' => t('Experimental Settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => (variable_get('advagg_mod_js_head_extract', ADVAGG_MOD_JS_HEAD_EXTRACT) || variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER) || variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) ? FALSE : TRUE,
+  );
+  $form['js']['expert']['advagg_mod_js_head_extract'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Move JavaScript added by drupal_add_html_head() into drupal_add_js()'),
+    '#default_value' => variable_get('advagg_mod_js_head_extract', ADVAGG_MOD_JS_HEAD_EXTRACT),
+    '#description' => t('This will move JavaScript added incorrectly to Drupal into the top of the drupal_add_js() queue.'),
   );
   $form['js']['expert']['advagg_mod_js_defer'] = array(
     '#type' => 'checkbox',
@@ -85,11 +91,13 @@ function advagg_mod_admin_settings_form() {
       '@link' => 'http://peter.sh/experiments/asynchronous-and-deferred-javascript-execution-explained/',
     )),
   );
-  $form['js']['expert']['advagg_mod_js_head_extract'] = array(
+  $form['js']['expert']['advagg_mod_js_async'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Move JavaScript added by drupal_add_html_head() into drupal_add_js()'),
-    '#default_value' => variable_get('advagg_mod_js_head_extract', ADVAGG_MOD_JS_HEAD_EXTRACT),
-    '#description' => t('This will move JavaScript added incorrectly to Drupal into the top of the drupal_add_js() queue.'),
+    '#title' => t('Asynchronous JavaScript Execution: Add The async Tag To All Script Tags'),
+    '#default_value' => variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC),
+    '#description' => t('This will cause the script to be downloaded in the background and executed once it is ready. This will break most javascript; only use after extensive testing! <a href="@link">More Info</a>', array(
+      '@link' => 'http://peter.sh/experiments/asynchronous-and-deferred-javascript-execution-explained/',
+    )),
   );
 
   $config_path = advagg_admin_config_root_path();
@@ -152,7 +160,13 @@ function advagg_mod_admin_settings_form() {
     '#type' => 'fieldset',
     '#title' => t('Experimental Settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => (variable_get('advagg_mod_css_head_extract', ADVAGG_MOD_CSS_HEAD_EXTRACT) || variable_get('advagg_mod_css_defer', ADVAGG_MOD_CSS_DEFER)) ? FALSE : TRUE,
+  );
+  $form['css']['expert']['advagg_mod_css_head_extract'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Move CSS added by drupal_add_html_head() into drupal_add_css()'),
+    '#default_value' => variable_get('advagg_mod_css_head_extract', ADVAGG_MOD_CSS_HEAD_EXTRACT),
+    '#description' => t('This will move CSS added incorrectly to Drupal into the top of the drupal_add_css() queue.'),
   );
   $form['css']['expert']['advagg_mod_css_defer'] = array(
     '#type' => 'checkbox',
@@ -162,12 +176,7 @@ function advagg_mod_admin_settings_form() {
       '@link' => 'http://stackoverflow.com/questions/19374843/css-delivery-optimization-how-to-defer-css-loading',
     )),
   );
-  $form['css']['expert']['advagg_mod_css_head_extract'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Move CSS added by drupal_add_html_head() into drupal_add_css()'),
-    '#default_value' => variable_get('advagg_mod_css_head_extract', ADVAGG_MOD_CSS_HEAD_EXTRACT),
-    '#description' => t('This will move CSS added incorrectly to Drupal into the top of the drupal_add_css() queue.'),
-  );
+
 
   $form['landing_page'] = array(
     '#type' => 'fieldset',

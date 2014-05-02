@@ -24,7 +24,7 @@ define('ADVAGG_MOD_JS_DEFER', FALSE);
 /**
  * Default value to add use the async script shim for script tags.
  */
-define('ADVAGG_MOD_JS_ASYNC_SHIM', TRUE);
+define('ADVAGG_MOD_JS_ASYNC_SHIM', FALSE);
 
 /**
  * Default value to remove JavaScript if none was added on the page.
@@ -85,6 +85,11 @@ define('ADVAGG_MOD_CSS_HEAD_EXTRACT', FALSE);
  * Default value to move JavaScript into drupal_add_js().
  */
 define('ADVAGG_MOD_JS_HEAD_EXTRACT', FALSE);
+
+/**
+ * Default value to move JavaScript into drupal_add_js().
+ */
+define('ADVAGG_MOD_JS_ASYNC', FALSE);
 
 // Core hook implementations.
 /**
@@ -202,15 +207,33 @@ function advagg_mod_js_alter(&$js) {
     }
   }
 
-  // Add the defer tag to all JS.
-  if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
+  // Add the defer or the async tag to all JS.
+  if (   variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
+      || variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)
+      ) {
     foreach ($js as $name => &$values) {
-      // Everything is defer.
-      $values['defer'] = TRUE;
+      if ($values['type'] != 'file' && $values['type'] != 'external') {
+        continue;
+      }
+      if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
+        // Everything is defer.
+        $values['defer'] = TRUE;
+      }
+      if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
+        // Everything is async.
+        $values['async'] = TRUE;
+      }
+
+
 
       if (strpos($name, 'jquery.js') !== FALSE || strpos($name, 'jquery.min.js') !== FALSE) {
-        // Do not defer the loading of jquery.js
-        $values['defer'] = FALSE;
+        // Do not defer/async the loading of jquery.js
+        if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
+          $values['defer'] = FALSE;
+        }
+        if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
+          $values['async'] = FALSE;
+        }
 
         // jquery_update fallback.
         if (module_exists('jquery_update')) {
@@ -218,8 +241,13 @@ function advagg_mod_js_alter(&$js) {
         }
       }
       if (strpos($name, 'jquery-ui.js') !== FALSE || strpos($name, 'jquery-ui.min.js') !== FALSE) {
-        // Do not defer the loading of jquery-ui.js
-        $values['defer'] = FALSE;
+        // Do not defer/async the loading of jquery-ui.js
+        if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
+          $values['defer'] = FALSE;
+        }
+        if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
+          $values['async'] = FALSE;
+        }
 
         // jquery_update fallback.
         if (module_exists('jquery_update')) {
@@ -230,8 +258,15 @@ function advagg_mod_js_alter(&$js) {
       // Drupal settings.
       if ($name == 'misc/drupal.js') {
         $values['onload'] = "if (typeof window.init_drupal_core_settings === 'function') {init_drupal_core_settings();}";
+        if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
+          $values['async'] = FALSE;
+        }
       }
-
+      if ($name == 'misc/jquery.once.js') {
+        if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
+          $values['async'] = FALSE;
+        }
+      }
     }
   }
 }
@@ -336,9 +371,28 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
     return;
   }
 
-  if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
+  if (   variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
+      || variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)
+      ) {
     foreach ($children as &$values) {
-      $values['#attributes']['defer'] = TRUE;
+      if (empty($values['#attributes']['src'])) {
+        continue;
+      }
+      if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER) && isset($values['#attributes']['defer'])) {
+        $values['#attributes']['defer'] = TRUE;
+      }
+      if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC) && isset($values['#attributes']['async'])) {
+        $values['#attributes']['async'] = TRUE;
+      }
+      if (   strpos($values['#attributes']['src'], 'jquery-ui.js') !== FALSE
+          || strpos($values['#attributes']['src'], 'jquery-ui.min.js') !== FALSE
+          || strpos($values['#attributes']['src'], 'jquery.js') !== FALSE
+          || strpos($values['#attributes']['src'], 'jquery.min.js') !== FALSE
+          || strpos($values['#attributes']['src'], 'jquery.once.js') !== FALSE
+          || strpos($values['#attributes']['src'], 'jquery.once.min.js') !== FALSE
+          ) {
+        unset($values['#attributes']['async']);
+      }
       if (empty($values['#value'])) {
         continue;
       }
@@ -365,8 +419,14 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
 
   if (variable_get('advagg_mod_js_async_shim', ADVAGG_MOD_JS_ASYNC_SHIM)) {
     foreach ($children as &$values) {
-      if (isset($values['#attributes']) && isset($values['#attributes']['async']) && $values['#attributes']['async'] == 'async') {
-        $source = url($values['#attributes']['src']);
+      if (isset($values['#attributes']) && isset($values['#attributes']['async']) && $values['#attributes']['async'] == 'async' && !empty($values['#attributes']['src'])) {
+        $source = $values['#attributes']['src'];
+        if (   strpos($source, 'http://') !== 0
+            && strpos($source, 'https://') !== 0
+            && strpos($source, '//') !== 0
+            ) {
+          $source = url($values['#attributes']['src']);
+        }
         $values['#value'] = "(function() {
   var s = document.createElement('script');
   s.type = 'text/javascript';
