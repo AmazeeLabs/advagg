@@ -224,8 +224,6 @@ function advagg_mod_js_alter(&$js) {
         $values['async'] = TRUE;
       }
 
-
-
       if (strpos($name, 'jquery.js') !== FALSE || strpos($name, 'jquery.min.js') !== FALSE) {
         // Do not defer/async the loading of jquery.js
         if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
@@ -258,11 +256,17 @@ function advagg_mod_js_alter(&$js) {
       // Drupal settings.
       if ($name == 'misc/drupal.js') {
         $values['onload'] = "if (typeof window.init_drupal_core_settings === 'function') {init_drupal_core_settings();}";
+        if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
+          $values['defer'] = FALSE;
+        }
         if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
           $values['async'] = FALSE;
         }
       }
       if ($name == 'misc/jquery.once.js') {
+        if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
+          $values['defer'] = FALSE;
+        }
         if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
           $values['async'] = FALSE;
         }
