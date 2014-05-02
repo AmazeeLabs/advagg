@@ -48,6 +48,12 @@ function advagg_mod_admin_settings_form() {
     '#default_value' => variable_get('advagg_mod_js_remove_unused', ADVAGG_MOD_JS_REMOVE_UNUSED),
     '#description' => t('This will scan all included JS files for references to jquery and drupal. If none are found then the core JavaScript (jquery.js, drupal.js, & Drupal.settings) is removed and not loaded on that page. If you have a site that does not use a lot of Javascript this might be helpful as it could prevent unused JavaScript from being executed, thus speeding up your sites frontend performance.'),
   );
+  $form['js']['advagg_mod_js_head_extract'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Move JavaScript added by drupal_add_html_head() into drupal_add_js()'),
+    '#default_value' => variable_get('advagg_mod_js_head_extract', ADVAGG_MOD_JS_HEAD_EXTRACT),
+    '#description' => t('This will move JavaScript added incorrectly to Drupal into the top of the drupal_add_js() queue.'),
+  );
   $form['js']['adjust_sort'] = array(
     '#type' => 'fieldset',
     '#title' => t('Optimize JavaScript Ordering'),
@@ -76,12 +82,6 @@ function advagg_mod_admin_settings_form() {
     '#title' => t('Experimental Settings'),
     '#collapsible' => TRUE,
     '#collapsed' => (variable_get('advagg_mod_js_head_extract', ADVAGG_MOD_JS_HEAD_EXTRACT) || variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER) || variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) ? FALSE : TRUE,
-  );
-  $form['js']['expert']['advagg_mod_js_head_extract'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Move JavaScript added by drupal_add_html_head() into drupal_add_js()'),
-    '#default_value' => variable_get('advagg_mod_js_head_extract', ADVAGG_MOD_JS_HEAD_EXTRACT),
-    '#description' => t('This will move JavaScript added incorrectly to Drupal into the top of the drupal_add_js() queue.'),
   );
   $form['js']['expert']['advagg_mod_js_defer'] = array(
     '#type' => 'checkbox',
@@ -133,6 +133,12 @@ function advagg_mod_admin_settings_form() {
       );
     }
   }
+  $form['css']['advagg_mod_css_head_extract'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Move CSS added by drupal_add_html_head() into drupal_add_css()'),
+    '#default_value' => variable_get('advagg_mod_css_head_extract', ADVAGG_MOD_CSS_HEAD_EXTRACT),
+    '#description' => t('This will move CSS added incorrectly to Drupal into the top of the drupal_add_css() queue.'),
+  );
   $form['css']['adjust_sort'] = array(
     '#type' => 'fieldset',
     '#title' => t('Optimize CSS Ordering'),
@@ -161,12 +167,6 @@ function advagg_mod_admin_settings_form() {
     '#title' => t('Experimental Settings'),
     '#collapsible' => TRUE,
     '#collapsed' => (variable_get('advagg_mod_css_head_extract', ADVAGG_MOD_CSS_HEAD_EXTRACT) || variable_get('advagg_mod_css_defer', ADVAGG_MOD_CSS_DEFER)) ? FALSE : TRUE,
-  );
-  $form['css']['expert']['advagg_mod_css_head_extract'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Move CSS added by drupal_add_html_head() into drupal_add_css()'),
-    '#default_value' => variable_get('advagg_mod_css_head_extract', ADVAGG_MOD_CSS_HEAD_EXTRACT),
-    '#description' => t('This will move CSS added incorrectly to Drupal into the top of the drupal_add_css() queue.'),
   );
   $form['css']['expert']['advagg_mod_css_defer'] = array(
     '#type' => 'checkbox',
