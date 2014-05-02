@@ -177,7 +177,6 @@ function advagg_mod_admin_settings_form() {
     )),
   );
 
-
   $form['landing_page'] = array(
     '#type' => 'fieldset',
     '#title' => t('Inline CSS/JS on specific pages'),

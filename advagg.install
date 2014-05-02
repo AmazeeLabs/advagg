@@ -1303,4 +1303,3 @@ function advagg_install_glue_url($parsed) {
 
   return $uri;
 }
-

@@ -164,8 +164,8 @@ function advagg_mod_js_alter(&$js) {
     advagg_remove_js_if_not_used($js);
   }
 
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:5
   // Change sort order so aggregates do not get split up.
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
   if (   variable_get('advagg_mod_js_adjust_sort_external', ADVAGG_MOD_JS_ADJUST_SORT_EXTERNAL)
       || variable_get('advagg_mod_js_adjust_sort_inline', ADVAGG_MOD_JS_ADJUST_SORT_INLINE)
       || variable_get('advagg_mod_js_adjust_sort_browsers', ADVAGG_MOD_JS_ADJUST_SORT_BROWSERS)
@@ -208,6 +208,7 @@ function advagg_mod_js_alter(&$js) {
   }
 
   // Add the defer or the async tag to all JS.
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
   if (   variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
       || variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)
       ) {
@@ -312,6 +313,7 @@ function advagg_mod_css_alter(&$css) {
 function advagg_mod_html_head_alter(&$head_elements) {
   foreach ($head_elements as $key => $element) {
     // CSS
+    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
     if (   variable_get('advagg_mod_css_head_extract', ADVAGG_MOD_CSS_HEAD_EXTRACT)
         && !empty($element['#tag'])
         && $element['#tag'] == 'link'
@@ -320,7 +322,8 @@ function advagg_mod_html_head_alter(&$head_elements) {
         && !empty($element['#attributes']['href'])
         ) {
       $type = 'file';
-      if (  strpos($element['#attributes']['href'], 'http://') === 0
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+      if (   strpos($element['#attributes']['href'], 'http://') === 0
           || strpos($element['#attributes']['href'], 'https://') === 0
           || strpos($element['#attributes']['href'], '//') === 0
           ) {
@@ -335,6 +338,7 @@ function advagg_mod_html_head_alter(&$head_elements) {
       unset($head_elements[$key]);
     }
     // JS
+    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
     if (   variable_get('advagg_mod_js_head_extract', ADVAGG_MOD_JS_HEAD_EXTRACT)
         && !empty($element['#tag'])
         && $element['#tag'] == 'script'
@@ -343,7 +347,8 @@ function advagg_mod_html_head_alter(&$head_elements) {
         && !empty($element['#attributes']['src'])
         ) {
       $type = 'file';
-      if (  strpos($element['#attributes']['src'], 'http://') === 0
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+      if (   strpos($element['#attributes']['src'], 'http://') === 0
           || strpos($element['#attributes']['src'], 'https://') === 0
           || strpos($element['#attributes']['src'], '//') === 0
           ) {
@@ -375,6 +380,7 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
     return;
   }
 
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
   if (   variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
       || variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)
       ) {
@@ -388,6 +394,7 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
       if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC) && isset($values['#attributes']['async'])) {
         $values['#attributes']['async'] = TRUE;
       }
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
       if (   strpos($values['#attributes']['src'], 'jquery-ui.js') !== FALSE
           || strpos($values['#attributes']['src'], 'jquery-ui.min.js') !== FALSE
           || strpos($values['#attributes']['src'], 'jquery.js') !== FALSE
@@ -425,6 +432,7 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
     foreach ($children as &$values) {
       if (isset($values['#attributes']) && isset($values['#attributes']['async']) && $values['#attributes']['async'] == 'async' && !empty($values['#attributes']['src'])) {
         $source = $values['#attributes']['src'];
+        // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
         if (   strpos($source, 'http://') !== 0
             && strpos($source, 'https://') !== 0
             && strpos($source, '//') !== 0
@@ -467,8 +475,9 @@ function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
     '#type' => 'html_tag',
     '#tag' => 'script',
     '#value_prefix' => $embed_prefix,
+    // @ignore sniffer_array_array_arrayindentation:15
     '#value' =>
-"  // Used to defer the loading of stylesheets.
+  "  // Used to defer the loading of stylesheets.
   function loadStyleSheet(src) {
     if (document.createStyleSheet) {
       document.createStyleSheet(src);
@@ -745,7 +754,6 @@ function advagg_mod_sort_css_js(&$array, $type) {
           advagg_drupal_sort_css_js_stable($browsers);
         }
 
-
         // Group all browsers together.
         $offset = 0.0001;
         foreach ($browsers as $key => $value) {
@@ -910,6 +918,7 @@ function advagg_mod_match_path($pages, $visibility) {
  * @see block_block_list_alter()
  */
 function advagg_mod_js_contains_jquery_drupal($filename, $type = '') {
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
   if (   $type == 'external'
       || strpos($filename, 'http://') === 0
       || strpos($filename, 'https://') === 0

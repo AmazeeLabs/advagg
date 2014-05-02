@@ -54,7 +54,6 @@ function advagg_admin_settings_form($form, $form_state) {
   );
   $options = array(
     -1 => t('Development ~ 100ms'),
-//     0 => t('Disabled ~ 70ms'),
     1 => t('Normal ~ 10ms'),
     3 => t('Aggressive ~ 4ms'),
   );
@@ -81,7 +80,7 @@ function advagg_admin_settings_form($form, $form_state) {
         ),
       );
       $form['global']['dev_container']['advagg_jquery_update_development'] = array(
-        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compression level</a> to "Development" as well. ', array(
+        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compression level</a> to "Development" as well.', array(
           '!url' => url('admin/config/development/jquery_update'),
         )) . '</p>',
       );
@@ -96,7 +95,7 @@ function advagg_admin_settings_form($form, $form_state) {
         ),
       );
       $form['global']['prod_container']['advagg_jquery_update_development'] = array(
-        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compression level</a> to "Production" as well. ', array(
+        '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compression level</a> to "Production" as well.', array(
           '!url' => url('admin/config/development/jquery_update'),
         )) . '</p>',
       );

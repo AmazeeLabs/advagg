@@ -335,6 +335,24 @@ function advagg_get_aggregate_info_from_files($type, $files_with_meta_data) {
   );
 }
 
+/**
+ * Load cache bin file info in static cache.
+ *
+ * @param array $files
+ *   Array; array of filenames.
+ *
+ * @return array
+ *   $cached_data. key is $cache_id; value is an array which contains
+ * @code
+ *   'filesize' => filesize($filename),
+ *   'mtime' => @filemtime($filename),
+ *   'filename_hash' => $filename_hash,
+ *   'content_hash' => drupal_hash_base64($file_contents),
+ *   'linecount' => $linecount,
+ *   'data' => $filename,
+ *   'fileext' => $ext,
+ * @endcode
+ */
 function &advagg_load_files_info_into_static_cache($files) {
   // Get the static cache of this data.
   $cached_data = &drupal_static('advagg_get_info_on_file');
@@ -401,7 +419,8 @@ function advagg_get_info_on_files($files, $bypass_cache = FALSE, $run_alter = TR
   foreach ($files as $file) {
     $filename_hash = drupal_hash_base64($file);
     $cache_id = 'advagg:file:' . $filename_hash;
-    // If we are not bypassing the cache add cached data
+    // If we are not bypassing the cache add cached data.
+    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
     if (   $bypass_cache == FALSE
         && is_array($cached_data)
         && array_key_exists($cache_id, $cached_data)
@@ -470,6 +489,7 @@ function advagg_get_info_on_files($files, $bypass_cache = FALSE, $run_alter = TR
     foreach ($return as $info) {
       // If no cache is empty add/update the cached entry.
       // Update the cache if it is new or something changed.
+      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
       if (   empty($info['#no_cache'])
           && !empty($info['cache_id'])
           && (empty($cached_data[$info['cache_id']]) || $info !== $cached_data[$info['cache_id']])

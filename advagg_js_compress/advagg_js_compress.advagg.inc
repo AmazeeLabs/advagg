@@ -23,6 +23,7 @@ function advagg_js_compress_advagg_get_info_on_files_alter(&$return, $cached_dat
       continue;
     }
     // New or updated data or no advagg_js_compress data.
+    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
     if (   empty($cached_data[$info['cache_id']])
         || empty($info['advagg_js_compress'])
         || $info['content_hash'] != $cached_data[$info['cache_id']]['content_hash']
@@ -462,7 +463,7 @@ function advagg_js_compress_run_test($filename, $info = array(), $compressors = 
               'function' => 'advagg_js_compress_test_file',
               'return' => &$sub_result,
             ),
-            $filename, array($key => $value['name']), $cache_id
+            $filename, array($key => $value['name']), $cache_id,
           );
           // Queue up the request.
           httprl_queue_background_callback($callback_options);
@@ -526,7 +527,7 @@ function advagg_js_compress_run_mutiple_tests($filenames_info, $compressors = ar
         $current_time = $dat["ru_utime.tv_sec"];
       }
       $max_time = max(30, ini_get('max_execution_time'));
-      $time_left = $max_time-$current_time;
+      $time_left = $max_time - $current_time;
       // Give every file 3 seconds.
       drupal_set_time_limit(count($filenames_info) * 3 + $time_left);
     }
