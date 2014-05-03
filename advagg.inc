@@ -29,18 +29,10 @@ function advagg_insert_update_db($files, $type, $root) {
 
   // Loop through all files.
   foreach ($files as $aggregate_file_name => $values) {
-    // Build lock name variable.
-    $lock_name = 'advagg_insert_update_db:' . $values['aggregate_filenames_hash'] . ADVAGG_SPACE . $values['aggregate_contents_hash'];
-
     // Insert files into the advagg_files table if it doesn't exist.
     // Update if needed.
     if (advagg_insert_update_files($values['files'], $type)) {
       $write_done = TRUE;
-    }
-
-    // If lock is already acquired, return here.
-    if (!lock_acquire($lock_name, 5)) {
-      continue;
     }
 
     // Insert aggregate into the advagg_aggregates table if it doesn't exist.
@@ -52,9 +44,6 @@ function advagg_insert_update_db($files, $type, $root) {
     if (advagg_insert_aggregate_version($values['aggregate_filenames_hash'], $values['aggregate_contents_hash'], $root)) {
       $write_done = TRUE;
     }
-
-    // Release Lock.
-    lock_release($lock_name);
   }
   return $write_done;
 }
@@ -86,6 +75,11 @@ function advagg_insert_aggregate_version($aggregate_filenames_hash, $aggregate_c
     return FALSE;
   }
 
+  $lock_name = 'advagg_insert_aggregate_version:' . $root . ':' . $aggregate_filenames_hash . ':' . $aggregate_contents_hash;
+  if (!lock_acquire($lock_name, 5)) {
+    // Skip if no lock acquired.
+    return FALSE;;
+  }
   // Save new aggregate into the database.
   $record = array(
     'aggregate_filenames_hash' => $aggregate_filenames_hash,
@@ -93,7 +87,10 @@ function advagg_insert_aggregate_version($aggregate_filenames_hash, $aggregate_c
     'atime' => 0,
     'root' => $root,
   );
-  return drupal_write_record('advagg_aggregates_versions', $record);
+  $return = drupal_write_record('advagg_aggregates_versions', $record);
+  // Release Lock.
+  lock_release($lock_name);
+  return $return;
 }
 
 /**
@@ -131,6 +128,12 @@ function advagg_insert_aggregate($files, $aggregate_filenames_hash) {
       continue;
     }
 
+    $lock_name = 'advagg_insert_aggregate:' . $count . ':' . $file_meta_data['filename_hash'] . ':' . $aggregate_filenames_hash;
+    if (!lock_acquire($lock_name, 5)) {
+      // Skip if no lock acquired.
+      continue;
+    }
+
     // Store settings for this file that depend on how it was added.
     $settings = array();
     if (isset($file_meta_data['media_query'])) {
@@ -147,6 +150,8 @@ function advagg_insert_aggregate($files, $aggregate_filenames_hash) {
     if (drupal_write_record('advagg_aggregates', $record)) {
       $write_done = TRUE;
     }
+    // Release Lock.
+    lock_release($lock_name);
   }
   return $write_done;
 }
