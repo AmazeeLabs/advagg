@@ -185,9 +185,6 @@ function advagg_insert_update_files($files, $type) {
   foreach ($files as $filename => $file_meta_data) {
     // Build lock name variable.
     $lock_name = 'advagg_insert_update_files:' . $filename;
-    if (!lock_acquire($lock_name, 5)) {
-      continue;
-    }
 
     // Create record.
     $record = array(
@@ -204,9 +201,15 @@ function advagg_insert_update_files($files, $type) {
     if (empty($files_in_db[$filename])) {
       // Insert into database.
       $record['changes'] = 1;
+      if (!lock_acquire($lock_name, 5)) {
+        // Skip if no lock acquired.
+        continue;
+      }
       if (drupal_write_record('advagg_files', $record)) {
         $write_done = TRUE;
       }
+      // Release Lock.
+      lock_release($lock_name);
     }
     else {
       // Take changes counter out of the diff equation.
@@ -218,14 +221,17 @@ function advagg_insert_update_files($files, $type) {
       if (!empty($diff)) {
         $diff['changes'] = $changes + 1;
         $diff['filename_hash'] = $record['filename_hash'];
+        if (!lock_acquire($lock_name, 5)) {
+          // Skip if no lock acquired.
+          continue;
+        }
         if (drupal_write_record('advagg_files', $diff, array('filename_hash'))) {
           $write_done = TRUE;
         }
+        // Release Lock.
+        lock_release($lock_name);
       }
     }
-
-    // Release Lock.
-    lock_release($lock_name);
   }
   return $write_done;
 }
@@ -360,7 +366,7 @@ function &advagg_load_files_info_into_static_cache($files) {
   // Get that staticly cached data for all the given files.
   $cache_ids = array();
   foreach ($files as $file) {
-    $cache_id = 'advagg:file:' . drupal_hash_base64($file);
+    $cache_id = 'advagg:file:' . advagg_drupal_hash_base64($file);
     // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
     if (   !empty($cached_data)
         && !empty($cached_data[$cache_id])
@@ -391,6 +397,24 @@ function &advagg_load_files_info_into_static_cache($files) {
 }
 
 /**
+ * Given a filename calculate the hash for it. Uses static cache.
+ *
+ * @param string $file
+ *   Filename.
+ *
+ * @return string
+ *   hash of filename.
+ */
+function advagg_drupal_hash_base64($file) {
+  // Get the static cache of this data.
+  $cached_data = &drupal_static('advagg_drupal_hash_base64');
+  if (!isset($cached_data[$file])) {
+    $cached_data[$file] = drupal_hash_base64($file);
+  }
+  return $cached_data[$file];
+}
+
+/**
  * Given a filename calculate various hashes and gather meta data.
  *
  * @param array $files
@@ -417,7 +441,7 @@ function advagg_get_info_on_files($files, $bypass_cache = FALSE, $run_alter = TR
   // Get basic info on the files.
   $return = array();
   foreach ($files as $file) {
-    $filename_hash = drupal_hash_base64($file);
+    $filename_hash = advagg_drupal_hash_base64($file);
     $cache_id = 'advagg:file:' . $filename_hash;
     // If we are not bypassing the cache add cached data.
     // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
@@ -434,7 +458,9 @@ function advagg_get_info_on_files($files, $bypass_cache = FALSE, $run_alter = TR
 
     // Remove file in the cache if it does not exist.
     if (!file_exists($file)) {
-      cache_clear_all($cache_id, 'cache_advagg_info', FALSE);
+      if (isset($cached_data[$cache_id])) {
+        cache_clear_all($cache_id, 'cache_advagg_info', FALSE);
+      }
       // Return filename_hash & data. Empty values for the other keys.
       $return[$file] = array(
         'filesize' => 0,

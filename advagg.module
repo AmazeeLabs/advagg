@@ -1041,7 +1041,13 @@ function _advagg_process_html(&$variables) {
   $javascript = drupal_add_js();
   // Try the JS cache first; only if not debugging.
   if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 3) {
+    // Exclude JS Settings from the hash.
+    $js_settings = $javascript['settings']['data'];
+    unset($javascript['settings']['data']);
     $js_hash = drupal_hash_base64(serialize($javascript));
+    $javascript['settings']['data'] = $js_settings;
+    $js_settings = drupal_array_merge_deep_array($js_settings);
+
     $js_cache_id = 'advagg:js:full:' . $hooks_hash . ':' . $js_hash;
     $js_cache = cache_get($js_cache_id, 'cache_advagg_aggregates');
   }
@@ -1058,7 +1064,25 @@ function _advagg_process_html(&$variables) {
     $variables['page_bottom'] = '';
   }
   if (!empty($js_cache->data) && !variable_get('advagg_debug', ADVAGG_DEBUG)) {
+    // Replace cached settings with current ones.
     foreach ($js_cache->data as $key => $value) {
+      // Search $value for Drupal.settings.
+      $start = strpos($value, 'jQuery.extend(Drupal.settings,');
+      if ($start !== FALSE) {
+        $end = strpos($value, '});', $start);
+        // Get raw json from the cache and decode it.
+        $json = trim(substr($value, $start+30, $end - $start-30+1));
+        $out = json_decode($json, TRUE);
+
+        // Use ['ajaxPageState']['js'] from the cached data.
+        $js_settings['ajaxPageState']['js'] = $out['ajaxPageState']['js'];
+
+        // Replace cached Drupal.settings with current Drupal.settings for this
+        // page.
+        $json_data = @drupal_json_encode($js_settings);
+        $value = substr($value, 0, $start+30) . $json_data . substr($value, $end+1);
+      }
+
       if (!isset($variables[$key]) || !is_string($variables[$key])) {
         $variables[$key] = '';
       }
@@ -1229,7 +1253,12 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
     $settings_js = array();
     foreach (array_keys($items) as $key) {
       if ($items[$key]['type'] == 'setting') {
-        $settings_js[$key] = $items[$key];
+        if (isset($settings_js[$key])) {
+          $settings_js[$key] += $items[$key];
+        }
+        else {
+          $settings_js[$key] = $items[$key];
+        }
         unset($items[$key]);
       }
     }
