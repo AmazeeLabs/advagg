@@ -101,6 +101,79 @@ function advagg_admin_settings_form($form, $form_state) {
       );
     }
   }
+  $form['global']['cron'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Cron Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Unless you have a good reason to adjust these values you should leave them alone.'),
+  );
+  $short_times = drupal_map_assoc(array(
+    60 * 15, // 15 min.
+    60 * 30, // 30 min.
+    60 * 45, // 45 min.
+    60 * 60, // 1 hour.
+    60 * 60 * 2, // 2 hours.
+    60 * 60 * 4, // 4 hours.
+    60 * 60 * 6, // 6 hours.
+    60 * 60 * 8, // 8 hours.
+    60 * 60 * 10, // 10 hours.
+    60 * 60 * 12, // 12 hours.
+    60 * 60 * 18, // 18 hours.
+    60 * 60 * 24, // 1 day.
+    60 * 60 * 24 * 2, // 2 days.
+  ), 'format_interval');
+  $long_times = drupal_map_assoc(array(
+    60 * 60 * 24 * 2, // 2 days.
+    60 * 60 * 24 * 3, // 3 days.
+    60 * 60 * 24 * 4, // 4 days.
+    60 * 60 * 24 * 5, // 5 days.
+    60 * 60 * 24 * 6, // 6 days.
+    60 * 60 * 24 * 7, // 1 week.
+    60 * 60 * 24 * 7 * 2, // 2 weeks.
+    60 * 60 * 24 * 7 * 3, // 3 weeks.
+    60 * 60 * 24 * 30, // 1 month.
+    60 * 60 * 24 * 45, // 1 month 2 weeks.
+    60 * 60 * 24 * 60, // 2 months.
+  ), 'format_interval');
+  $last_ran = variable_get('advagg_cron_timestamp', 0);
+  if (!empty($last_ran)) {
+    $last_ran = t('@time ago', array('@time' => format_interval(REQUEST_TIME - $last_ran)));
+  }
+  else {
+    $last_ran = t('never');
+  }
+  $form['global']['cron']['advagg_cron_frequency'] = array(
+    '#type' => 'select',
+    '#options' => $short_times,
+    '#title' => 'Minimum amount of time between advagg_cron() runs.',
+    '#default_value' => variable_get('advagg_cron_frequency', ADVAGG_CRON_FREQUENCY),
+    '#description' => t('The default value for this is %value. The last time advagg_cron was ran is %time.', array(
+      '%value' => format_interval(ADVAGG_CRON_FREQUENCY),
+      '%time' => $last_ran,
+    )),
+  );
+  $form['global']['cron']['drupal_stale_file_threshold'] = array(
+    '#type' => 'select',
+    '#options' => $long_times,
+    '#title' => 'Delete aggregates accessed/modified more than a set time ago.',
+    '#default_value' => variable_get('drupal_stale_file_threshold', 2592000),
+    '#description' => t('The default value for this is %value.', array('%value' => format_interval(2592000))),
+  );
+  $form['global']['cron']['advagg_remove_missing_files_from_db_time'] = array(
+    '#type' => 'select',
+    '#options' => $long_times,
+    '#title' => 'How long to wait until unaccessed aggregates with missing files are removed from the database.',
+    '#default_value' => variable_get('advagg_remove_missing_files_from_db_time', ADVAGG_REMOVE_MISSING_FILES_FROM_DB_TIME),
+    '#description' => t('The default value for this is %value.', array('%value' => format_interval(ADVAGG_REMOVE_MISSING_FILES_FROM_DB_TIME))),
+  );
+  $form['global']['cron']['advagg_remove_old_unused_aggregates_time'] = array(
+    '#type' => 'select',
+    '#options' => $long_times,
+    '#title' => 'How long to wait until unaccessed aggregates are removed from the database.',
+    '#default_value' => variable_get('advagg_remove_old_unused_aggregates_time', ADVAGG_REMOVE_OLD_UNUSED_AGGREGATES_TIME),
+    '#description' => t('The default value for this is %value.', array('%value' => format_interval(ADVAGG_REMOVE_OLD_UNUSED_AGGREGATES_TIME))),
+  );
 
   $form['css'] = array(
     '#type' => 'fieldset',

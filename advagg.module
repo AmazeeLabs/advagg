@@ -106,6 +106,21 @@ define('ADVAGG_CLEAR_SCRIPTS', TRUE);
  */
 define('ADVAGG_NEEDS_UPDATE', FALSE);
 
+/**
+ * How long to wait until advagg cron will run again. Default is 24 hours.
+ */
+define('ADVAGG_CRON_FREQUENCY', 86400);
+
+/**
+ * How long to wait until unaccessed aggregates are removed from the database.
+ */
+define('ADVAGG_REMOVE_MISSING_FILES_FROM_DB_TIME', 1209600);
+
+/**
+ * How long to wait until unaccessed aggregates are removed from the database.
+ */
+define('ADVAGG_REMOVE_OLD_UNUSED_AGGREGATES_TIME', 3888000);
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
@@ -395,7 +410,7 @@ function advagg_menu() {
  */
 function advagg_cron($bypass_time_check = FALSE) {
   // Execute once a day (24 hours).
-  if (!$bypass_time_check && variable_get('advagg_cron_timestamp', 0) > (REQUEST_TIME - 86400)) {
+  if (!$bypass_time_check && variable_get('advagg_cron_timestamp', 0) > (REQUEST_TIME - variable_get('advagg_cron_frequency', ADVAGG_CRON_FREQUENCY))) {
     return array();
   }
   variable_set('advagg_cron_timestamp', REQUEST_TIME);
