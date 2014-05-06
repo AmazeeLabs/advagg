@@ -1743,12 +1743,9 @@ function advagg_get_current_hooks_hash() {
 
     // Save into variables for verification purposes later on if not found.
     $settings = advagg_get_hash_settings($current_hash);
-    if (empty($settings) && lock_acquire(__FUNCTION__, 5)) {
+    if (empty($settings)) {
       // Save new hash into.
       advagg_set_hash_settings($current_hash, $aggregate_settings);
-
-      // Release lock.
-      lock_release(__FUNCTION__);
     }
   }
 
@@ -1764,7 +1761,10 @@ function advagg_get_current_hooks_hash() {
 function advagg_set_hash_settings($hash, $settings) {
   return db_merge('advagg_aggregates_hashes')
     ->key(array('hash' => $hash))
-    ->fields(array('settings' => serialize($settings)))
+    ->insertFields(array(
+      'hash' => $hash,
+      'settings' => serialize($settings),
+    ))
     ->execute();
 }
 
@@ -2042,13 +2042,16 @@ function advagg_update_atime($aggregate_filenames_hash, $aggregate_contents_hash
     }
   }
 
-  // If lock is already acquired, return here.
-  if (!lock_acquire($cache_id, 5)) {
-    return $write_done;
-  }
-
   // Update atime in DB.
-  if (drupal_write_record('advagg_aggregates_versions', $record, array('aggregate_filenames_hash', 'aggregate_contents_hash'))) {
+  $return = db_merge('advagg_aggregates_versions')
+    ->key(array(
+      'aggregate_filenames_hash' => $record['aggregate_filenames_hash'],
+      'aggregate_contents_hash' => $record['aggregate_contents_hash'],
+      ))
+    ->updateFields(array('atime' => $record['atime']))
+    ->execute();
+
+  if ($return) {
     $write_done = TRUE;
   }
 
@@ -2065,9 +2068,6 @@ function advagg_update_atime($aggregate_filenames_hash, $aggregate_contents_hash
   // CACHE_PERMANENT isn't good here. Use 2 weeks from now + 0-45 days.
   // The random 0 to 45 day addition is to prevent a cache stampeed.
   cache_set($cache_id, $cache->data, 'cache_advagg_info', round(REQUEST_TIME + 1209600 + mt_rand(0, 3888000), -3));
-
-  // Release Lock.
-  lock_release($cache_id);
 
   // Return if a write was done.
   return $write_done;

@@ -62,34 +62,22 @@ function advagg_insert_update_db($files, $type, $root) {
  *   Return TRUE if anything was written to the database.
  */
 function advagg_insert_aggregate_version($aggregate_filenames_hash, $aggregate_contents_hash, $root) {
-  // Build query checking if this aggregate exists in the
-  // advagg_aggregates_versions table.
-  $aggregate_exists = db_select('advagg_aggregates_versions', 'aav')
-    ->fields('aav')
-    ->condition('aggregate_filenames_hash', $aggregate_filenames_hash)
-    ->condition('aggregate_contents_hash', $aggregate_contents_hash)
-    ->execute()
-    ->fetchAssoc();
-  // If this aggregate version already exists, return FALSE here.
-  if (!empty($aggregate_exists)) {
-    return FALSE;
-  }
-
-  $lock_name = 'advagg_insert_aggregate_version:' . $root . ':' . $aggregate_filenames_hash . ':' . $aggregate_contents_hash;
-  if (!lock_acquire($lock_name, 5)) {
-    // Skip if no lock acquired.
-    return FALSE;;
-  }
-  // Save new aggregate into the database.
+  // Info for the DB.
   $record = array(
     'aggregate_filenames_hash' => $aggregate_filenames_hash,
     'aggregate_contents_hash' => $aggregate_contents_hash,
     'atime' => 0,
     'root' => $root,
   );
-  $return = drupal_write_record('advagg_aggregates_versions', $record);
-  // Release Lock.
-  lock_release($lock_name);
+
+  // Save new aggregate into the database if it does not exist.
+  $return = db_merge('advagg_aggregates_versions')
+    ->key(array(
+      'aggregate_filenames_hash' => $record['aggregate_filenames_hash'],
+      'aggregate_contents_hash' => $record['aggregate_contents_hash'],
+      ))
+    ->insertFields($record)
+    ->execute();
   return $return;
 }
 
@@ -128,12 +116,6 @@ function advagg_insert_aggregate($files, $aggregate_filenames_hash) {
       continue;
     }
 
-    $lock_name = 'advagg_insert_aggregate:' . $count . ':' . $file_meta_data['filename_hash'] . ':' . $aggregate_filenames_hash;
-    if (!lock_acquire($lock_name, 5)) {
-      // Skip if no lock acquired.
-      continue;
-    }
-
     // Store settings for this file that depend on how it was added.
     $settings = array();
     if (isset($file_meta_data['media_query'])) {
@@ -145,13 +127,19 @@ function advagg_insert_aggregate($files, $aggregate_filenames_hash) {
       'aggregate_filenames_hash' => $aggregate_filenames_hash,
       'filename_hash' => $file_meta_data['filename_hash'],
       'porder' => $count,
-      'settings' => $settings,
+      'settings' => serialize($settings),
     );
-    if (drupal_write_record('advagg_aggregates', $record)) {
+    $return = db_merge('advagg_aggregates')
+      ->key(array(
+        'aggregate_filenames_hash' => $record['aggregate_filenames_hash'],
+        'filename_hash' => $record['filename_hash'],
+        ))
+      ->insertFields($record)
+      ->execute();
+
+    if ($return) {
       $write_done = TRUE;
     }
-    // Release Lock.
-    lock_release($lock_name);
   }
   return $write_done;
 }
@@ -188,9 +176,6 @@ function advagg_insert_update_files($files, $type) {
   }
 
   foreach ($files as $filename => $file_meta_data) {
-    // Build lock name variable.
-    $lock_name = 'advagg_insert_update_files:' . $filename;
-
     // Create record.
     $record = array(
       'filename' => $filename,
@@ -206,15 +191,17 @@ function advagg_insert_update_files($files, $type) {
     if (empty($files_in_db[$filename])) {
       // Insert into database.
       $record['changes'] = 1;
-      if (!lock_acquire($lock_name, 5)) {
-        // Skip if no lock acquired.
-        continue;
-      }
-      if (drupal_write_record('advagg_files', $record)) {
+
+      $return = db_merge('advagg_files')
+        ->key(array(
+          'filename_hash' => $record['filename_hash'],
+          ))
+        ->insertFields($record)
+        ->execute();
+
+      if ($return) {
         $write_done = TRUE;
       }
-      // Release Lock.
-      lock_release($lock_name);
     }
     else {
       // Take changes counter out of the diff equation.
@@ -226,15 +213,16 @@ function advagg_insert_update_files($files, $type) {
       if (!empty($diff)) {
         $diff['changes'] = $changes + 1;
         $diff['filename_hash'] = $record['filename_hash'];
-        if (!lock_acquire($lock_name, 5)) {
-          // Skip if no lock acquired.
-          continue;
-        }
-        if (drupal_write_record('advagg_files', $diff, array('filename_hash'))) {
+
+        $return = db_merge('advagg_files')
+          ->key(array(
+            'filename_hash' => $diff['filename_hash'],
+            ))
+          ->updateFields($diff)
+          ->execute();
+        if ($return) {
           $write_done = TRUE;
         }
-        // Release Lock.
-        lock_release($lock_name);
       }
     }
   }
