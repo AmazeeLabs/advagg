@@ -87,9 +87,14 @@ define('ADVAGG_MOD_CSS_HEAD_EXTRACT', FALSE);
 define('ADVAGG_MOD_JS_HEAD_EXTRACT', FALSE);
 
 /**
- * Default value to move JavaScript into drupal_add_js().
+ * Default value to have async on all JS script tags.
  */
 define('ADVAGG_MOD_JS_ASYNC', FALSE);
+
+/**
+ * Default value to wrap inline content javascript so it runs when it is ready.
+ */
+define('ADVAGG_MOD_JS_FOOTER_INLINE_ALTER', TRUE);
 
 // Core hook implementations.
 /**
@@ -366,6 +371,69 @@ function advagg_mod_html_head_alter(&$head_elements) {
   }
 }
 
+/**
+ * Implements hook_theme_registry_alter().
+ *
+ * Insert advagg_mod_process_move_js before _advagg_process_html.
+ */
+function advagg_mod_theme_registry_alter(&$theme_registry) {
+  if (!isset($theme_registry['html'])) {
+    return;
+  }
+
+  // Find template_process_html/_advagg_process_html.
+  $index = array_search('_advagg_process_html', $theme_registry['html']['process functions']);
+  if ($index === FALSE) {
+    $index = array_search('template_process_html', $theme_registry['html']['process functions']);
+    if ($index === FALSE) {
+      return;
+    }
+  }
+
+  // Insert advagg_mod_process_move_js before _advagg_process_html.
+  array_splice($theme_registry['html']['process functions'], $index, 0, 'advagg_mod_process_move_js');
+}
+
+/**
+ * Implements hook_process().
+ *
+ * Used to wrap inline JS in a function in order to prevent js errors when JS is
+ * moved to the footer.
+ */
+function advagg_mod_process_move_js(&$variables) {
+  // Only run if.
+  // $variables['page'] is not empty.
+  // All js is in the footer.
+  // Setting is enabled.
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+  if (   empty($variables['page'])
+      || variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) != 2
+      || !variable_get('advagg_mod_js_footer_inline_alter', ADVAGG_MOD_JS_FOOTER_INLINE_ALTER)
+      ) {
+    return;
+  }
+
+  $pattern = '/<script((?:(?!src=).)*?)>(.*?)<\/script>/smix';
+  $callback = 'advagg_mod_wrap_inline_js';
+  // Wrap inline JS with a check so that it only runs once Drupal.settings &
+  // jQuery are not undefined.
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+  if (   !empty($variables['page']['#children'])
+      && is_string($variables['page']['#children'])
+      && stripos($variables['page']['#children'], '<script') !== FALSE
+      ) {
+    $variables['page']['#children'] = preg_replace_callback($pattern, $callback, $variables['page']['#children']);
+    return;
+  }
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
+  if (   is_string($variables['page'])
+      && stripos($variables['page'], '<script') !== FALSE
+      ) {
+    $variables['page'] = preg_replace_callback($pattern, $callback, $variables['page']);
+    return;
+  }
+}
+
 // AdvAgg hook implementations.
 /**
  * Implements hook_advagg_modify_js_pre_render_alter().
@@ -541,6 +609,38 @@ function advagg_mod_advagg_current_hooks_hash_array_alter(&$aggregate_settings) 
 }
 
 // Helper Functions.
+/**
+ * Callback for preg_replace_callback.
+ *
+ * Used to wrap inline JS in a function in order to prevent js errors when JS is
+ * moved to the footer.
+ *
+ * @param array $matches
+ * $matches[0] is the full string; $matches[2] is just the JavaScript.
+ */
+function advagg_mod_wrap_inline_js($matches) {
+  // Use a counter in order to create unique function names.
+  static $counter;
+  $counter++;
+
+  // JS wrapper code.
+  $new = "
+function advagg_mod_drupal_settings_loaded$counter() {
+  $matches[2]
+}
+function advagg_mod_check_if_drupal_settings_loaded$counter() {
+    if (typeof window.Drupal !== 'undefined' && typeof window.Drupal.settings !== 'undefined' && typeof window.jQuery !== 'undefined') {
+        advagg_mod_drupal_settings_loaded$counter();
+    } else {
+        window.setTimeout(advagg_mod_check_if_drupal_settings_loaded$counter, 250);
+    }
+}
+advagg_mod_check_if_drupal_settings_loaded$counter();";
+
+  $return = str_replace($matches[2], $new, $matches[0]);
+  return $return;
+}
+
 /**
  * Rearrange CSS/JS so that aggregates are better grouped.
  *
