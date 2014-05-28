@@ -496,3 +496,7 @@ CSS/JS Aggregation is enabled, the first step should be to validate the
 individual CSS and/or JS files using the included advagg_validator module -
 something as simple as an errant unfinished comment in one file may cause entire
 aggregates of files to be ignored.
+
+
+If AdvAgg was installed via drush sometimes directory permissions need to be
+fixed. Using `chown -R` on the advagg directories usually solves this issue.
