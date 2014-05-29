@@ -1029,7 +1029,7 @@ function advagg_mod_js_contains_jquery_drupal($filename, $type = '') {
       $contents = $result->data;
     }
   }
-  else {
+  elseif (file_exists($filename)) {
     $contents = file_get_contents($filename);
   }
 
