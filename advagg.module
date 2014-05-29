@@ -1282,12 +1282,20 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
     advagg_drupal_sort_css_js_stable($items);
   }
 
+  // Set the js_in_footer variable.
+  $js_in_footer = FALSE;
+  if (   module_exists('advagg_mod')
+      && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2
+      ) {
+    $js_in_footer = TRUE;
+  }
+
   // In Drupal 8, there's a JS_SETTING group for making setting variables
   // appear last after libraries have loaded. In Drupal 7, this is forced
   // without that group. We do not use the $key => $item type of iteration,
   // because PHP uses an internal array pointer for that, and we're modifying
   // the array order inside the loop.
-  if ($scope == 'footer' && module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2) {
+  if ($scope == 'footer' && $js_in_footer) {
     // Get all settings from the items array.
     $settings_js = array();
     foreach (array_keys($items) as $key) {
@@ -1337,7 +1345,9 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   unset($setting['ajaxPageState']['js']['settings']);
   drupal_add_js($setting, 'setting');
   // Move 'settings' javascript to the header region.
-  if ($scope == 'header' || ($scope == 'footer' && module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2) && !empty($javascript_settings_data)) {
+
+
+  if (!empty($javascript_settings_data) && (($scope == 'header' && !$js_in_footer) || ($scope == 'footer' && $js_in_footer))) {
     foreach ($javascript_settings_data as $js_data) {
       $items['settings']['data'][] = $js_data;
     }
@@ -1354,7 +1364,7 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   // stripped of settings, potentially in order to override how settings get
   // output, so in this case, do not add the setting to this output.
   // Also output the settings if we have pushed all javascript to the footer.
-  if (($scope == 'header' || ($scope == 'footer' && module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2)) && isset($items['settings'])) {
+  if (isset($items['settings']) && (($scope == 'header' && !$js_in_footer) || ($scope == 'footer' && $js_in_footer))) {
     $items['settings']['data'][] = $setting;
   }
 

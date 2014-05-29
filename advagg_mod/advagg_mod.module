@@ -185,6 +185,12 @@ function advagg_mod_js_alter(&$js) {
       if ($move_js_to_footer == 1 && $values['group'] <= JS_LIBRARY) {
         continue;
       }
+
+      // Do not move modernizr js to the footer.
+      if ($values['type'] != 'inline' && $values['type'] != 'setting' && stripos($values['data'], '/modernizr.') !== FALSE) {
+        continue;
+      }
+
       // If JS is not in the header increase group by 10000.
       if ($values['scope'] != 'header') {
         $values['group'] += 10000;
