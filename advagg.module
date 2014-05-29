@@ -588,6 +588,10 @@ function advagg_js_alter(&$js) {
     return;
   }
 
+  // Get hostname and base path.
+  $mod_base_url = substr($GLOBALS['base_root'] . $GLOBALS['base_path'], strpos($GLOBALS['base_root'] . $GLOBALS['base_path'], '//') + 2);
+  $mod_base_url_len = strlen($mod_base_url);
+
   // Fix type if it was incorrectly set.
   foreach ($js as $key => &$value) {
     if (empty($value['data']) || !is_string($value['data'])) {
@@ -602,6 +606,16 @@ function advagg_js_alter(&$js) {
     // If type is file but it starts with http or // change it to external.
     if ((stripos($value['data'], 'http://') === 0 || stripos($value['data'], 'https://') === 0 || stripos($value['data'], '//') === 0) && $value['type'] == 'file') {
       $value['type'] = 'external';
+    }
+
+    // If type is external & starts with http or // but points to this host
+    // change it to file, but move it to the top of the aggregration stack.
+    if ($value['type'] == 'external' && stripos($value['data'], $mod_base_url) !== FALSE && (stripos($value['data'], 'http://') === 0 || stripos($value['data'], 'https://') === 0 || stripos($value['data'], '//') === 0)) {
+      $value['type'] = 'file';
+      $value['group'] = JS_LIBRARY;
+      $value['every_page'] = TRUE;
+      $value['weight'] = -40000;
+      $value['data'] = substr($value['data'], stripos($value['data'], $mod_base_url) + $mod_base_url_len);
     }
   }
 }
@@ -895,12 +909,22 @@ function _advagg_aggregate_js(&$js_groups) {
   // update.
   $gap_counter = 0;
   if ($preprocess_js) {
+    // Set boolean to TRUE if all JS in footer.
+    $all_in_footer = FALSE;
+    if (module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2) {
+      $all_in_footer = TRUE;
+    }
     foreach ($js_groups as $key => &$group) {
       switch ($group['type']) {
         // If a file group can be aggregated into a single file, do so, and set
         // the group's data property to the file path of the aggregate file.
         case 'file':
           if ($group['preprocess']) {
+            // Special handing for when all JS is in the footer.
+            if ($all_in_footer && $group['scope'] == 'footer' && $group['group'] > 9000) {
+              ++$gap_counter;
+              $all_in_footer = FALSE;
+            }
             $files_to_aggregate[$gap_counter][$key] = $group;
           }
           else {
@@ -2066,7 +2090,7 @@ function advagg_update_atime($aggregate_filenames_hash, $aggregate_contents_hash
 
   // Write to the cache.
   // CACHE_PERMANENT isn't good here. Use 2 weeks from now + 0-45 days.
-  // The random 0 to 45 day addition is to prevent a cache stampeed.
+  // The random 0 to 45 day addition is to prevent a cache stampede.
   cache_set($cache_id, $cache->data, 'cache_advagg_info', round(REQUEST_TIME + 1209600 + mt_rand(0, 3888000), -3));
 
   // Return if a write was done.
