@@ -409,12 +409,14 @@ function advagg_mod_theme_registry_alter(&$theme_registry) {
 function advagg_mod_process_move_js(&$variables) {
   // Only run if.
   // $variables['page'] is not empty.
-  // All js is in the footer.
   // Setting is enabled.
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-  if (   empty($variables['page'])
-      || variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) != 2
-      || !variable_get('advagg_mod_js_footer_inline_alter', ADVAGG_MOD_JS_FOOTER_INLINE_ALTER)
+  if (empty($variables['page']) || !variable_get('advagg_mod_js_footer_inline_alter', ADVAGG_MOD_JS_FOOTER_INLINE_ALTER)) {
+    return;
+  }
+
+  if (   variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) != 2
+      && !variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
+      && !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)
       ) {
     return;
   }
@@ -635,7 +637,12 @@ function advagg_mod_drupal_settings_loaded$counter() {
   // Count how many times this function is called.
   advagg_mod_drupal_settings_loaded$counter.count = ++advagg_mod_drupal_settings_loaded$counter.count || 1;
   try {
-    $matches[2]
+    if (advagg_mod_drupal_settings_loaded$counter.count <= 10) {
+      $matches[2]
+
+      // Set this to 100 so that this function only runs once.
+      advagg_mod_drupal_settings_loaded$counter.count = 100;
+    }
   }
   catch(e) {
     if (advagg_mod_drupal_settings_loaded$counter.count >= 10) {

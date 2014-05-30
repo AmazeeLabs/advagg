@@ -38,8 +38,10 @@ function advagg_mod_admin_settings_form() {
     '#description' => t('This will put a wrapper around any inline JavaScript that was added to the content part of the page incorrectly. The wrapper will check every 250ms until window.Drupal.settings and window.jQuery are defined; at that point the inlined code will then run.'),
 
     '#states' => array(
-      'enabled' => array(
-        ':input[name="advagg_mod_js_footer"]' => array('value' => '2'),
+      'disabled' => array(
+        ':input[name="advagg_mod_js_footer"]' => array('value' => '0'),
+        ':input[name="advagg_mod_js_defer"]' => array('checked' => FALSE),
+        ':input[name="advagg_mod_js_async"]' => array('checked' => FALSE),
       ),
       'checked' => array(
         ':input[name="advagg_mod_js_footer"]' => array('value' => '2'),
