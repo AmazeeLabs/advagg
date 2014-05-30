@@ -41,6 +41,9 @@ function advagg_mod_admin_settings_form() {
       'enabled' => array(
         ':input[name="advagg_mod_js_footer"]' => array('value' => '2'),
       ),
+      'checked' => array(
+        ':input[name="advagg_mod_js_footer"]' => array('value' => '2'),
+      ),
     ),
   );
   $form['js']['advagg_mod_js_preprocess'] = array(

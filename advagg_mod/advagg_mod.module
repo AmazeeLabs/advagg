@@ -632,7 +632,21 @@ function advagg_mod_wrap_inline_js($matches) {
   // JS wrapper code.
   $new = "
 function advagg_mod_drupal_settings_loaded$counter() {
-  $matches[2]
+  // Count how many times this function is called.
+  arguments.callee.count = ++arguments.callee.count || 1
+  try {
+    $matches[2]
+  }
+  catch(e) {
+    if (arguments.callee.count >= 10) {
+      // Throw the exception if this still fails after 5 seconds.
+      throw e;
+    }
+    else {
+      // Try again in half a second.
+      window.setTimeout(advagg_mod_drupal_settings_loaded$counter, 500);
+    }
+  }
 }
 function advagg_mod_check_if_drupal_settings_loaded$counter() {
     if (typeof window.Drupal !== 'undefined' && typeof window.Drupal.settings !== 'undefined' && typeof window.jQuery !== 'undefined') {
