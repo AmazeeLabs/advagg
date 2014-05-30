@@ -1344,9 +1344,8 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   $setting['ajaxPageState']['js'] = array_fill_keys(array_filter(array_keys($items), 'advagg_remove_short_keys'), 1);
   unset($setting['ajaxPageState']['js']['settings']);
   drupal_add_js($setting, 'setting');
+
   // Move 'settings' javascript to the header region.
-
-
   if (!empty($javascript_settings_data) && (($scope == 'header' && !$js_in_footer) || ($scope == 'footer' && $js_in_footer))) {
     foreach ($javascript_settings_data as $js_data) {
       $items['settings']['data'][] = $js_data;
@@ -1371,6 +1370,22 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   // Do not include jQuery.extend(Drupal.settings) if the output is ajax.
   if ($ajax) {
     unset($items['settings']['data']);
+  }
+
+  // Semi support of the attributes array.
+  foreach ($items as $key => $item) {
+    if (!isset($item['attributes'])) {
+      continue;
+    }
+    if (isset($item['attributes']['defer'])) {
+      $items[$key]['defer'] = $item['attributes']['defer'];
+    }
+    if (isset($item['attributes']['async'])) {
+      $items[$key]['async'] = $item['attributes']['async'];
+    }
+    if (isset($item['attributes']['onload'])) {
+      $items[$key]['onload'] = $item['attributes']['onload'];
+    }
   }
 
   // Render the HTML needed to load the JavaScript.
