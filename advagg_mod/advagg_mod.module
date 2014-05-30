@@ -633,12 +633,12 @@ function advagg_mod_wrap_inline_js($matches) {
   $new = "
 function advagg_mod_drupal_settings_loaded$counter() {
   // Count how many times this function is called.
-  arguments.callee.count = ++arguments.callee.count || 1
+  advagg_mod_drupal_settings_loaded$counter.count = ++advagg_mod_drupal_settings_loaded$counter.count || 1;
   try {
     $matches[2]
   }
   catch(e) {
-    if (arguments.callee.count >= 10) {
+    if (advagg_mod_drupal_settings_loaded$counter.count >= 10) {
       // Throw the exception if this still fails after 5 seconds.
       throw e;
     }
