@@ -658,8 +658,9 @@ function advagg_mod_drupal_settings_loaded$counter() {
 function advagg_mod_check_if_drupal_settings_loaded$counter() {
     if (typeof window.Drupal !== 'undefined' && typeof window.Drupal.settings !== 'undefined' && typeof window.jQuery !== 'undefined') {
         advagg_mod_drupal_settings_loaded$counter();
-    } else {
-        window.setTimeout(advagg_mod_check_if_drupal_settings_loaded$counter, 250);
+    }
+    else {
+        window.setTimeout(advagg_mod_check_if_drupal_settings_loaded$counter, 500);
     }
 }
 advagg_mod_check_if_drupal_settings_loaded$counter();";
