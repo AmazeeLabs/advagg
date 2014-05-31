@@ -43,9 +43,6 @@ function advagg_mod_admin_settings_form() {
         ':input[name="advagg_mod_js_defer"]' => array('checked' => FALSE),
         ':input[name="advagg_mod_js_async"]' => array('checked' => FALSE),
       ),
-      'checked' => array(
-        ':input[name="advagg_mod_js_footer"]' => array('value' => '2'),
-      ),
     ),
   );
   $form['js']['advagg_mod_js_preprocess'] = array(
