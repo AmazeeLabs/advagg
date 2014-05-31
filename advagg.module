@@ -1759,6 +1759,7 @@ function advagg_current_hooks_hash_array() {
       'advagg_ie_css_selector_limiter' => variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER),
       'advagg_ie_css_selector_limiter_value' => variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE),
       'advagg_scripts_scope_anywhere' => variable_get('advagg_scripts_scope_anywhere', ADVAGG_SCRIPTS_SCOPE_ANYWHERE),
+      'advagg_devel' => variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0 ? TRUE : FALSE,
     ),
     'hooks' => advagg_hooks_implemented(FALSE),
   );
