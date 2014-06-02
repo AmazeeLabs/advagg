@@ -1039,7 +1039,9 @@ function advagg_build_aggregate_plans($files_to_aggregate, $type) {
   }
 
   // Create the aggregate files.
-  $output = advagg_create_aggregate_files($plans, $type);
+  if (variable_get('advagg_pregenerate_aggregate_files', ADVAGG_PREGENERATE_AGGREGATE_FILES)) {
+    $output = advagg_create_aggregate_files($plans, $type);
+  }
 
   return $plans;
 }

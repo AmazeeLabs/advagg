@@ -214,6 +214,11 @@ current defaults are shown.
     // set this to FALSE.
     $conf['advagg_fast_filesystem'] = TRUE;
 
+    // Pregenerate aggregate files. If disable the browser requesting the file
+    // will cause the generation to happen. If advagg 404 handling is broken
+    // then setting this to false will break your site in bad ways.
+    $conf['advagg_pregenerate_aggregate_files'] = TRUE;
+
     // Set the jQuery UI version.
     $conf['advagg_css_cdn_jquery_ui_version'] = '1.8.7';
 

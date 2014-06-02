@@ -129,6 +129,16 @@ define('ADVAGG_REMOVE_OLD_UNUSED_AGGREGATES_TIME', 3888000);
  */
 define('ADVAGG_FAST_FILESYSTEM', TRUE);
 
+/**
+ * Pregenerate aggregate files.
+ *
+ * If disable the browser requesting the file will cause the generation to
+ * happen. If advagg 404 handling is broken then setting this to false will
+ * break your site in bad ways.
+ */
+define('ADVAGG_PREGENERATE_AGGREGATE_FILES', TRUE);
+
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
