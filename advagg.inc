@@ -963,7 +963,7 @@ function advagg_create_subfile($css, $overall_split, $file_info) {
  *
  * @param array $files_to_aggregate
  *   An array of CSS/JS groups.
- * @param array $type
+ * @param string $type
  *   css or js.
  *
  * @return array
@@ -1039,7 +1039,7 @@ function advagg_build_aggregate_plans($files_to_aggregate, $type) {
   }
 
   // Create the aggregate files.
-  advagg_create_aggregate_files($plans);
+  $output = advagg_create_aggregate_files($plans, $type);
 
   return $plans;
 }
@@ -1049,9 +1049,15 @@ function advagg_build_aggregate_plans($files_to_aggregate, $type) {
  *
  * @param array $plans
  *   An array of aggregate file names.
+ * @param string $type
+ *   css or js.
+ *
+ * @return array
+ *   An array of what was done when generating the file.
  */
-function advagg_create_aggregate_files($plans) {
+function advagg_create_aggregate_files($plans, $type) {
   $filenames = array();
+  $return = array();
   foreach ($plans as $plan) {
     $filenames[] = $plan['filename'];
   }
@@ -1062,21 +1068,38 @@ function advagg_create_aggregate_files($plans) {
       && variable_get('advagg_use_httprl', ADVAGG_USE_HTTPRL)
       && (is_callable('httprl_is_background_callback_capable') && httprl_is_background_callback_capable() || !is_callable('httprl_is_background_callback_capable'))
       ) {
-    // Setup callback options array; call function in the background.
-    $callback_options = array(
-      array(
-        'function' => 'advagg_build_aggregates',
-      ),
-      $filenames,
-    );
-    // Queue up the request.
-    httprl_queue_background_callback($callback_options);
-    // Execute request.
-    $return = httprl_send_request();
+    if (variable_get('advagg_fast_filesystem', ADVAGG_FAST_FILESYSTEM)) {
+      list($css_path, $js_path) = advagg_get_root_files_dir();
+      foreach ($filenames as $key => $filename) {
+        if ($type == 'css') {
+          $uri = $css_path[0] . '/' . $filename;
+        }
+        elseif ($type == 'js') {
+          $uri = $js_path[0] . '/' . $filename;
+        }
+        if (file_exists($uri)) {
+          unset($filenames[$key]);
+        }
+      }
+    }
+    if (!empty($filenames)) {
+      // Setup callback options array; call function in the background.
+      $callback_options = array(
+        array(
+          'function' => 'advagg_build_aggregates',
+        ),
+        $filenames, $type,
+      );
+      // Queue up the request.
+      httprl_queue_background_callback($callback_options);
+      // Execute request.
+      $return = httprl_send_request();
+    }
   }
   else {
-    $return = advagg_build_aggregates($filenames);
+    $return = advagg_build_aggregates($filenames, $type);
   }
+  return $return;
 }
 
 /**

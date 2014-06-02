@@ -183,7 +183,8 @@ the Smart Cache Flush. There are no configuration options here.
 **Hidden Settings**
 
 The following settings are not configurable from the admin UI and must be set in
-settings.php. In general they are settings that should not be changed.
+settings.php. In general they are settings that should not be changed. The
+current defaults are shown.
 
     // Display a message that the bypass cookie is set.
     $conf['advagg_show_bypass_cookie_message'] = TRUE;
@@ -207,6 +208,11 @@ settings.php. In general they are settings that should not be changed.
     // Empty the scripts key inside of template_process_html replacement
     // function.
     $conf['advagg_scripts_scope_anywhere'] = FALSE;
+
+    // Do more file operations in main thread if the file system is fast. If
+    // AdvAgg's directories are mounted on something like S3, you might want to
+    // set this to FALSE.
+    $conf['advagg_fast_filesystem'] = TRUE;
 
     // Set the jQuery UI version.
     $conf['advagg_css_cdn_jquery_ui_version'] = '1.8.7';

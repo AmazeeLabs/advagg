@@ -121,6 +121,14 @@ define('ADVAGG_REMOVE_MISSING_FILES_FROM_DB_TIME', 1209600);
  */
 define('ADVAGG_REMOVE_OLD_UNUSED_AGGREGATES_TIME', 3888000);
 
+/**
+ * Do more file operations in main thread if the file system is fast.
+ *
+ * If AdvAgg's directories are mounted on something like S3, you might want to
+ * set this to FALSE.
+ */
+define('ADVAGG_FAST_FILESYSTEM', TRUE);
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
@@ -609,7 +617,7 @@ function advagg_js_alter(&$js) {
     }
 
     // If type is external & starts with http or // but points to this host
-    // change it to file, but move it to the top of the aggregration stack.
+    // change it to file, but move it to the top of the aggregation stack.
     if ($value['type'] == 'external' && stripos($value['data'], $mod_base_url) !== FALSE && (stripos($value['data'], 'http://') === 0 || stripos($value['data'], 'https://') === 0 || stripos($value['data'], '//') === 0)) {
       $value['type'] = 'file';
       $value['group'] = JS_LIBRARY;
@@ -1948,17 +1956,26 @@ function advagg_get_root_files_dir($reset = FALSE) {
  *
  * @param array $filenames
  *   Array of AdvAgg filenames to generate.
+ * @param string $type
+ *   css or js.
  *
  * @return array
  *   Array keyed by filename, value is result from advagg_missing_create_file().
  */
-function advagg_build_aggregates($filenames) {
-  // Otherwise call the file generation function directly.
+function advagg_build_aggregates($filenames, $type) {
+  // Call the file generation function directly.
   module_load_include('inc', 'advagg', 'advagg.missing');
+  list($css_path, $js_path) = advagg_get_root_files_dir();
   $return = array();
   foreach ($filenames as $filename) {
     // Skip if the file exists.
-    if (file_exists($filename)) {
+    if ($type == 'css') {
+      $uri = $css_path[0] . '/' . $filename;
+    }
+    elseif ($type == 'js') {
+      $uri = $js_path[0] . '/' . $filename;
+    }
+    if (file_exists($uri)) {
       continue;
     }
 
