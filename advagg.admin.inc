@@ -52,6 +52,14 @@ function advagg_admin_settings_form($form, $form_state) {
     '#disabled' => module_exists('httprl') ? FALSE : TRUE,
     '#description' => t('If <a href="@link">HTTPRL</a> is installed, advagg will use it to generate aggregates on the fly in a background parallel process.', array('@link' => 'http://drupal.org/project/httprl')),
   );
+
+  $agressive_cache_conflicts = advagg_agressive_cache_conflicts();
+  if (empty($agressive_cache_conflicts)) {
+    $description = t('It appears that there are no incompatible modules, so you should be able to safely use the Aggressive cache.');
+  }
+  else {
+    $description = t('It appears that there might be some incompatible modules. I would test these out before setting the cache to agressive: %modules', array('%modules' => implode(', ', $agressive_cache_conflicts)));
+  }
   $options = array(
     -1 => t('Development ~ 100ms'),
     1 => t('Normal ~ 10ms'),
@@ -66,19 +74,33 @@ function advagg_admin_settings_form($form, $form_state) {
       '@information' => url($config_path . '/advagg/info', array(
         'fragment' => 'edit-hooks-implemented',
       )),
-    )),
+    )) . ' ' . $description,
   );
+
+  $form['global']['dev_container'] = array(
+    '#type' => 'container',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="advagg_cache_level"]' => array('value' => '-1'),
+      ),
+    ),
+  );
+  // Show msg about advagg css compress.
+  if (module_exists('advagg_css_compress') && (variable_get('advagg_css_compressor', ADVAGG_CSS_COMPRESSOR) || variable_get('advagg_css_inline_compressor', ADVAGG_CSS_INLINE_COMPRESSOR))) {
+    $form['global']['dev_container']['advagg_css_compress_msg'] = array(
+      '#markup' => '<p>' . t('The <a href="@css">AdvAgg CSS Compression module</a> is disabled when in development mode.', array('@css' => url($config_path . '/advagg/css-compress'))) . '</p>',
+    );
+  }
+  // Show msg about advagg js compress.
+  if (module_exists('advagg_js_compress') && (variable_get('advagg_js_compressor', ADVAGG_JS_COMPRESSOR) || variable_get('advagg_js_inline_compressor', ADVAGG_JS_INLINE_COMPRESSOR))) {
+    $form['global']['dev_container']['advagg_js_compress_msg'] = array(
+      '#markup' => '<p>' . t('The <a href="@js">AdvAgg JS Compression module</a> is disabled when in development mode.', array('@js' => url($config_path . '/advagg/js-compress'))) . '</p>',
+    );
+  }
+
   // Show msg about the jquery update compression setting.
   if (module_exists('jquery_update')) {
     if (variable_get('jquery_update_compression_type', 'min') == 'min') {
-      $form['global']['dev_container'] = array(
-        '#type' => 'container',
-        '#states' => array(
-          'visible' => array(
-            ':input[name="advagg_cache_level"]' => array('value' => '-1'),
-          ),
-        ),
-      );
       $form['global']['dev_container']['advagg_jquery_update_development'] = array(
         '#markup' => '<p>' . t('You might want to change the <a href="!url">jQuery update compression level</a> to "Development" as well.', array(
           '!url' => url('admin/config/development/jquery_update'),
@@ -101,6 +123,7 @@ function advagg_admin_settings_form($form, $form_state) {
       );
     }
   }
+
   $form['global']['cron'] = array(
     '#type' => 'fieldset',
     '#title' => t('Cron Options'),

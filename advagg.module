@@ -2487,3 +2487,57 @@ function advagg_drupal_sort_css_js_stable(&$items) {
   }
   $items = $sorted;
 }
+
+/**
+ * Check and see if the agressive cache can safely be enabled.
+ *
+ * @return array
+ *   If there are no conflicts, this will return an empty array.
+ */
+function advagg_agressive_cache_conflicts() {
+  $hooks = array('css_alter' => TRUE, 'js_alter' => TRUE);
+  foreach ($hooks as $hook => $values) {
+    $hooks[$hook] = module_implements($hook);
+  }
+
+  $whitelist = array(
+    'locale',
+    'css_injector',
+    'disable_css',
+    'excluded',
+    'fences',
+    'panopoly_core',
+    'ais',
+    'elfinder',
+    'google_webfont_loader_api',
+    'jqmulti',
+    'jquery_dollar',
+    'labjs_js',
+    'clientside_validation',
+    'speedy',
+    'logintoboggan',
+  );
+  // Allow other modules to modify the $whitelist.
+  // Call hook_advagg_modify_js_pre_render_alter()
+  drupal_alter('advagg_agressive_cache_conflicts', $whitelist);
+
+  $questionable_modules = array();
+  foreach ($hooks as $hook => $modules) {
+    foreach ($modules as $key => $module) {
+      // Anything from advagg is ok.
+      if (strpos($module, 'advagg') === 0) {
+        unset($modules[$key]);
+        continue;
+      }
+
+      // Remove known modules that should work with aggressive caching.
+      if (in_array($module, $whitelist)) {
+        unset($modules[$key]);
+      }
+      else {
+        $questionable_modules[$module] = $module;
+      }
+    }
+  }
+  return $questionable_modules;
+}
