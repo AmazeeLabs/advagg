@@ -1135,9 +1135,11 @@ function _advagg_process_html(&$variables) {
         $js_settings['ajaxPageState']['js'] = $out['ajaxPageState']['js'];
 
         // Replace cached Drupal.settings with current Drupal.settings for this
-        // page.
-        $json_data = @drupal_json_encode($js_settings);
-        $value = substr($value, 0, $start+30) . $json_data . substr($value, $end+1);
+        // page if the merged json data is not empty.
+        $json_data = advagg_json_encode($js_settings);
+        if (!empty($json_data) || (empty($js_settings) && empty($json_data))) {
+          $value = substr($value, 0, $start+30) . $json_data . substr($value, $end+1);
+        }
       }
 
       if (!isset($variables[$key]) || !is_string($variables[$key])) {
@@ -2293,18 +2295,8 @@ function advagg_pre_render_scripts($elements) {
         // Element properties that depend on item type.
         switch ($item['type']) {
           case 'setting':
-            // If in development mode and PHP >= 5.4.0 pretty print JSON.
-            static $php540;
-            if (!isset($php540)) {
-              $php540 = version_compare(PHP_VERSION, '5.4.0', '>=');
-            }
-            $json_data = drupal_array_merge_deep_array($item['data']);
-            if ($php540 && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) == -1) {
-              $json_data = @json_encode($json_data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_PRETTY_PRINT);
-            }
-            else {
-              $json_data = @drupal_json_encode($json_data);
-            }
+            $data = drupal_array_merge_deep_array($item['data']);
+            $json_data = advagg_json_encode($data);
             $element['#value_prefix'] = $embed_prefix;
             $element['#value'] = 'jQuery.extend(Drupal.settings, ' . $json_data . ");";
             $element['#value_suffix'] = $embed_suffix;
@@ -2540,4 +2532,89 @@ function advagg_agressive_cache_conflicts() {
     }
   }
   return $questionable_modules;
+}
+
+/**
+ * Converts a PHP variable into its JavaScript equivalent.
+ *
+ * @param mixed $data
+ *   Usually an array of data to be converted into a JSON string.
+ *
+ * @return string
+ *   If there are no errors, this will return a JSON string. FALSE will be
+ *   returned on failure.
+ */
+function advagg_json_encode($data) {
+  // Different versions of PHP handle json_encode differently.
+  static $php550;
+  static $php540;
+  static $php530;
+  if (!isset($php550)) {
+    $php550 = version_compare(PHP_VERSION, '5.5.0', '>=');
+  }
+  if (!isset($php540)) {
+    $php540 = version_compare(PHP_VERSION, '5.4.0', '>=');
+  }
+  if (!isset($php530)) {
+    $php530 = version_compare(PHP_VERSION, '5.3.0', '>=');
+  }
+
+  if ($php550) {
+    if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
+      // Do not output partial json if in development mode.
+      $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_PRETTY_PRINT;
+    }
+    else {
+      // Output partial json if not in development mode.
+      $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_PRETTY_PRINT | JSON_PARTIAL_OUTPUT_ON_ERROR;
+    }
+    $json_data = @json_encode($data, $options);
+  }
+  // If in development mode and PHP >= 5.4.0 pretty print JSON.
+  elseif ($php540 && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
+    $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_PRETTY_PRINT;
+    $json_data = @json_encode($data, $options);
+  }
+  else {
+    $json_data = @drupal_json_encode($data);
+  }
+  // Uses json_last_error if in development mode and php >= 5.3.0.
+  if ($php530 && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
+    switch (json_last_error()) {
+      case JSON_ERROR_NONE:
+        $error_message = '';
+      break;
+      case JSON_ERROR_DEPTH:
+        $error_message = 'Maximum stack depth exceeded';
+      break;
+      case JSON_ERROR_STATE_MISMATCH:
+        $error_message = 'Underflow or the modes mismatch';
+      break;
+      case JSON_ERROR_CTRL_CHAR:
+        $error_message = 'Unexpected control character found';
+      break;
+      case JSON_ERROR_SYNTAX:
+        $error_message = 'Syntax error, malformed JSON';
+      break;
+      case JSON_ERROR_UTF8:
+        $error_message = 'Malformed UTF-8 characters, possibly incorrectly encoded';
+      break;
+      default:
+        $error_message = 'Unknown error';
+      break;
+    }
+    if (!empty($error_message)) {
+      if (module_exists('httprl') && function_exists('httprl_pr')) {
+        $pretty_data = httprl_pr($data);
+      }
+      elseif (module_exists('devel') && function_exists('kprint_r')) {
+        $pretty_data = kprint_r($data, TRUE);
+      }
+      else {
+        $pretty_data = '<pre>' . print_r($data, TRUE) . '</pre>';
+      }
+      watchdog('advagg', 'Error with json encoding the Drupal.settings value. Error Message: %error_message. JSON Data: @data', array('%error_message' => $error_message, '@data' => $pretty_data), WATCHDOG_ERROR);
+    }
+  }
+  return $json_data;
 }
