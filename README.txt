@@ -403,7 +403,6 @@ using browser css/js conditionals (js browser conditionals backported from D8
 https://drupal.org/node/865536) then the bundler might not meet your set value.
 
 
-
 NGINX CONFIGURATION
 -------------------
 
