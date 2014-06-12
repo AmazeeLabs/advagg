@@ -702,12 +702,12 @@ $base_url = str_replace("http://", "https://", $base_url);
   if (empty($requirements)) {
     $description = '';
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
-      $description .= ' ' . t('Currently running in development mode.');
+      $description .= ' ' . $t('Currently running in development mode.');
     }
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 3) {
       $agressive_cache_conflicts = advagg_agressive_cache_conflicts();
       if (empty($agressive_cache_conflicts)) {
-        $description .= ' ' . t('It appears that there are no incompatible modules, so you should be able to safely use the Aggressive cache.');
+        $description .= ' ' . $t('It appears that there are no incompatible modules, so you should be able to safely use the Aggressive cache.');
       }
     }
 

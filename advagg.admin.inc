@@ -131,6 +131,7 @@ function advagg_admin_settings_form($form, $form_state) {
     '#collapsed' => TRUE,
     '#description' => t('Unless you have a good reason to adjust these values you should leave them alone.'),
   );
+  // @ignore sniffer_squiz_commenting_poststatementcomment_found:27
   $short_times = drupal_map_assoc(array(
     60 * 15, // 15 min.
     60 * 30, // 30 min.

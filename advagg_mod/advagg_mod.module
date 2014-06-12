@@ -414,6 +414,7 @@ function advagg_mod_process_move_js(&$variables) {
     return;
   }
 
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
   if (   variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) != 2
       && !variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
       && !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)
@@ -624,12 +625,15 @@ function advagg_mod_advagg_current_hooks_hash_array_alter(&$aggregate_settings) 
  * moved to the footer.
  *
  * @param array $matches
- * $matches[0] is the full string; $matches[2] is just the JavaScript.
+ *   $matches[0] is the full string; $matches[2] is just the JavaScript.
+ *
+ * @return string
+ *   Inline javascritp code wrapped up in a loader to prevent errors.
  */
 function advagg_mod_wrap_inline_js($matches) {
   // Use a counter in order to create unique function names.
   static $counter;
-  $counter++;
+  ++$counter;
 
   // JS wrapper code.
   $new = "

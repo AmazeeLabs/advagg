@@ -1128,7 +1128,7 @@ function _advagg_process_html(&$variables) {
       if ($start !== FALSE) {
         $end = strpos($value, '});', $start);
         // Get raw json from the cache and decode it.
-        $json = trim(substr($value, $start+30, $end - $start-30+1));
+        $json = trim(substr($value, $start + 30, $end - $start - 30 + 1));
         $out = json_decode($json, TRUE);
 
         // Use ['ajaxPageState']['js'] from the cached data.
@@ -1138,7 +1138,7 @@ function _advagg_process_html(&$variables) {
         // page if the merged json data is not empty.
         $json_data = advagg_json_encode($js_settings);
         if (!empty($json_data) || (empty($js_settings) && empty($json_data))) {
-          $value = substr($value, 0, $start+30) . $json_data . substr($value, $end+1);
+          $value = substr($value, 0, $start + 30) . $json_data . substr($value, $end + 1);
         }
       }
 
@@ -1303,6 +1303,7 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   }
 
   // Set the js_in_footer variable.
+  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:2
   $js_in_footer = FALSE;
   if (   module_exists('advagg_mod')
       && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2
@@ -2583,31 +2584,38 @@ function advagg_json_encode($data) {
     switch (json_last_error()) {
       case JSON_ERROR_NONE:
         $error_message = '';
-      break;
+        break;
+
       case JSON_ERROR_DEPTH:
         $error_message = 'Maximum stack depth exceeded';
-      break;
+        break;
+
       case JSON_ERROR_STATE_MISMATCH:
         $error_message = 'Underflow or the modes mismatch';
-      break;
+        break;
+
       case JSON_ERROR_CTRL_CHAR:
         $error_message = 'Unexpected control character found';
-      break;
+        break;
+
       case JSON_ERROR_SYNTAX:
         $error_message = 'Syntax error, malformed JSON';
-      break;
+        break;
+
       case JSON_ERROR_UTF8:
         $error_message = 'Malformed UTF-8 characters, possibly incorrectly encoded';
-      break;
+        break;
+
       default:
         $error_message = 'Unknown error';
-      break;
+        break;
     }
     if (!empty($error_message)) {
       if (module_exists('httprl') && function_exists('httprl_pr')) {
         $pretty_data = httprl_pr($data);
       }
       elseif (module_exists('devel') && function_exists('kprint_r')) {
+        // @ignore sniffer_functions_discouragedfunctions_discouraged
         $pretty_data = kprint_r($data, TRUE);
       }
       else {
