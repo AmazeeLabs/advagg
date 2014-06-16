@@ -2581,7 +2581,8 @@ function advagg_json_encode($data) {
   }
   // Uses json_last_error if in development mode and php >= 5.3.0.
   if ($php530 && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
-    switch (json_last_error()) {
+    $error_number = json_last_error();
+    switch ($error_number) {
       case JSON_ERROR_NONE:
         $error_message = '';
         break;
@@ -2607,21 +2608,23 @@ function advagg_json_encode($data) {
         break;
 
       default:
-        $error_message = 'Unknown error';
+        $error_message = 'Unknown error: ' . $error_number;
         break;
     }
     if (!empty($error_message)) {
       if (module_exists('httprl') && function_exists('httprl_pr')) {
-        $pretty_data = httprl_pr($data);
+        $pretty_data = httprl_pr(filter_xss($data));
       }
       elseif (module_exists('devel') && function_exists('kprint_r')) {
-        // @ignore sniffer_functions_discouragedfunctions_discouraged
-        $pretty_data = kprint_r($data, TRUE);
+        $pretty_data = kprint_r(filter_xss($data), TRUE);
       }
       else {
-        $pretty_data = '<pre>' . print_r($data, TRUE) . '</pre>';
+        $pretty_data = '<pre>' . print_r(filter_xss($data), TRUE) . '</pre>';
       }
-      watchdog('advagg', 'Error with json encoding the Drupal.settings value. Error Message: %error_message. JSON Data: @data', array('%error_message' => $error_message, '@data' => $pretty_data), WATCHDOG_ERROR);
+      watchdog('advagg_json', 'Error with json encoding the Drupal.settings value. Error Message: %error_message. JSON Data: !data', array(
+        '%error_message' => $error_message,
+        '!data' => $pretty_data,
+      ), WATCHDOG_ERROR);
     }
   }
   return $json_data;
