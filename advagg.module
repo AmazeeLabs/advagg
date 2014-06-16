@@ -2613,13 +2613,13 @@ function advagg_json_encode($data) {
     }
     if (!empty($error_message)) {
       if (module_exists('httprl') && function_exists('httprl_pr')) {
-        $pretty_data = httprl_pr(filter_xss($data));
+        $pretty_data = httprl_pr($data);
       }
       elseif (module_exists('devel') && function_exists('kprint_r')) {
-        $pretty_data = kprint_r(filter_xss($data), TRUE);
+        $pretty_data = kprint_r($data) TRUE);
       }
       else {
-        $pretty_data = '<pre>' . print_r(filter_xss($data), TRUE) . '</pre>';
+        $pretty_data = '<pre>' . filter_xss(print_r($data, TRUE)) . '</pre>';
       }
       watchdog('advagg_json', 'Error with json encoding the Drupal.settings value. Error Message: %error_message. JSON Data: !data', array(
         '%error_message' => $error_message,
