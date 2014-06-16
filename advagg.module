@@ -2616,7 +2616,7 @@ function advagg_json_encode($data) {
         $pretty_data = httprl_pr($data);
       }
       elseif (module_exists('devel') && function_exists('kprint_r')) {
-        $pretty_data = kprint_r($data) TRUE);
+        $pretty_data = kprint_r($data);
       }
       else {
         $pretty_data = '<pre>' . filter_xss(print_r($data, TRUE)) . '</pre>';
