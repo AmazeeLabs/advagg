@@ -1113,10 +1113,14 @@ function advagg_remove_js_if_not_used(&$js) {
     'jquery.min.js',
     'jquery.once.js',
   );
-  $inline_skiplist = array(
-    '/jquery_update/replace/jquery/1.5/jquery.min.js',
-    'var $L = $LAB.setGlobalDefaults',
-  );
+  $inline_skiplist = array();
+  if (module_exists('jquery_update')) {
+    $inline_skiplist[] = 'document.write("<script src=\'' . $GLOBALS['base_path'] . drupal_get_path('module', 'jquery_update') . '/replace/jquery/' . variable_get('jquery_update_jquery_version', '1.10') . '/jquery' . (variable_get('jquery_update_compression_type', 'min') == 'none' ? '' : '.min') . ".js'>";
+  }
+  if (module_exists('labjs')) {
+    $inline_skiplist[] = 'var $L = $LAB.setGlobalDefaults',
+  }
+
   $include_jquery = FALSE;
   $include_drupal = FALSE;
 
@@ -1151,10 +1155,12 @@ function advagg_remove_js_if_not_used(&$js) {
     }
     if ($values['type'] == 'inline') {
       $skip = FALSE;
-      foreach ($inline_skiplist as $skip_string) {
-        if (stripos($values['data'], $skip_string) !== FALSE) {
-          $skip = TRUE;
-          break;
+      if (!empty($inline_skiplist)) {
+        foreach ($inline_skiplist as $skip_string) {
+          if (stripos($values['data'], $skip_string) !== FALSE) {
+            $skip = TRUE;
+            break;
+          }
         }
       }
       if (!$skip) {
