@@ -415,30 +415,27 @@ function advagg_get_hashes_from_filename($filename) {
  *   List of files in the order they should be included.
  */
 function advagg_get_files_from_hashes($type, $aggregate_filenames_hash, $aggregate_contents_hash) {
-  // Create join query for the advagg_files table.
-  $subquery_files = db_select('advagg_files', 'af')
-    ->fields('af')
-    ->condition('af.filetype', $type);
-  // Create join query for the advagg_aggregates table.
-  $subquery_aggregates = db_select('advagg_aggregates', 'aa')
-    ->condition('aa.aggregate_filenames_hash', $aggregate_filenames_hash)
-    ->fields('aa');
-
   // Create main query for the advagg_aggregates_versions table.
   $query = db_select('advagg_aggregates_versions', 'aav')
     ->condition('aav.aggregate_filenames_hash', $aggregate_filenames_hash)
     ->condition('aav.aggregate_contents_hash', $aggregate_contents_hash);
-  $query->join($subquery_aggregates, 'aa', 'aa.aggregate_filenames_hash=aav.aggregate_filenames_hash');
-  $query->join($subquery_files, 'af', 'af.filename_hash=aa.filename_hash');
-  $query->comment('Query called from ' . __FUNCTION__ . '()');
+  // Create join query for the advagg_aggregates table.
+  $subquery_aggregates = $query->join('advagg_aggregates', 'aa', 'aa.aggregate_filenames_hash =
+    aav.aggregate_filenames_hash AND aa.aggregate_filenames_hash = :aggregate_filenames_hash',
+    array(':aggregate_filenames_hash' => $aggregate_filenames_hash));
+  // Create join query for the advagg_files table.
+  $subquery_files = $query->join('advagg_files', 'af', 'af.filename_hash = aa.filename_hash AND
+    af.filetype = :type', array(':type' => $type));
+  // Select fields and ordering of the query; add in query comment as well.
   $query = $query->fields('af', array('filename'))
-    ->fields('aa', array('settings'))
-    ->orderBy('porder', 'ASC')
-    ->execute();
+    ->fields($subquery_aggregates, array('settings'))
+    ->orderBy('porder', 'ASC');
+  $query->comment('Query called from ' . __FUNCTION__ . '()');
+  $results = $query->execute();
 
   // Add in files that are included in this aggregate.
   $files = array();
-  foreach ($query as $value) {
+  foreach ($results as $value) {
     $files[$value->filename] = unserialize($value->settings);
   }
   return $files;
