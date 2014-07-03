@@ -229,6 +229,9 @@ function advagg_delete_files_if_stale($files) {
       $kill_list[] = $uri;
     }
   }
+  // Let other modules know about the removed files.
+  // Call hook_advagg_removed_aggregates().
+  module_invoke_all('advagg_removed_aggregates', $kill_list);
   return $kill_list;
 }
 

@@ -212,17 +212,27 @@ function advagg_url_inbound_alter(&$path, $original_path, $path_language) {
  */
 function advagg_hook_info() {
   // List of hooks that can be inside of *.advagg.inc files.
+  // All advagg hooks except for:
+  //  advagg_current_hooks_hash_array_alter
+  //  advagg_hooks_implemented_alter
+  //  advagg_get_root_files_dir_alter
+  // because these 3 hooks are used on most requests.
   $advagg_hooks = array(
     'advagg_get_css_file_contents_alter',
-    'advagg_get_css_aggregate_contents_alter',
     'advagg_get_js_file_contents_alter',
+    'advagg_get_css_aggregate_contents_alter',
     'advagg_get_js_aggregate_contents_alter',
     'advagg_save_aggregate_alter',
     'advagg_build_aggregate_plans_alter',
+    'advagg_css_groups_alter',
+    'advagg_js_groups_alter',
+    'advagg_modify_css_pre_render_alter',
+    'advagg_modify_js_pre_render_alter',
     'advagg_changed_files',
+    'advagg_removed_aggregates',
     'advagg_scan_for_changes',
-    'advagg_context_alter',
     'advagg_get_info_on_files_alter',
+    'advagg_context_alter',
   );
   $hooks = array();
   foreach ($advagg_hooks as $hook) {
@@ -1870,6 +1880,9 @@ function advagg_hooks_implemented($all = TRUE) {
       'advagg_modify_css_pre_render_alter' => array(),
       'advagg_modify_js_pre_render_alter' => array(),
       'advagg_get_info_on_files_alter' => array(),
+      'advagg_hooks_implemented_alter' => array(),
+      'advagg_removed_aggregates' => array(),
+      'advagg_scan_for_changes' => array(),
       'js_alter' => array(),
       'css_alter' => array(),
     );
@@ -2034,6 +2047,7 @@ function advagg_build_ajax_js_css() {
     else {
       $function = 'drupal_add_' . $type;
       $items[$type] = $function();
+      // Call hook_js_alter() OR hook_css_alter().
       drupal_alter($type, $items[$type]);
       // @todo Inline CSS and JS items are indexed numerically. These can't be
       //   reliably diffed with array_diff_key(), since the number can change
