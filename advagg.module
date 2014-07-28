@@ -2525,7 +2525,7 @@ function advagg_agressive_cache_conflicts() {
     'logintoboggan',
   );
   // Allow other modules to modify the $whitelist.
-  // Call hook_advagg_modify_js_pre_render_alter()
+  // Call hook_advagg_agressive_cache_conflicts_alter()
   drupal_alter('advagg_agressive_cache_conflicts', $whitelist);
 
   $questionable_modules = array();
