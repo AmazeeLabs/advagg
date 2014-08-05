@@ -179,7 +179,7 @@ function advagg_bundler_analysis($filename = '', $force = FALSE) {
 
       $fields = array('counter');
       $db_type = Database::getConnection()->databaseType();
-      if ($db_type == 'mysql') {
+      if ($db_type === 'mysql') {
         db_query('SET SESSION group_concat_max_len = 65535');
         $fields = array('counter', 'hashlist');
         $subquery_aggregates->addExpression('GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash ORDER BY aa.aggregate_filenames_hash ASC)', 'hashlist');

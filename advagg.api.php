@@ -84,7 +84,7 @@ function hook_advagg_changed_files($files, $types) {
   foreach ($files as $filename => $meta_data) {
     // Only care about js files.
     $ext = pathinfo($filename, PATHINFO_EXTENSION);
-    if ($ext != 'js') {
+    if ($ext !== 'js') {
       continue;
     }
 
@@ -314,7 +314,7 @@ function hook_advagg_css_groups_alter(&$css_groups, $preprocess_css) {
   }
   $match = FALSE;
   foreach ($theme_keys as $name) {
-    if ($name == 'seven') {
+    if ($name === 'seven') {
       $match = TRUE;
     }
   }
@@ -329,9 +329,9 @@ function hook_advagg_css_groups_alter(&$css_groups, $preprocess_css) {
   $replaced = FALSE;
   foreach ($css_groups as $key => $group) {
     if (empty($target)) {
-      if ($group['type'] == 'external' && $group['preprocess'] && $preprocess_css) {
+      if ($group['type'] === 'external' && $group['preprocess'] && $preprocess_css) {
         foreach ($group['items'] as $k => $value) {
-          if ($value['data'] == 'themes/seven/jquery.ui.theme.css') {
+          if ($value['data'] === 'themes/seven/jquery.ui.theme.css') {
             // Type should be file and not external (core bug).
             $value['type'] = 'file';
             $target = $value;
@@ -626,7 +626,7 @@ function hook_advagg_get_info_on_files_alter(&$return, $cached_data, $bypass_cac
   $parts_path = $css_path[1] . '/parts';
 
   foreach ($return as $filename => &$info) {
-    if (empty($info['fileext']) || $info['fileext'] != 'css') {
+    if (empty($info['fileext']) || $info['fileext'] !== 'css') {
       continue;
     }
 
