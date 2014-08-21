@@ -747,8 +747,18 @@ function advagg_mod_sort_css_js(&$array, $type) {
     // Group all external together.
     $offset = 0.0001;
     $weight += -1;
+    $found_jquery = FALSE;
     foreach ($external as $key => $value) {
       if (isset($value['movable']) && empty($value['movable'])) {
+        $array[$key] = $value;
+        continue;
+      }
+      // If bootstrap is used, it must be loaded after jquery. Don't move
+      // bootstrap if jquery is not above it.
+      if (strpos($value['data'], 'jquery.min.js') !== FALSE || strpos($value['data'], 'jquery.js') !== FALSE ) {
+        $found_jquery = TRUE;
+      }
+      if (!$found_jquery && (strpos($value['data'], 'bootstrap.min.js') !== FALSE || strpos($value['data'], 'bootstrap.js') !== FALSE)) {
         $array[$key] = $value;
         continue;
       }
