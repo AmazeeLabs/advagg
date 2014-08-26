@@ -1054,7 +1054,7 @@ function _advagg_process_html(&$variables) {
   // Get the raw CSS variable.
   $variables['css'] = drupal_add_css();
   // Try the CSS cache first; only if not debugging.
-  if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 3) {
+  if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 3 && advagg_file_aggregation_enabled('css')) {
     $css_hash = drupal_hash_base64(serialize($variables['css']));
     $css_cache_id = 'advagg:css:full:' . $hooks_hash . ':' . $css_hash;
     $css_cache = cache_get($css_cache_id, 'cache_advagg_aggregates');
@@ -1107,7 +1107,7 @@ function _advagg_process_html(&$variables) {
   // Get the raw JS variable.
   $javascript = drupal_add_js();
   // Try the JS cache first; only if not debugging.
-  if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 3) {
+  if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 3 && advagg_file_aggregation_enabled('js')) {
     // Exclude JS Settings from the hash.
     $js_settings = $javascript['settings']['data'];
     unset($javascript['settings']['data']);
