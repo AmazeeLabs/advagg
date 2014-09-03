@@ -364,7 +364,7 @@ Others:
  - advagg_changed_files. Let other modules know about the changed files.
  - advagg_removed_aggregates. Let other modules know about removed aggregates.
  - advagg_scan_for_changes. Let other modules see if files related to this file
-   has changed. Useful for decting changes to referenced images in css.
+   has changed. Useful for detecting changes to referenced images in css.
  - advagg_get_info_on_files_alter. Let other modules modify information about
    the base CSS/JS files.
  - advagg_context_alter. Allow other modules to swap important contextual
@@ -520,3 +520,34 @@ aggregates of files to be ignored.
 
 If AdvAgg was installed via drush sometimes directory permissions need to be
 fixed. Using `chown -R` on the advagg directories usually solves this issue.
+
+
+If hosting on Pantheon, you might need to add this to your settings.php file if
+you get Numerous login prompts after enabling Adv Agg module on Pantheon Test
+and Live instances.
+
+    if (isset($_SERVER['PANTHEON_ENVIRONMENT'])) {
+      // NO trailing slash when setting the $base_url variable.
+      switch ($_SERVER['PANTHEON_ENVIRONMENT']) {
+        case 'dev':
+          $base_url = 'http://dev-sitename.gotpantheon.com';
+          break;
+
+        case 'test':
+          $base_url = 'http://test-sitename.gotpantheon.com';
+          break;
+
+        case 'live':
+          $base_url = 'http://www.domain.tld';
+          break;
+      }
+      // Remove a trailing slash if one was added.
+      if (!empty($base_url)) {
+        $base_url = rtrim($base_url, '/');
+      }
+    }
+
+
+If you're getting the "HTTP requests to advagg are not getting though" error,
+you can try to fix it by making sure the $base_url is correctly set for
+production and not production environments.
