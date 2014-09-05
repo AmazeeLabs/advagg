@@ -417,12 +417,14 @@ NGINX CONFIGURATION
 -------------------
 
 http://drupal.org/node/1116618
-Note that @drupal might be @rewrite depending on your servers configuration.
+Note that @drupal (last line of code below) might be @rewrite or @rewrites
+depending on your servers configuration.
 
     ###
     ### advagg_css and advagg_js support
     ###
     location ~* files/advagg_(?:css|js)/ {
+      access_log  off;
       gzip_static on;
       access_log  off;
       expires     max;
