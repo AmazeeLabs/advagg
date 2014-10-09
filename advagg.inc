@@ -970,6 +970,10 @@ function advagg_create_subfile($css, $overall_split, $file_info) {
  *   array of aggregate files.
  */
 function advagg_build_aggregate_plans($files_to_aggregate, $type) {
+  if ($type !== 'css' && $type !== 'js') {
+    return array();
+  }
+
   // Place into biggest grouping possible.
   $groups = advagg_generate_groups($files_to_aggregate);
 

@@ -883,7 +883,7 @@ function _advagg_aggregate_css(&$css_groups) {
     else {
       module_load_include('inc', 'advagg', 'advagg');
       $plans = advagg_build_aggregate_plans($files_to_aggregate, 'css');
-      if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1) {
+      if (!empty($plans) && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1) {
         cache_set($cache_id, $plans, 'cache_advagg_aggregates', CACHE_TEMPORARY);
       }
     }
@@ -984,7 +984,7 @@ function _advagg_aggregate_js(&$js_groups) {
     else {
       module_load_include('inc', 'advagg', 'advagg');
       $plans = advagg_build_aggregate_plans($files_to_aggregate, 'js');
-      if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1) {
+      if (!empty($plans) && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1) {
         cache_set($cache_id, $plans, 'cache_advagg_aggregates', CACHE_TEMPORARY);
       }
     }
@@ -1989,6 +1989,15 @@ function advagg_get_root_files_dir($reset = FALSE) {
  *   Array keyed by filename, value is result from advagg_missing_create_file().
  */
 function advagg_build_aggregates($filenames, $type) {
+  // Check input values.
+  if (empty($filenames)) {
+    return array();
+  }
+  if (empty($type)) {
+    $filename = reset($filenames);
+    $type = pathinfo($filename, PATHINFO_EXTENSION);
+  }
+
   // Call the file generation function directly.
   module_load_include('inc', 'advagg', 'advagg.missing');
   list($css_path, $js_path) = advagg_get_root_files_dir();
