@@ -252,6 +252,13 @@ function advagg_module_implements_alter(&$implementations, $hook) {
     $implementations = array_merge($item, $implementations);
   }
 
+  // Move advagg to the top.
+  if ($hook === 'ajax_render_alter' && array_key_exists('advagg', $implementations)) {
+    $item = array('advagg' => $implementations['advagg']);
+    unset($implementations['advagg']);
+    $implementations = array_merge($item, $implementations);
+  }
+
   // Move advagg to the bottom.
   if ($hook === 'element_info_alter' && array_key_exists('advagg', $implementations)) {
     $item = $implementations['advagg'];
