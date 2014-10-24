@@ -704,6 +704,23 @@ function advagg_admin_get_file_info($filename) {
 
     // Get a list of files.
     $files = advagg_get_files_from_hashes($type, $aggregate_filenames_hash, $aggregate_contents_hash);
+    if (empty($files)) {
+      list($css_path, $js_path) = advagg_get_root_files_dir();
+      // Skip if the file exists.
+      if ($type === 'css') {
+        $uri = $css_path[0] . '/' . $filename;
+      }
+      elseif ($type === 'js') {
+        $uri = $js_path[0] . '/' . $filename;
+      }
+      $atime = advagg_get_atime($aggregate_filenames_hash, $aggregate_contents_hash, $uri);
+      if (REQUEST_TIME - $atime > variable_get('drupal_stale_file_threshold', 2592000)) {
+        $files = t('This is an old aggregate, it should be deleted on the next cron run.');
+      }
+      else {
+        $files = t('This is an old aggregate, it should be deleted on the cron run after !time.', array('!time' => format_interval(variable_get('drupal_stale_file_threshold', 2592000) - (REQUEST_TIME - $atime))));
+      }
+    }
     $data['files'] = $files;
 
     // Get detailed info on each file.

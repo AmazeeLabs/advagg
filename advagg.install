@@ -1218,6 +1218,8 @@ function advagg_install_chk_urls(&$requirements, $urls, $options, $mod_url, $typ
  *   Returns aggregate filename.
  */
 function advagg_install_get_first_advagg_file($file_path) {
+  module_load_include('inc', 'advagg', 'advagg.missing');
+
   // Open the advagg directory.
   $handle = opendir($file_path);
   $counter = 0;
@@ -1261,8 +1263,20 @@ function advagg_install_get_first_advagg_file($file_path) {
         continue;
       }
     }
-    // All checked passed above, break out of loop.
-    break;
+
+    $data = advagg_get_hashes_from_filename(basename($filename));
+    $output = array();
+    if (is_array($data)) {
+      list($type, $aggregate_filenames_hash, $aggregate_contents_hash, $aggregate_settings) = $data;
+
+      // Get a list of files.
+      $files = advagg_get_files_from_hashes($type, $aggregate_filenames_hash, $aggregate_contents_hash);
+
+      if (!empty($files)) {
+        // All checked passed above, break out of loop.
+        break;
+      }
+    }
   }
 
   return $filename;
