@@ -713,12 +713,17 @@ function advagg_admin_get_file_info($filename) {
       elseif ($type === 'js') {
         $uri = $js_path[0] . '/' . $filename;
       }
-      $atime = advagg_get_atime($aggregate_filenames_hash, $aggregate_contents_hash, $uri);
-      if (REQUEST_TIME - $atime > variable_get('drupal_stale_file_threshold', 2592000)) {
-        $files = t('This is an old aggregate, it should be deleted on the next cron run.');
+      if (file_exists($uri)) {
+        $atime = advagg_get_atime($aggregate_filenames_hash, $aggregate_contents_hash, $uri);
+        if (REQUEST_TIME - $atime > variable_get('drupal_stale_file_threshold', 2592000)) {
+          $files = t('This is an old aggregate, it should be deleted on the next cron run.');
+        }
+        else {
+          $files = t('This is an old aggregate, it should be deleted on the cron run after !time.', array('!time' => format_interval(variable_get('drupal_stale_file_threshold', 2592000) - (REQUEST_TIME - $atime))));
+        }
       }
       else {
-        $files = t('This is an old aggregate, it should be deleted on the cron run after !time.', array('!time' => format_interval(variable_get('drupal_stale_file_threshold', 2592000) - (REQUEST_TIME - $atime))));
+        $files = t('This aggregate file no longer exists.');
       }
     }
     $data['files'] = $files;
