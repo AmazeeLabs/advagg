@@ -731,7 +731,10 @@ $base_url = str_replace("http://", "https://", $base_url);
 function advagg_install_check_via_http(&$requirements) {
   // If other checks have not passed, do not test this.
   if (!empty($requirements)) {
-    return;
+    // Still check if it's only that the CDN patch has not been applied.
+    if (count($requirements) != 1 || !array_key_exists('advagg_module_cdn_patch', $requirements)) {
+      return;
+    }
   }
 
   // Ensure translations don't break at install time.
@@ -1083,7 +1086,7 @@ function advagg_install_chk_urls(&$requirements, $urls, $options, $mod_url, $typ
         );
       }
 
-      if ($type === 'js' && (empty($request->headers['content-type']) || strpos($request->headers['content-type'], 'application/' . $content_type) === FALSE)) {
+      if ($type === 'js' && (empty($request->headers['content-type']) || (strpos($request->headers['content-type'], 'application/' . $content_type) === FALSE && strpos($request->headers['content-type'], 'application/x-' . $content_type) === FALSE))) {
         // Recommend servers configuration be adjusted.
         $requirements['advagg_' . $type . '_type' . $key] = array(
           'title' => $t('Adv CSS/JS Agg - Content-Type'),
