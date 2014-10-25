@@ -53,12 +53,12 @@ function advagg_admin_settings_form($form, $form_state) {
     '#description' => t('If <a href="@link">HTTPRL</a> is installed, advagg will use it to generate aggregates on the fly in a background parallel process.', array('@link' => 'http://drupal.org/project/httprl')),
   );
 
-  $agressive_cache_conflicts = advagg_agressive_cache_conflicts();
-  if (empty($agressive_cache_conflicts)) {
+  $aggressive_cache_conflicts = advagg_aggressive_cache_conflicts();
+  if (empty($aggressive_cache_conflicts)) {
     $description = t('It appears that there are no incompatible modules, so you should be able to safely use the Aggressive cache.');
   }
   else {
-    $description = t('It appears that there might be some incompatible modules. I would test these out before setting the cache to agressive: %modules', array('%modules' => implode(', ', $agressive_cache_conflicts)));
+    $description = t('It appears that there might be some incompatible modules. I would test these out before setting the cache to aggressive: %modules', array('%modules' => implode(', ', $aggressive_cache_conflicts)));
   }
   $options = array(
     -1 => t('Development ~ 100ms'),

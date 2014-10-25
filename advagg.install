@@ -705,8 +705,8 @@ $base_url = str_replace("http://", "https://", $base_url);
       $description .= ' ' . $t('Currently running in development mode.');
     }
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 3) {
-      $agressive_cache_conflicts = advagg_agressive_cache_conflicts();
-      if (empty($agressive_cache_conflicts)) {
+      $aggressive_cache_conflicts = advagg_aggressive_cache_conflicts();
+      if (empty($aggressive_cache_conflicts)) {
         $description .= ' ' . $t('It appears that there are no incompatible modules, so you should be able to safely use the Aggressive cache.');
       }
     }
