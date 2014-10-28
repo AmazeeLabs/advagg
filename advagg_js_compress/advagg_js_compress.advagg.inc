@@ -45,6 +45,11 @@ function advagg_js_compress_advagg_get_info_on_files_alter(&$return, $cached_dat
     }
   }
 
+  // If no cache ids are found bail out.
+  if (empty($cache_ids)) {
+    return;
+  }
+
   // Get cached values.
   $cache_hits = array();
   if (!$bypass_cache) {
