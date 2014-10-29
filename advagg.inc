@@ -933,8 +933,13 @@ function advagg_create_subfile($css, $overall_split, $file_info) {
     module_load_include('inc', 'advagg', 'advagg.missing');
   }
 
+  // Get the path from $file_info['data'].
+  $uri_path = parse_url(file_create_url($file_info['data']), PHP_URL_PATH);
+  if (substr($uri_path, 0, strlen($GLOBALS['base_path'])) == $GLOBALS['base_path']) {
+    $uri_path = substr($uri_path, strlen($GLOBALS['base_path']));
+  }
   // Write the current chunk of the CSS into a file.
-  $new_filename = str_ireplace('.css', '.' . $overall_split . '.css', $file_info['data']);
+  $new_filename = str_ireplace('.css', '.' . $overall_split . '.css', $uri_path);
   $part_uri = $parts_uri . '/' . $new_filename;
   $dirname = drupal_dirname($part_uri);
   file_prepare_directory($dirname, FILE_CREATE_DIRECTORY);
