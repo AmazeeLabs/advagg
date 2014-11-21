@@ -229,30 +229,6 @@ function advagg_insert_update_files($files, $type) {
   return $write_done;
 }
 
-/**
- * Update atime advagg_aggregates_versions table & cache_advagg_info cache bin.
- *
- * @param array $files
- *   List of files in the aggregate as well as the aggregate name.
- *
- * @return bool
- *   Return TRUE if anything was written to the database.
- */
-function advagg_update_all_atimes($files) {
-  // Record if a database write was done.
-  $write_done = FALSE;
-
-  // Loop through all files.
-  foreach ($files as $aggregate_file_name => $values) {
-    // Build lock name variable.
-    if (advagg_update_atime($values['aggregate_filenames_hash'], $values['aggregate_contents_hash'])) {
-      $write_done = TRUE;
-    }
-  }
-
-  return $write_done;
-}
-
 // File operations.
 /**
  * Given a group of files calculate what the aggregate filename will be.
@@ -988,7 +964,7 @@ function advagg_build_aggregate_plans($files_to_aggregate, $type) {
   // Insert/Update Database.
   advagg_insert_update_db($files, $type, 1);
   // Update atimes for root.
-  advagg_update_all_atimes($files);
+  advagg_multi_update_atime($files);
 
   // Run hooks to modify the aggregate.
   // Call hook_advagg_build_aggregate_plans_alter().
@@ -1000,7 +976,7 @@ function advagg_build_aggregate_plans($files_to_aggregate, $type) {
     // Insert/Update Database.
     advagg_insert_update_db($files, $type, 0);
     // Update atimes for non root.
-    advagg_update_all_atimes($files);
+    advagg_multi_update_atime($files);
   }
 
   // Get file paths.
