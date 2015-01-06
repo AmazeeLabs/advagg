@@ -2651,10 +2651,10 @@ function advagg_json_encode($data) {
   }
   if (!isset($php530)) {
     $php530 = version_compare(PHP_VERSION, '5.3.0', '>=');
+    $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
   }
 
   // Default json encode options.
-  $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
   if ($php550 && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 0) {
     // Output partial json if not in development mode & PHP >= 5.5.0.
     $options |= JSON_PARTIAL_OUTPUT_ON_ERROR;
