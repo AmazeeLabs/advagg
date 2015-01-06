@@ -2639,7 +2639,7 @@ function advagg_drupal_sort_css_js_stable(&$items) {
  *   returned on failure.
  */
 function advagg_json_encode($data) {
-  // Different versions of PHP handle json_encode differently.
+  // Different versions of PHP handle json_encode() differently.
   static $php550;
   static $php540;
   static $php530;
@@ -2651,27 +2651,28 @@ function advagg_json_encode($data) {
   }
   if (!isset($php530)) {
     $php530 = version_compare(PHP_VERSION, '5.3.0', '>=');
-    $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
+  }
+
+  // Use fallback drupal encoder if PHP < 5.3.0
+  if (!$php530) {
+    return @drupal_json_encode($data);
   }
 
   // Default json encode options.
+  $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
   if ($php550 && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 0) {
     // Output partial json if not in development mode & PHP >= 5.5.0.
     $options |= JSON_PARTIAL_OUTPUT_ON_ERROR;
   }
-  // If in development mode and PHP >= 5.4.0 pretty print JSON.
   if ($php540 && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
+    // Pretty print JSON if in development mode & PHP >= 5.4.0.
     $options |= JSON_PRETTY_PRINT;
   }
-  if ($php530) {
-    $json_data = @json_encode($data, $options);
-  }
-  else {
-    // Use fallback encoder if PHP < 5.3.0
-    $json_data = @drupal_json_encode($data);
-  }
-  // Uses json_last_error if in development mode and php >= 5.3.0.
-  if ($php530 && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
+  // Encode to JSON.
+  @json_encode($data, $options);
+
+  // Uses json_last_error() if in development mode.
+  if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
     $error_number = json_last_error();
     switch ($error_number) {
       case JSON_ERROR_NONE:
