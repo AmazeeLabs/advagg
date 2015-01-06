@@ -2669,7 +2669,7 @@ function advagg_json_encode($data) {
     $options |= JSON_PRETTY_PRINT;
   }
   // Encode to JSON.
-  @json_encode($data, $options);
+  $json_data = @json_encode($data, $options);
 
   // Uses json_last_error() if in development mode.
   if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
