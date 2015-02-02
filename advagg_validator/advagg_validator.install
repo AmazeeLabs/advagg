@@ -25,6 +25,7 @@ function advagg_validator_schema() {
         'length' => 43,
         'not null' => TRUE,
         'default' => '',
+        'binary' => TRUE,
       ),
       'content_hash' => array(
         'description' => 'Hash of the file content. Used to see if the file has changed.',
@@ -32,6 +33,7 @@ function advagg_validator_schema() {
         'length' => 43,
         'not null' => TRUE,
         'default' => '',
+        'binary' => TRUE,
       ),
       'filetype' => array(
         'description' => 'Filetype.',
@@ -39,6 +41,7 @@ function advagg_validator_schema() {
         'length' => 8,
         'not null' => TRUE,
         'default' => '',
+        'binary' => TRUE,
       ),
       'data' => array(
         'description' => 'Validation data about this file.',
