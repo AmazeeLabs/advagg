@@ -80,7 +80,7 @@ function advagg_uninstall() {
   module_load_include('inc', 'advagg', 'advagg.cache');
 
   // Remove files.
-  advagg_remove_all_aggregated_files();
+  advagg_remove_all_aggregated_files(TRUE);
   // Flush caches.
   advagg_flush_all_cache_bins();
 
