@@ -2753,7 +2753,12 @@ function advagg_aggressive_cache_conflicts() {
   }
 
   $whitelist = array(
+    // Core.
     'locale',
+    'simpletest',
+    'seven',
+
+    // Popular contrib.
     'css_injector',
     'disable_css',
     'excluded',
