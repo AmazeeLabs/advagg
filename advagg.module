@@ -2809,6 +2809,7 @@ function advagg_scan_filesystem_for_changes_live() {
   }
   $function_has_ran = TRUE;
 
+  $bypass_cookie = FALSE;
   $cookie_name = 'AdvAggDisabled';
   $key = drupal_hash_base64(drupal_get_private_key());
   if (!empty($_COOKIE[$cookie_name]) && $_COOKIE[$cookie_name] == $key) {
