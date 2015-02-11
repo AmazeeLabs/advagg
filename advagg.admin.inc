@@ -52,6 +52,34 @@ function advagg_admin_settings_form($form, $form_state) {
     '#disabled' => module_exists('httprl') ? FALSE : TRUE,
     '#description' => t('If <a href="@link">HTTPRL</a> is installed, advagg will use it to generate aggregates on the fly in a background parallel process.', array('@link' => 'http://drupal.org/project/httprl')),
   );
+  $form['global']['advagg_convert_absolute_to_relative_path'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert absolute paths to be self references.'),
+    '#default_value' => variable_get('advagg_convert_absolute_to_relative_path', ADVAGG_CONVERT_ABSOLUTE_TO_RELATIVE_PATH),
+    '#description' => t('If the src to a CSS/JS file points to this domain, convert the absolute path to a relative path. Will also convert url() references inside of css files.'),
+  );
+  $form['global']['advagg_convert_absolute_to_protocol_relative_path'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert absolute paths to be protocol relative paths.'),
+    '#default_value' => variable_get('advagg_convert_absolute_to_protocol_relative_path', ADVAGG_CONVERT_ABSOLUTE_TO_PROTOCOL_RELATIVE_PATH),
+    '#description' => t('If the src to a CSS/JS file points starts with http:// or https://, convert it to use a protocol relative path //. Will also convert url() references inside of css files. This is incompatible with IE6 and might cause extra bandwith usage in IE7 & IE8 in regards to url() calls in css files.'),
+    '#states' => array(
+      'enabled' => array(
+        '#edit-advagg-force-https-path' => array('checked' => FALSE),
+      ),
+    ),
+  );
+  $form['global']['advagg_force_https_path'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert http:// to https://.'),
+    '#default_value' => variable_get('advagg_force_https_path', ADVAGG_FORCE_HTTPS_PATH),
+    '#description' => t('If the src to a CSS/JS file starts with http:// convert it https://. Will also convert url() references inside of css files.'),
+    '#states' => array(
+      'enabled' => array(
+        '#edit-advagg-convert-absolute-to-protocol-relative-path' => array('checked' => FALSE),
+      ),
+    ),
+  );
 
   $aggressive_cache_conflicts = advagg_aggressive_cache_conflicts();
   if (empty($aggressive_cache_conflicts)) {
@@ -199,6 +227,23 @@ function advagg_admin_settings_form($form, $form_state) {
     '#description' => t('The default value for this is %value.', array('%value' => format_interval(ADVAGG_REMOVE_OLD_UNUSED_AGGREGATES_TIME))),
   );
 
+  $form['global']['obscure'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Obscure Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Unless you have a good reason to adjust these values you should leave them alone.'),
+  );
+  $form['global']['obscure']['advagg_include_base_url'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include the base_url variable in the hooks hash array.'),
+    '#default_value' => variable_get('advagg_include_base_url', ADVAGG_INCLUDE_BASE_URL),
+    '#description' => t('If you would like a unique set of aggregates for every permutation of the base_url (current value: %value) then enable this setting. <a href="@issue">Read more</a>.', array(
+      '%value' => $GLOBALS['base_url'],
+      '@issue' => 'https://www.drupal.org/node/2353811',
+    )),
+  );
+
   $form['css'] = array(
     '#type' => 'fieldset',
     '#title' => t('CSS Options'),
@@ -245,6 +290,7 @@ function advagg_admin_settings_form($form, $form_state) {
     '#default_value' => variable_get('advagg_css_fix_type', ADVAGG_CSS_FIX_TYPE),
     '#description' => t('If type is external but does not start with http, https, or // change it to be type file. If type is file but it starts with http, https, or // change type to be external.'),
   );
+
   $form['js'] = array(
     '#type' => 'fieldset',
     '#title' => t('JS Options'),

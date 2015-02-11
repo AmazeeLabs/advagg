@@ -1126,7 +1126,7 @@ function advagg_load_css_stylesheet($file, $optimize, $aggregate_settings = NULL
   if (count($url_parts) === 2) {
     $css_base_url = $url_parts[1];
   }
-  _advagg_build_css_path(NULL, $css_base_url . '/');
+  _advagg_build_css_path(NULL, $css_base_url . '/', $aggregate_settings);
 
   // Anchor all paths in the CSS with its base URL, ignoring external,
   // absolute paths, and urls that start with # (SVG).
@@ -1167,11 +1167,15 @@ function advagg_context_css($aggregate_settings, $mode) {
  * @see https://drupal.org/node/1961340#comment-7735815
  * @see https://drupal.org/node/1514182#comment-7875489
  */
-function _advagg_build_css_path($matches, $base = NULL) {
+function _advagg_build_css_path($matches, $base = NULL, $aggregate_settings = NULL) {
   $_base = &drupal_static(__FUNCTION__);
+  $_aggregate_settings = &drupal_static(__FUNCTION__ . '_aggregate_settings');
   // Store base path for preg_replace_callback.
   if (isset($base)) {
     $_base = $base;
+  }
+  if (isset($aggregate_settings)) {
+    $_aggregate_settings = $aggregate_settings;
   }
   // Short circuit if no matches were passed in.
   if (empty($matches)) {
@@ -1186,9 +1190,10 @@ function _advagg_build_css_path($matches, $base = NULL) {
     $path = preg_replace('`(^|/)(?!\.\./)([^/]+)/\.\./`', '$1', $path);
   }
 
-  $path = file_create_url($path);
+  $path = advagg_file_create_url($path, $_aggregate_settings);
   // Decoding path because some browsers can not handle encoded urls inside of
   // CSS. file_create_url() -> drupal_encode_path() -> rawurlencode().
   $path = rawurldecode($path);
+
   return 'url(' . $path . ')';
 }

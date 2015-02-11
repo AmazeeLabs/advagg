@@ -363,7 +363,7 @@ function advagg_htaccess_check_generate($files_to_save, $type, $force = FALSE) {
  */
 function advagg_get_hashes_from_filename($filename) {
   // Verify requested filename has the correct pattern.
-  if (!preg_match('/^(j|cs)s' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}' . ADVAGG_SPACE . '[A-Za-z0-9-_]{43}\.(j|cs)s$/', $filename)) {
+  if (!advagg_match_file_pattern($filename)) {
     return t('Wrong pattern.');
   }
 
