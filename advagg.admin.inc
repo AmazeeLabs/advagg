@@ -26,13 +26,6 @@ function advagg_admin_settings_form($form, $form_state) {
     '#default_value' => variable_get('advagg_enabled', ADVAGG_ENABLED),
     '#description' => t('Uncheck this box to completely disable AdvAgg functionality.'),
   );
-  $form['global']['advagg_gzip'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Create .gz files'),
-    '#default_value' => variable_get('advagg_gzip', ADVAGG_GZIP),
-    '#description' => t('All aggregated files can be pre-compressed into a .gz file and
-   served from Apache. This is faster then gzipping the file on each request.'),
-  );
   $form['global']['advagg_core_groups'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use cores grouping logic'),
@@ -51,34 +44,6 @@ function advagg_admin_settings_form($form, $form_state) {
     '#default_value' => module_exists('httprl') ? variable_get('advagg_use_httprl', ADVAGG_USE_HTTPRL) : FALSE,
     '#disabled' => module_exists('httprl') ? FALSE : TRUE,
     '#description' => t('If <a href="@link">HTTPRL</a> is installed, advagg will use it to generate aggregates on the fly in a background parallel process.', array('@link' => 'http://drupal.org/project/httprl')),
-  );
-  $form['global']['advagg_convert_absolute_to_relative_path'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Convert absolute paths to be self references.'),
-    '#default_value' => variable_get('advagg_convert_absolute_to_relative_path', ADVAGG_CONVERT_ABSOLUTE_TO_RELATIVE_PATH),
-    '#description' => t('If the src to a CSS/JS file points to this domain, convert the absolute path to a relative path. Will also convert url() references inside of css files.'),
-  );
-  $form['global']['advagg_convert_absolute_to_protocol_relative_path'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Convert absolute paths to be protocol relative paths.'),
-    '#default_value' => variable_get('advagg_convert_absolute_to_protocol_relative_path', ADVAGG_CONVERT_ABSOLUTE_TO_PROTOCOL_RELATIVE_PATH),
-    '#description' => t('If the src to a CSS/JS file points starts with http:// or https://, convert it to use a protocol relative path //. Will also convert url() references inside of css files. This is incompatible with IE6 and might cause extra bandwith usage in IE7 & IE8 in regards to url() calls in css files.'),
-    '#states' => array(
-      'enabled' => array(
-        '#edit-advagg-force-https-path' => array('checked' => FALSE),
-      ),
-    ),
-  );
-  $form['global']['advagg_force_https_path'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Convert http:// to https://.'),
-    '#default_value' => variable_get('advagg_force_https_path', ADVAGG_FORCE_HTTPS_PATH),
-    '#description' => t('If the src to a CSS/JS file starts with http:// convert it https://. Will also convert url() references inside of css files.'),
-    '#states' => array(
-      'enabled' => array(
-        '#edit-advagg-convert-absolute-to-protocol-relative-path' => array('checked' => FALSE),
-      ),
-    ),
   );
 
   $aggressive_cache_conflicts = advagg_aggressive_cache_conflicts();
@@ -232,7 +197,14 @@ function advagg_admin_settings_form($form, $form_state) {
     '#title' => t('Obscure Options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#description' => t('Unless you have a good reason to adjust these values you should leave them alone.'),
+    '#description' => t('Some of the more obscure AdvAgg settings. Odds are you do not need to change anything in here.'),
+  );
+  $form['global']['obscure']['advagg_gzip'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Create .gz files'),
+    '#default_value' => variable_get('advagg_gzip', ADVAGG_GZIP),
+    '#description' => t('All aggregated files can be pre-compressed into a .gz file and
+   served from Apache. This is faster then gzipping the file on each request.'),
   );
   $form['global']['obscure']['advagg_include_base_url'] = array(
     '#type' => 'checkbox',
@@ -243,6 +215,35 @@ function advagg_admin_settings_form($form, $form_state) {
       '@issue' => 'https://www.drupal.org/node/2353811',
     )),
   );
+  $form['global']['obscure']['advagg_convert_absolute_to_relative_path'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert absolute paths to be self references.'),
+    '#default_value' => variable_get('advagg_convert_absolute_to_relative_path', ADVAGG_CONVERT_ABSOLUTE_TO_RELATIVE_PATH),
+    '#description' => t('If the src to a CSS/JS file points to this domain, convert the absolute path to a relative path. Will also convert url() references inside of css files.'),
+  );
+  $form['global']['obscure']['advagg_convert_absolute_to_protocol_relative_path'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert absolute paths to be protocol relative paths.'),
+    '#default_value' => variable_get('advagg_convert_absolute_to_protocol_relative_path', ADVAGG_CONVERT_ABSOLUTE_TO_PROTOCOL_RELATIVE_PATH),
+    '#description' => t('If the src to a CSS/JS file points starts with http:// or https://, convert it to use a protocol relative path //. Will also convert url() references inside of css files. This is incompatible with IE6 and might cause extra bandwith usage in IE7 & IE8 in regards to url() calls in css files.'),
+    '#states' => array(
+      'enabled' => array(
+        '#edit-advagg-force-https-path' => array('checked' => FALSE),
+      ),
+    ),
+  );
+  $form['global']['obscure']['advagg_force_https_path'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert http:// to https://.'),
+    '#default_value' => variable_get('advagg_force_https_path', ADVAGG_FORCE_HTTPS_PATH),
+    '#description' => t('If the src to a CSS/JS file starts with http:// convert it https://. Will also convert url() references inside of css files.'),
+    '#states' => array(
+      'enabled' => array(
+        '#edit-advagg-convert-absolute-to-protocol-relative-path' => array('checked' => FALSE),
+      ),
+    ),
+  );
+
 
   $form['css'] = array(
     '#type' => 'fieldset',
