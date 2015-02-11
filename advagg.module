@@ -3205,7 +3205,7 @@ function advagg_file_create_url($path, $aggregate_settings = array()) {
   }
   // Finally force https.
   if ((isset($aggregate_settings['variables']['advagg_force_https_path'])
-    && $aggregate_settings['variables']['advagg_force_https_path '])
+    && $aggregate_settings['variables']['advagg_force_https_path'])
     || (!isset($aggregate_settings['variables']['advagg_force_https_path'])
     && variable_get('advagg_force_https_path', ADVAGG_FORCE_HTTPS_PATH))
     ) {
