@@ -763,6 +763,7 @@ function advagg_split_css_file($file_info) {
   $parts = array();
   $overall_split = 0;
   $split_at = $selector_split_value;
+  $chunk_split_value = (int) variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE) - $selector_split_value - 1;
   foreach ($major_chunks as $chunk_key => $chunks) {
     $last_chunk = FALSE;
     $file_info['split_last_part'] = FALSE;
@@ -831,13 +832,34 @@ function advagg_split_css_file($file_info) {
         --$split_at;
       }
 
-      // Combine parts of the so that it can be saved to disk.
+      // Combine parts of the css so that it can be saved to disk.
       foreach ($new_css_chunk as $key => $value) {
-        $string_to_write .= $value;
-        unset($new_css_chunk[$key]);
-        if ($key == $split_at) {
-          $overall_split = $split_at;
-          $split_at += $selector_split_value;
+        if ($key !== $split_at) {
+          // Move this css row to the $string_to_write variable.
+          $string_to_write .= $value;
+          unset($new_css_chunk[$key]);
+        }
+        // We are at the split point.
+        else {
+          // Get the number of selectors in this chunk.
+          $matched = array();
+          $chunk_selector_count = preg_match_all('/\{.+?\}|,/s', $new_css_chunk[$key], $matched);
+          if ($chunk_selector_count < $chunk_split_value) {
+            // The number of selectors at this point is below the threshold;
+            // move this chunk to the write variable and break out of the loop.
+            $string_to_write .= $value;
+            unset($new_css_chunk[$key]);
+            $overall_split = $split_at;
+            $split_at += $selector_split_value;
+          }
+          else {
+            // The number of selectors with this chunk included is over the
+            // threshold; do not move it. Change split position so the next
+            // iteration of the while loop ends at the correct spot. Because we
+            // skip unset here, this chunk will start the next part file.
+            $overall_split = $split_at;
+            $split_at += $selector_split_value - $chunk_selector_count;
+          }
           break;
         }
       }
