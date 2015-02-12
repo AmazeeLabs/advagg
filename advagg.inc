@@ -938,6 +938,21 @@ function advagg_create_subfile($css, $overall_split, $file_info) {
   }
   // Write the current chunk of the CSS into a file.
   $new_filename = str_ireplace('.css', '.' . $overall_split . '.css', $uri_path);
+
+  // Fix for things like LESS which write dynamically to the public file system.
+  $scheme = file_uri_scheme($new_filename);
+  if ($scheme) {
+    $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme);
+    if ($wrapper) {
+      // Use the wrappers directory path.
+      $new_filename = $wrapper->getDirectoryPath() . '/' . file_uri_target($new_filename);
+    }
+    else {
+      // If the scheme does not have a wrapper; prefix file with the scheme.
+      $new_filename = $scheme . '/' . file_uri_target($new_filename);
+    }
+  }
+
   $part_uri = $parts_uri . '/' . $new_filename;
   $dirname = drupal_dirname($part_uri);
   file_prepare_directory($dirname, FILE_CREATE_DIRECTORY);
