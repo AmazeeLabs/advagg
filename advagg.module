@@ -666,7 +666,7 @@ function advagg_ajax_render_alter(&$commands) {
     $commands = array_merge($extra_commands, $commands);
   }
   if (!empty($settings)) {
-    array_unshift($commands, ajax_command_settings(call_user_func_array('array_merge_recursive', $settings['data']), TRUE));
+    array_unshift($commands, ajax_command_settings(drupal_array_merge_deep_array($settings['data']), TRUE));
   }
 }
 
