@@ -1357,7 +1357,7 @@ function advagg_get_css($css = NULL, $skip_alter = FALSE) {
   }
 
   // Sort CSS items, so that they appear in the correct order.
-  uasort($css, 'drupal_sort_css_js');
+  advagg_drupal_sort_css_js_stable($css);
 
   // Provide the page with information about the individual CSS files used,
   // information not otherwise available when CSS aggregation is enabled. The
@@ -1494,12 +1494,7 @@ function advagg_get_js($scope = 'header', $javascript = NULL, $skip_alter = FALS
   }
 
   // Sort the JavaScript so that it appears in the correct order.
-  if (is_callable('drupal_sort_css_js')) {
-    uasort($items, 'drupal_sort_css_js');
-  }
-  else {
-    advagg_drupal_sort_css_js_stable($items);
-  }
+  advagg_drupal_sort_css_js_stable($items);
 
   // Set the js_in_footer variable.
   // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:2
@@ -3337,8 +3332,10 @@ function advagg_load_stylesheet_content($contents, $optimize = FALSE) {
     // whitespace.
     // @see http://php.net/manual/regexp.reference.subpatterns.php
     $contents = preg_replace('<
+      # Do not strip any space from within single or double quotes
+      ('.$double_quot.'|'.$single_quot.')
       # Strip leading and trailing whitespace.
-        \s*([@{};,])\s*
+      | \s*([@{};,])\s*
       # Strip only leading whitespace from:
       # - Closing parenthesis: Retain "@media (bar) and foo".
       | \s+([\)])
@@ -3350,7 +3347,7 @@ function advagg_load_stylesheet_content($contents, $optimize = FALSE) {
       // Only one of the three capturing groups will match, so its reference
       // will contain the wanted value and the references for the
       // two non-matching groups will be replaced with empty strings.
-      '$1$2$3',
+      '$1$2$3$4',
       $contents
     );
     // End the file with a new line.
