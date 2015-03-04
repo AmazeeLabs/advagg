@@ -12,6 +12,11 @@ class AdvAggCascadingStylesheetsUnitTest extends DrupalUnitTestCase {
     );
   }
 
+  function setUp() {
+    // Include the advagg.module file.
+    drupal_load('module', 'advagg');
+  }
+
  function testLoadCssBasic() {
     // Array of files to test living in 'simpletest/files/css_test_files/'.
     // - Original: name.css
