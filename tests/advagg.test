@@ -13,6 +13,9 @@ class AdvAggCascadingStylesheetsUnitTest extends DrupalUnitTestCase {
   }
 
   function setUp() {
+    // Enable any modules required for the test. This should be an array of
+    // module names.
+    parent::setUp(array('advagg'));
     // Include the advagg.module file.
     drupal_load('module', 'advagg');
   }
