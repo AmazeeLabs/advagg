@@ -3294,6 +3294,9 @@ function advagg_load_stylesheet($file, $optimize = NULL, $reset_basepath = TRUE)
 
   // Restore the parent base path as the file and its childen are processed.
   $basepath = $parent_base_path;
+  if ($_optimize) {
+    $content = trim($content);
+  }
   return $content;
 }
 
