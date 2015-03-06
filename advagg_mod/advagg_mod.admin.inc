@@ -211,7 +211,7 @@ function advagg_mod_admin_settings_form() {
       0 => t('Disabled'),
       1 => t('All in head, above js'),
       3 => t('All in head'),
-      5 => t('All in footer except for JS loading code'),
+      5 => t('All in footer except for JS loading code (If enabled this is recommended)'),
       7 => t('All in footer'),
     ),
     '#description' => t('This will try to optimize CSS delivery by using JavaScript to load the CSS. This might break CSS on different browsers and will cause a flash of unstyled content (FOUC). Only enable after extensive testing! <a href="@link">More Info</a>', array(
@@ -223,7 +223,7 @@ function advagg_mod_admin_settings_form() {
     '#title' => t('How to include the JS loading code'),
     '#default_value' => variable_get('advagg_mod_css_defer_js_code', ADVAGG_MOD_CSS_DEFER_JS_CODE),
     '#options' => array(
-      0 => t('Inline javascript loader library'),
+      0 => t('Inline javascript loader library (If enabled this is recommended)'),
       2 => t('Local file included in aggregrate'),
 //       4 => t('Externally load the latest from github (SLOW! Not a CDN!!!)'),
     ),

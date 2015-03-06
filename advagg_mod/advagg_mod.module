@@ -573,13 +573,18 @@ function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
   // Make advagg_mod_loadStyleSheet() available.
   $type = 'external';
   $data = '//rawgit.com/filamentgroup/loadCSS/master/loadCSS.js';
+  $min = '';
+  if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 0) {
+    $min = '.min';
+  }
   if ($css_defer_js_code == 2) {
     $type = 'file';
-    $data = drupal_get_path('module', 'advagg_mod') . '/loadCSS.js';
+    $data = drupal_get_path('module', 'advagg_mod') . "/loadCSS$min.js";
   }
   if ($css_defer_js_code == 0) {
     $type = 'inline';
-    $data = file_get_contents(drupal_get_path('module', 'advagg_mod') . '/loadCSS.js');
+    $data = '// [c]2014 @scottjehl, Filament Group, Inc. Licensed MIT.
+function loadCSS(a,b,c,d){"use strict";function h(){for(var a,b=0;b<g.length;b++)g[b].href&&g[b].href.indexOf(e.href)>-1&&(a=!0);a?e.media=c||"all":setTimeout(h)}var e=window.document.createElement("link"),f=b||window.document.getElementsByTagName("script")[0],g=window.document.styleSheets;return e.rel="stylesheet",e.href=a,e.media="only x",d&&(e.onload=d),f.parentNode.insertBefore(e,f),h(),e}';
   }
   $options = array(
     'type' => $type,
@@ -590,6 +595,9 @@ function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
     'weight' => $css_defer == 1 ? -50000 : 0,
     'movable' => $css_defer == 1 ? FALSE : TRUE,
   );
+  if ($type !== 'inline') {
+    $options['async'] = TRUE;
+  }
   drupal_add_js($data, $options);
 
   // Wrap CSS in noscript tags.
@@ -616,13 +624,10 @@ function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
         $options['browsers'] = $values['#browsers'];
       }
       $inline = 'loadCSS("' . $values['#attributes']['href'] . '")';
-      // Make defer/async work if enabled.
-      if ((variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
-        || variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC))
-        && $type !== 'inline'
-        ) {
+      // Make async work if it's being used.
+      if ($type !== 'inline') {
         $matches[2] = $matches[0] = $inline;
-        $inline = advagg_mod_wrap_inline_js($matches, "typeof loadCSS === 'function'");
+        $inline = advagg_mod_wrap_inline_js($matches, "typeof loadCSS === 'function'", 40);
       }
       // Add in script tags to load css via js.
       drupal_add_js($inline, $options);
@@ -675,15 +680,19 @@ function advagg_mod_advagg_current_hooks_hash_array_alter(&$aggregate_settings) 
  * Callback for preg_replace_callback.
  *
  * Used to wrap inline JS in a function in order to prevent js errors when JS is
- * moved to the footer.
+ * moved to the footer, or when js is loaded async.
  *
  * @param array $matches
  *   $matches[0] is the full string; $matches[2] is just the JavaScript.
+ * @param string $check_string
+ *   JavaScript if statement; when true, run the inline code.
+ * @param int $ms_wait
+ *   Default amount of time to wait until the required code is available.
  *
  * @return string
  *   Inline javascript code wrapped up in a loader to prevent errors.
  */
-function advagg_mod_wrap_inline_js($matches, $check_string = NULL) {
+function advagg_mod_wrap_inline_js($matches, $check_string = NULL, $ms_wait = 250) {
   if (empty($check_string)) {
     $check_string = "typeof window.Drupal !== 'undefined' && typeof window.Drupal.settings !== 'undefined' && typeof window.jQuery !== 'undefined'";
   }
@@ -710,8 +719,8 @@ function advagg_mod_drupal_settings_loaded$counter() {
       throw e;
     }
     else {
-      // Try again in half a second.
-      window.setTimeout(advagg_mod_drupal_settings_loaded$counter, 500);
+      // Try again in a quarter second.
+      window.setTimeout(advagg_mod_drupal_settings_loaded$counter, $ms_wait);
     }
   }
 }
@@ -720,7 +729,7 @@ function advagg_mod_check_if_drupal_settings_loaded$counter() {
         advagg_mod_drupal_settings_loaded$counter();
     }
     else {
-        window.setTimeout(advagg_mod_check_if_drupal_settings_loaded$counter, 500);
+        window.setTimeout(advagg_mod_check_if_drupal_settings_loaded$counter, $ms_wait);
     }
 }
 advagg_mod_check_if_drupal_settings_loaded$counter();";
