@@ -116,6 +116,11 @@ define('ADVAGG_VISIBILITY_PHP', 2);
  */
 define('ADVAGG_MOD_CSS_DEFER_JS_CODE', 0);
 
+/**
+ * Default value to convert inline GA code into file.
+ */
+define('ADVAGG_MOD_GA_INLINE_TO_FILE', FALSE);
+
 // Core hook implementations.
 /**
  * Implements hook_init().
@@ -182,6 +187,11 @@ function advagg_mod_menu() {
 function advagg_mod_js_alter(&$js) {
   if (module_exists('advagg') && !advagg_enabled()) {
     return;
+  }
+
+  // Change google analytics inline loader to be inside of an aggregrated file.
+  if (variable_get('advagg_mod_ga_inline_to_file', ADVAGG_MOD_GA_INLINE_TO_FILE)) {
+    advagg_mod_ga_inline_to_file($js);
   }
 
   // Only add JS if it's actually needed.
@@ -1156,6 +1166,50 @@ function advagg_mod_js_contains_jquery_drupal($filename, $type = '') {
     $results['contents']['jquery'] = FALSE;
   }
   return $results;
+}
+
+function advagg_mod_ga_inline_to_file(&$js) {
+  // Get inline GA js and put it inside of an aggregrate.
+  $ga_script = '';
+  $debug = variable_get('googleanalytics_debug', 0);
+  $library_tracker_url = '//www.google-analytics.com/' . ($debug ? 'analytics_debug.js' : 'analytics.js');
+  $library_cache_url = 'http:' . $library_tracker_url;
+  if (variable_get('googleanalytics_cache', 0) && $ga_script = _googleanalytics_cache($library_cache_url)) {
+    // A dummy query-string is added to filenames, to gain control over
+    // browser-caching. The string changes on every update or full cache
+    // flush, forcing browsers to load a new copy of the files, as the
+    // URL changed.
+    $ga_script_len = strlen('"' . $ga_script . '?' . variable_get('css_js_query_string', '0') . '"');
+
+    $mod_base_url = substr($GLOBALS['base_root'] . $GLOBALS['base_path'], strpos($GLOBALS['base_root'] . $GLOBALS['base_path'], '//') + 2);
+    $mod_base_url_len = strlen($mod_base_url);
+    $ga_script = substr($ga_script, stripos($ga_script, $mod_base_url) + $mod_base_url_len);
+  }
+
+  if (!empty($ga_script)) {
+    foreach ($js as $key => $value) {
+      // Skip if not inline.
+      if ($value['type'] !== 'inline') {
+        continue;
+      }
+      // Skip if it doesn't start with the GoogleAnalytics inline loader string.
+      if (strpos($value['data'], '(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,"script",') !== 0) {
+        continue;
+      }
+      // Strip loader string.
+      $matches[2] = $matches[0] = substr($value['data'], 261 + $ga_script_len + 7);
+      $js[$key]['data'] = advagg_mod_wrap_inline_js($matches, "typeof ga === 'function'");
+
+      // Add GA analytics.js file to the $js array.
+      $js[$ga_script] = array(
+        'data' => $ga_script,
+        'type' => 'file',
+//         'async' => TRUE,
+      );
+      $js[$ga_script] += $value;
+      break;
+    }
+  }
 }
 
 /**
