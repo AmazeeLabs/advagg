@@ -218,6 +218,24 @@ function advagg_mod_admin_settings_form() {
       '@link' => 'http://stackoverflow.com/questions/19374843/css-delivery-optimization-how-to-defer-css-loading',
     )),
   );
+  $form['css']['placement']['expert']['advagg_mod_css_defer_js_code'] = array(
+    '#type' => 'radios',
+    '#title' => t('How to include the JS loading code'),
+    '#default_value' => variable_get('advagg_mod_css_defer_js_code', ADVAGG_MOD_CSS_DEFER_JS_CODE),
+    '#options' => array(
+      0 => t('Inline javascript loader library'),
+      2 => t('Local file included in aggregrate'),
+//       4 => t('Externally load the latest from github (SLOW! Not a CDN!!!)'),
+    ),
+    '#description' => t('The <a href="@link">loadCSS</a> library can be included in various ways.', array(
+      '@link' => 'https://github.com/filamentgroup/loadCSS',
+    )),
+    '#states' => array(
+      'disabled' => array(
+        ':input[name="advagg_mod_css_defer"]' => array('value' => '0'),
+      ),
+    ),
+  );
 
   $form['landing_page'] = array(
     '#type' => 'fieldset',
