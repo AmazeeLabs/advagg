@@ -69,7 +69,7 @@ function advagg_mod_admin_settings_form() {
   );
   $form['js']['adjust_sort']['expert']['advagg_mod_ga_inline_to_file'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Move  Google Analytics analytics.js code from inline to be a file'),
+    '#title' => t('Move Google Analytics analytics.js code from inline to be a file'),
     '#default_value' => variable_get('advagg_mod_ga_inline_to_file', ADVAGG_MOD_GA_INLINE_TO_FILE),
   );
 
