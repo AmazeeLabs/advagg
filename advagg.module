@@ -1170,9 +1170,23 @@ function _advagg_process_html(&$variables) {
       if (isset($cached_data[$css_cache_id_attached_js])) {
         $css_cache_attached_js = $cached_data[$css_cache_id_attached_js];
       }
+      elseif (isset($css_cache)) {
+        // If the $css_cache is set but the ajaxPageState cache is not, do not
+        // use the agressive cache for the $css_cache.
+        unset($css_cache);
+      }
       if (isset($cached_data[$js_cache_id_full])) {
         $js_cache = $cached_data[$js_cache_id_full];
       }
+    }
+    if ( module_exists('advagg_mod')
+      && variable_get('advagg_mod_css_defer', ADVAGG_MOD_CSS_DEFER)
+      && !empty($css_cache)
+      && empty($js_cache)
+      ) {
+      // If CSS is being loaded via JavaScript and the css cache is set but the
+      // js cache is not set; then unset the css cache as well.
+      unset($css_cache, $css_cache_attached_js);
     }
   }
 
