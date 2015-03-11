@@ -470,8 +470,9 @@ function advagg_get_css_aggregate_contents($files, $aggregate_settings) {
   if (!empty($files)) {
     $media_changes = FALSE;
     $last_media = NULL;
-    foreach ($files as $file => $settings) {
+    foreach ($files as &$settings) {
       if (!isset($settings['media'])) {
+        $settings['media'] = '';
         continue;
       }
       if (is_null($last_media)) {
@@ -517,7 +518,7 @@ function advagg_get_css_aggregate_contents($files, $aggregate_settings) {
             $css_selectors_rules = substr($css_rules, $start + 1, $end - ($start + 1));
 
             // Add in main media rule if needed.
-            if (strpos($media_rules, $settings['media']) === FALSE) {
+            if (!empty($settings['media']) && strpos($media_rules, $settings['media']) === FALSE) {
               $media_rules = $settings['media'] . ' ' . $media_rules;
             }
           }
