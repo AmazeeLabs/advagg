@@ -151,7 +151,7 @@ define('ADVAGG_INCLUDE_BASE_URL', FALSE);
 /**
  * Convert absolute path CSS/JS src/url() to be relative if self referencing.
  */
-define('ADVAGG_CONVERT_ABSOLUTE_TO_RELATIVE_PATH', TRUE);
+define('ADVAGG_CONVERT_ABSOLUTE_TO_RELATIVE_PATH', FALSE);
 
 /**
  * Convert absolute path CSS/JS src/url() to be protocol relative.
@@ -1163,7 +1163,7 @@ function _advagg_process_html(&$variables) {
       $css_hash = drupal_hash_base64(serialize($css_copy));
 
       $cids[] = $css_cache_id_full = 'advagg:css:full:' . $hooks_hash . ':' . $css_hash;
-      $cids[] = $css_ajax_page_sate_id = 'advagg:css:ajaxPageState:' . $hooks_hash . ':' . $css_hash;
+      $cids[] = $css_ajax_page_state_id = 'advagg:css:ajaxPageState:' . $hooks_hash . ':' . $css_hash;
     }
 
     // Try the JS cache; only if not debugging.
@@ -1188,8 +1188,8 @@ function _advagg_process_html(&$variables) {
       if (isset($cached_data[$css_cache_id_full])) {
         $css_cache = $cached_data[$css_cache_id_full];
       }
-      if (isset($cached_data[$css_ajax_page_sate_id])) {
-        $css_ajax_page_sate = $cached_data[$css_ajax_page_sate_id];
+      if (isset($cached_data[$css_ajax_page_state_id])) {
+        $css_ajax_page_sate = $cached_data[$css_ajax_page_state_id];
       }
       elseif (isset($css_cache)) {
         // If the $css_cache is set but the ajaxPageState cache is not, do not
@@ -1200,8 +1200,8 @@ function _advagg_process_html(&$variables) {
         $js_cache = $cached_data[$js_cache_id_full];
       }
     }
-    if ( module_exists('advagg_mod')
-      && variable_get('advagg_mod_css_defer', ADVAGG_MOD_CSS_DEFER)
+    if (((module_exists('advagg_mod') && variable_get('advagg_mod_css_defer', ADVAGG_MOD_CSS_DEFER))
+      || (module_exists('css_delivery') && css_delivery_enabled()))
       && !empty($css_cache)
       && empty($js_cache)
       ) {
