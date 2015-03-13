@@ -682,22 +682,22 @@ function advagg_requirements($phase) {
 
   // Check that https is correct.
   // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:2
-  if (  empty($GLOBALS['is_https']) &&
-        (  (isset($_SERVER['HTTPS']) &&  strtolower($_SERVER['HTTPS']) === 'on')
-        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-        || (isset($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] === 'on')
-          )
-    ) {
+  if ( empty($GLOBALS['is_https']) &&
+    (  (isset($_SERVER['HTTPS']) &&  strtolower($_SERVER['HTTPS']) === 'on')
+    || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+    || (isset($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] === 'on')
+    )
+  ) {
     $requirements['advagg_is_https_check'] = array(
       'title' => $t('Adv CSS/JS Agg - HTTPS'),
       'severity' => REQUIREMENT_WARNING,
       'value' => $t('The core global $is_https is not TRUE.'),
       'description' => $t('You need to add in this logic near the top your settings.php file: <pre>@code</pre>', array(
-        '@code' => 'if ( (isset($_SERVER["HTTPS"]) && strtolower($_SERVER["HTTPS"]) == "on")
-|| (isset($_SERVER["HTTP_X_FORWARDED_PROTO"]) && $_SERVER["HTTP_X_FORWARDED_PROTO"] == "https")
-|| (isset($_SERVER["HTTP_HTTPS"]) && $_SERVER["HTTP_HTTPS"] == "on")
+        '@code' => 'if ( (isset($_SERVER[\'HTTPS\']) && strtolower($_SERVER[\'HTTPS\']) == \'on\')
+  || (isset($_SERVER[\'HTTP_X_FORWARDED_PROTO\']) && $_SERVER[\'HTTP_X_FORWARDED_PROTO\'] == \'https\')
+  || (isset($_SERVER[\'HTTP_HTTPS\']) && $_SERVER[\'HTTP_HTTPS\'] == \'on\')
 ) {
-$_SERVER["HTTPS"] = "on";
+  $_SERVER[\'HTTPS\'] = \'on\';
 }')));
   }
 
