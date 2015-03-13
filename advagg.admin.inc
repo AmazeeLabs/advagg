@@ -494,7 +494,7 @@ function advagg_admin_info_form($form, $form_state) {
   drupal_theme_initialize();
   $core_hooks = theme_get_registry();
   $advagg_hooks = advagg_hooks_implemented();
-  list($css_path, $js_path) = advagg_get_root_files_dir();
+  list( , $js_path) = advagg_get_root_files_dir();
 
   // Output html process functions hooks.
   $form['info'] = array(
@@ -710,7 +710,7 @@ function advagg_admin_get_file_info_callback($form, &$form_state) {
   }
   $info = advagg_admin_get_file_info($form_state['values']['filename']);
   if (empty($info)) {
-    form_set_error('filename', 'Please input a valid aggregate filename.');
+    form_set_error('filename', t('Please input a valid aggregate filename.'));
     return '<div id="advagg-file-info-ajax"></div>';
   }
   else {
@@ -729,7 +729,7 @@ function advagg_admin_get_file_info_callback($form, &$form_state) {
  */
 function advagg_admin_get_file_info_validate($form, &$form_state) {
   if (empty($form_state['values']['filename'])) {
-    form_set_error('filename', 'Please input an aggregate filename.');
+    form_set_error('filename', t('Please input an aggregate filename.'));
     $form_state['values']['error'] = TRUE;
   }
 }
@@ -753,7 +753,7 @@ function advagg_admin_get_file_info($filename) {
   $data = advagg_get_hashes_from_filename(basename($filename));
   $output = array();
   if (is_array($data)) {
-    list($type, $aggregate_filenames_hash, $aggregate_contents_hash, $aggregate_settings) = $data;
+    list($type, $aggregate_filenames_hash, $aggregate_contents_hash) = $data;
 
     // Get a list of files.
     $files = advagg_get_files_from_hashes($type, $aggregate_filenames_hash, $aggregate_contents_hash);
