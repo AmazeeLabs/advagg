@@ -1216,6 +1216,11 @@ function advagg_mod_js_contains_jquery_drupal($filename, $type = '') {
  *   JS array.
  */
 function advagg_mod_ga_inline_to_file(&$js) {
+  // Do nothing if the googleanalytics module is not enabled.
+  if (!module_exists('googleanalytics')) {
+    return;
+  }
+
   // Get inline GA js and put it inside of an aggregrate.
   $ga_script = '';
   $debug = variable_get('googleanalytics_debug', 0);
