@@ -112,11 +112,12 @@ function advagg_mod_admin_settings_form() {
       ),
     ),
   );
+  $advagg_mod_wrap_inline_js_skip_list = trim(variable_get('advagg_mod_wrap_inline_js_skip_list', ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST));
   $form['js']['placement']['advagg_mod_wrap_inline'] = array(
     '#type' => 'fieldset',
     '#title' => t('Inline skip list for wrapper code'),
     '#collapsible' => TRUE,
-    '#collapsed' => empty(trim(variable_get('advagg_mod_wrap_inline_js_skip_list', ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST))),
+    '#collapsed' => empty($advagg_mod_wrap_inline_js_skip_list),
     '#states' => array(
       'visible' => array(
         ':input[name="advagg_mod_js_footer_inline_alter"]' => array('checked' => TRUE),
