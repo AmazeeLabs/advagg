@@ -61,17 +61,19 @@ function advagg_mod_admin_settings_form() {
     '#default_value' => variable_get('advagg_mod_js_adjust_sort_browsers', ADVAGG_MOD_JS_ADJUST_SORT_BROWSERS),
     '#description' => t('This will group all browser conditional JavaScript to be in the lowest group of that conditional rule.'),
   );
-  $form['js']['adjust_sort']['expert'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Experimental Settings'),
-    '#collapsible' => TRUE,
-    '#collapsed' => !variable_get('advagg_mod_ga_inline_to_file', ADVAGG_MOD_GA_INLINE_TO_FILE),
-  );
-  $form['js']['adjust_sort']['expert']['advagg_mod_ga_inline_to_file'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Move Google Analytics analytics.js code from inline to be a file'),
-    '#default_value' => variable_get('advagg_mod_ga_inline_to_file', ADVAGG_MOD_GA_INLINE_TO_FILE),
-  );
+  if (module_exists('googleanalytics') && variable_get('googleanalytics_cache', 0)) {
+    $form['js']['adjust_sort']['expert'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Experimental Settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => !variable_get('advagg_mod_ga_inline_to_file', ADVAGG_MOD_GA_INLINE_TO_FILE),
+    );
+    $form['js']['adjust_sort']['expert']['advagg_mod_ga_inline_to_file'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Move Google Analytics analytics.js code from inline to be a file'),
+      '#default_value' => variable_get('advagg_mod_ga_inline_to_file', ADVAGG_MOD_GA_INLINE_TO_FILE),
+    );
+  }
 
   // Adjust javascript location and execution.
   $form['js']['placement'] = array(
