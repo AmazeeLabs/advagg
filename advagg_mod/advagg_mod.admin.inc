@@ -120,7 +120,7 @@ function advagg_mod_admin_settings_form() {
     '#type' => 'fieldset',
     '#title' => t('Inline Wrapper Settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => empty(trim($advagg_mod_wrap_inline_js_skip_list)) && empty($advagg_mod_wrap_inline_js_xpath),
+    '#collapsed' => empty($advagg_mod_wrap_inline_js_skip_list) && empty($advagg_mod_wrap_inline_js_xpath),
     '#states' => array(
       'visible' => array(
         ':input[name="advagg_mod_js_footer_inline_alter"]' => array('checked' => TRUE),
