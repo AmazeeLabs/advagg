@@ -433,7 +433,7 @@ function advagg_js_compress_jshrink(&$contents, $log_errors = TRUE) {
   $contents_before = $contents;
 
   // Only include jshrink.inc if the \JShrink\Minifier class doesn't exist.
-  if (!class_exists('\JShrink\Minifier')) {
+  if (!class_exists('JShrink\Minifier')) {
     include drupal_get_path('module', 'advagg_js_compress') . '/jshrink.inc';
     $nesting_level = ini_get('xdebug.max_nesting_level');
     if (!empty($nesting_level) && $nesting_level < 200) {
@@ -443,7 +443,7 @@ function advagg_js_compress_jshrink(&$contents, $log_errors = TRUE) {
   ob_start();
   try {
     // JShrink the contents of the aggregated file.
-    $contents = \JShrink\Minifier::minify($contents, array('flaggedComments' => FALSE));
+    $contents = JShrink\Minifier::minify($contents, array('flaggedComments' => FALSE));
 
     // Capture any output from JShrink.
     $error = trim(ob_get_contents());
@@ -473,7 +473,7 @@ function advagg_js_compress_jsqueeze(&$contents, $log_errors = TRUE) {
   $contents_before = $contents;
 
   // Only include jshrink.inc if the \Patchwork\JSqueeze class doesn't exist.
-  if (!class_exists('\Patchwork\JSqueeze')) {
+  if (!class_exists('Patchwork\JSqueeze')) {
     include drupal_get_path('module', 'advagg_js_compress') . '/jsqueeze.inc';
     $nesting_level = ini_get('xdebug.max_nesting_level');
     if (!empty($nesting_level) && $nesting_level < 200) {
@@ -483,7 +483,7 @@ function advagg_js_compress_jsqueeze(&$contents, $log_errors = TRUE) {
   ob_start();
   try {
     // Minify the contents of the aggregated file.
-    $jz = new \Patchwork\JSqueeze();
+    $jz = new Patchwork\JSqueeze();
     $contents = $jz->squeeze(
       $contents,
       TRUE,  // $singleLine
