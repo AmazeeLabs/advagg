@@ -115,11 +115,12 @@ function advagg_mod_admin_settings_form() {
     ),
   );
   $advagg_mod_wrap_inline_js_skip_list = trim(variable_get('advagg_mod_wrap_inline_js_skip_list', ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST));
+  $advagg_mod_wrap_inline_js_xpath = variable_get('advagg_mod_wrap_inline_js_xpath', ADVAGG_MOD_WRAP_INLINE_JS_XPATH);
   $form['js']['placement']['advagg_mod_wrap_inline'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Inline skip list for wrapper code'),
+    '#title' => t('Inline Wrapper Settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => empty($advagg_mod_wrap_inline_js_skip_list),
+    '#collapsed' => empty(trim($advagg_mod_wrap_inline_js_skip_list)) && empty($advagg_mod_wrap_inline_js_xpath),
     '#states' => array(
       'visible' => array(
         ':input[name="advagg_mod_js_footer_inline_alter"]' => array('checked' => TRUE),
@@ -128,12 +129,19 @@ function advagg_mod_admin_settings_form() {
   );
   $form['js']['placement']['advagg_mod_wrap_inline']['advagg_mod_wrap_inline_js_skip_list'] = array(
     '#type' => 'textarea',
+    '#title' => t('Inline skip list for wrapper code'),
     '#default_value' => variable_get('advagg_mod_wrap_inline_js_skip_list', ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST),
-    '#description' => t("If the inline JavaScript matches a given string then the whole inline script will not be wrapped. Enter one per line. Useful for things like conversion.js from the Google tracking code, as this is not async friendly (conversion.js needs global varaibles that were previously defined). In that case enter <code>@code</code> or equivalent above, where you replace %replace with the actual ID. Ideally you'd want to fix the code by using <a href='@url'>async frendly JS</a> but this is not always possible with 3rd party code.", array(
+    '#description' => t("If the inline JavaScript matches a given string then the whole inline script will not be wrapped. Enter one per line. Useful for things like conversion.js from the Google tracking code, as this is not async friendly (conversion.js needs global variables that were previously defined). In that case enter <code>@code</code> or equivalent above, where you replace %replace with the actual ID. Ideally you'd want to fix the code by using <a href='@url'>async friendly JS</a> but this is not always possible with 3rd party code.", array(
       '@code' => 'var google_conversion_id = XXX;',
       '%replace' => 'XXX',
       '@url' => 'https://developers.google.com/adwords-remarketing-tag/asynchronous/',
     )),
+  );
+  $form['js']['placement']['advagg_mod_wrap_inline']['advagg_mod_wrap_inline_js_xpath'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use XPath instead of regex when searching for inline scripts'),
+    '#default_value' => variable_get('advagg_mod_wrap_inline_js_xpath', ADVAGG_MOD_WRAP_INLINE_JS_XPATH),
+    '#description' => t('In general this should be disabled due to the unpredictable nature of parsing html snippets using DOMDocument loadHTML(). Only enable if you have script tags inside a textarea that have not been ran through htmlentities().'),
   );
   $form['js']['placement']['expert'] = array(
     '#type' => 'fieldset',

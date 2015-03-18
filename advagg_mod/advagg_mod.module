@@ -126,6 +126,8 @@ define('ADVAGG_MOD_GA_INLINE_TO_FILE', FALSE);
  */
 define('ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST', '');
 
+define('ADVAGG_MOD_WRAP_INLINE_JS_XPATH', TRUE);
+
 // Core hook implementations.
 /**
  * Implements hook_init().
@@ -470,16 +472,70 @@ function advagg_mod_process_move_js(&$variables) {
       && is_string($variables['page']['#children'])
       && stripos($variables['page']['#children'], '<script') !== FALSE
       ) {
-    $variables['page']['#children'] = preg_replace_callback($pattern, $callback, $variables['page']['#children']);
+    if (variable_get('advagg_mod_wrap_inline_js_xpath', ADVAGG_MOD_WRAP_INLINE_JS_XPATH)) {
+      $variables['page']['#children'] = advagg_mod_xpath_script_wrapper($variables['page']['#children']);
+    }
+    else {
+      $variables['page']['#children'] = preg_replace_callback($pattern, $callback, $variables['page']['#children']);
+    }
     return;
   }
   // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
   if (   is_string($variables['page'])
       && stripos($variables['page'], '<script') !== FALSE
       ) {
-    $variables['page'] = preg_replace_callback($pattern, $callback, $variables['page']);
+    if (variable_get('advagg_mod_wrap_inline_js_xpath', ADVAGG_MOD_WRAP_INLINE_JS_XPATH)) {
+      $variables['page'] = advagg_mod_xpath_script_wrapper($variables['page']);
+    }
+    else {
+      $variables['page'] = preg_replace_callback($pattern, $callback, $variables['page']);
+    }
     return;
   }
+}
+
+/**
+ * Use DOMDocument's loadHTML along with DOMXPath's query to find script tags.
+ *
+ * Once found, it will also wrap them in a javascript loader function.
+ *
+ * @param string $html
+ *   HTML fragments.
+ *
+ * @return string
+ *   The HTML fragment with less markup errors and script tags wrapped.
+ */
+function advagg_mod_xpath_script_wrapper($html) {
+  // Do not throw errors when parsing the html.
+  libxml_use_internal_errors(TRUE);
+
+  $dom = new DOMDocument;
+  // Load html with full tags all around.
+  $dom->loadHTML('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+  <html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body>' . $html . '</body></html>');
+  $xpath = new DOMXPath($dom);
+  // Get all script tags that are not inside of a textarea and do not contain a
+  // src attribute.
+  $nodes = $xpath->query('//script[not(@src)][not(ancestor::textarea)]');
+
+  foreach ($nodes as $node) {
+//     $matches[0] = $dom->saveHTML($node);
+    $matches[2] = $node->nodeValue;
+    $matches[0] = $node->nodeValue;
+    $new_html = advagg_mod_wrap_inline_js($matches);
+    $advagg = $dom->createElement('script', $new_html);
+    $node->parentNode->replaceChild($advagg, $node);
+  }
+  // Render to HTML.
+  $output = $dom->saveHTML();
+
+  // Remove the tags we added.
+  $output = str_replace(array('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+  <html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body>', '</body></html>'), array('', ''), $output);
+
+  // Clear any errors
+  libxml_clear_errors();
+  return $output;
 }
 
 // AdvAgg hook implementations.
