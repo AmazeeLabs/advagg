@@ -2696,9 +2696,6 @@ function advagg_pre_render_scripts(array $elements) {
  *   - '#aggregate_callback': A function to call to aggregate the items within
  *     the groups arranged by the #group_callback function.
  *
- * @return array
- *   A render array that will render to a string of XHTML CSS tags.
- *
  * For production websites, LINK tags are preferable to STYLE tags with @import
  * statements, because:
  * - They are the standard tag intended for linking to a resource.
@@ -2741,6 +2738,9 @@ function advagg_pre_render_scripts(array $elements) {
  * group rather than by testing the site-wide aggregation setting. This allows
  * this function to work correctly even if modules have implemented custom
  * logic for grouping and aggregating files.
+ *
+ * @return array
+ *   A render array that will render to a string of XHTML CSS tags.
  *
  * @see drupal_get_css()
  */
