@@ -2686,6 +2686,19 @@ function advagg_pre_render_scripts(array $elements) {
 /**
  * #pre_render callback to add the elements needed for CSS tags to be rendered.
  *
+ * @param array $elements
+ *   A render array containing:
+ *   - '#items': The CSS items as returned by drupal_add_css() and altered by
+ *     drupal_get_css().
+ *   - '#group_callback': A function to call to group #items to enable the use
+ *     of fewer tags by aggregating files and/or using multiple @import
+ *     statements within a single tag.
+ *   - '#aggregate_callback': A function to call to aggregate the items within
+ *     the groups arranged by the #group_callback function.
+ *
+ * @return array
+ *   A render array that will render to a string of XHTML CSS tags.
+ *
  * For production websites, LINK tags are preferable to STYLE tags with @import
  * statements, because:
  * - They are the standard tag intended for linking to a resource.
@@ -2694,8 +2707,8 @@ function advagg_pre_render_scripts(array $elements) {
  *   use: http://drupal.org/node/145218.
  * - On IE, if only LINK tags and no @import statements are used, all the CSS
  *   files are downloaded in parallel, resulting in faster page load, but if
- *   @import statements are used and span across multiple STYLE tags, all the
- *   ones from one STYLE tag must be downloaded before downloading begins for
+ *   the @import statements are used and span across multiple STYLE tags, all
+ *   the ones from 1 STYLE tag must be downloaded before downloading begins for
  *   the next STYLE tag. Furthermore, IE7 does not support media declaration on
  *   the @import statement, so multiple STYLE tags must be used when different
  *   files are for different media types. Non-IE browsers always download in
@@ -2728,19 +2741,6 @@ function advagg_pre_render_scripts(array $elements) {
  * group rather than by testing the site-wide aggregation setting. This allows
  * this function to work correctly even if modules have implemented custom
  * logic for grouping and aggregating files.
- *
- * @param array $element
- *   A render array containing:
- *   - '#items': The CSS items as returned by drupal_add_css() and altered by
- *     drupal_get_css().
- *   - '#group_callback': A function to call to group #items to enable the use
- *     of fewer tags by aggregating files and/or using multiple @import
- *     statements within a single tag.
- *   - '#aggregate_callback': A function to call to aggregate the items within
- *     the groups arranged by the #group_callback function.
- *
- * @return array
- *   A render array that will render to a string of XHTML CSS tags.
  *
  * @see drupal_get_css()
  */
@@ -3462,7 +3462,7 @@ function advagg_load_stylesheet_content($contents, $optimize = FALSE) {
  *
  * @see _drupal_load_stylesheet()
  */
-function _advagg_load_stylesheet($matches) {
+function _advagg_load_stylesheet(array $matches) {
   $filename = $matches[1];
   // Load the imported stylesheet and replace @import commands in there as well.
   $file = advagg_load_stylesheet($filename, NULL, FALSE);
