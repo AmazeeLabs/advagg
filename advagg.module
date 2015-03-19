@@ -1439,7 +1439,7 @@ function _advagg_process_html(&$variables) {
  *
  * @see drupal_add_css()
  */
-function advagg_get_css(array $css = array, $skip_alter = FALSE) {
+function advagg_get_css(array $css = array(), $skip_alter = FALSE) {
   if (empty($css)) {
     $css = drupal_add_css();
   }
