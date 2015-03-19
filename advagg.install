@@ -743,7 +743,7 @@ $base_url = str_replace("http://", "https://", $base_url);
   // Make sure http requests will work correctly.
   advagg_install_check_via_http($requirements);
 
-  // If all requirements have been meet, state advagg should be working.
+  // If all requirements have been met, state advagg should be working.
   if (empty($requirements)) {
     $description = '';
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
