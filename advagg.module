@@ -1335,7 +1335,8 @@ function _advagg_process_html(&$variables) {
 
     // Check if the js has changed.
     $new_js = drupal_add_js();
-    if (!empty(array_diff(array_keys($new_js), array_keys($javascript)))) {
+    $diff = array_diff(array_keys($new_js), array_keys($javascript));
+    if (!empty($diff)) {
       // Get all JS variables needed again because js changed.
       list($javascript, $js_scope_settings_array, $js_scope_array) = _advagg_build_js_arrays_for_rendering();
     }
