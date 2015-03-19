@@ -434,7 +434,7 @@ function advagg_update_7206(&$sandbox) {
  * Callback to delete files if size == 0 & modified more than 60 seconds ago.
  *
  * @param string $uri
- *   location of the file to check.
+ *   Location of the file to check.
  */
 function advagg_install_delete_empty_file_if_stale($uri) {
   // Set stale file threshold to 60 seconds.
@@ -638,13 +638,13 @@ function advagg_requirements($phase) {
   $styles_info = element_info('styles');
   $scripts_info = element_info('scripts');
   // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-  if (   empty($styles_info['#pre_render'])
-      || !is_array($styles_info['#pre_render'])
-      || !in_array('advagg_modify_css_pre_render', $styles_info['#pre_render'])
-      || empty($scripts_info['#pre_render'])
-      || !is_array($scripts_info['#pre_render'])
-      || !in_array('advagg_modify_js_pre_render', $scripts_info['#pre_render'])
-      ) {
+  if ( empty($styles_info['#pre_render'])
+    || !is_array($styles_info['#pre_render'])
+    || !in_array('advagg_modify_css_pre_render', $styles_info['#pre_render'])
+    || empty($scripts_info['#pre_render'])
+    || !is_array($scripts_info['#pre_render'])
+    || !in_array('advagg_modify_js_pre_render', $scripts_info['#pre_render'])
+  ) {
     $requirements['advagg_hook_element_info_alter'] = array(
       'title' => $t('Adv CSS/JS Agg - element_info'),
       'severity' => REQUIREMENT_WARNING,
@@ -772,9 +772,9 @@ $base_url = str_replace("http://", "https://", $base_url);
  * Make sure http requests to css/js files work correctly.
  *
  * @param array $requirements
- *   array of requirements used in hook_requirements().
+ *   Array of requirements used in hook_requirements().
  */
-function advagg_install_check_via_http(&$requirements) {
+function advagg_install_check_via_http(array &$requirements) {
   // If other checks have not passed, do not test this.
   if (!empty($requirements)) {
     // Still check if it's only that the CDN patch has not been applied.
@@ -1001,23 +1001,23 @@ function advagg_install_check_via_http(&$requirements) {
  * Make sure http requests to css/js files work correctly.
  *
  * @param array $requirements
- *   array of requirements used in hook_requirements().
+ *   Array of requirements used in hook_requirements().
  * @param array $urls
- *   array of urls
+ *   Array of urls
  * @param array $options
- *   options array to pass to drupal_http_request().
+ *   Options array to pass to drupal_http_request().
  * @param bool $mod_url
- *   set to TRUE if an alt URL was used.
+ *   Set to TRUE if an alt URL was used.
  * @param string $type
- *   css or js.
+ *   String: css or js.
  * @param string $url_path
- *   url path to the file.
+ *   The url path to the file.
  * @param string $file_path
- *   file path to the file.
+ *   File path to the file.
  * @param string $filename
- *   name of the file.
+ *   Name of the file.
  */
-function advagg_install_chk_urls(&$requirements, $urls, $options, $mod_url, $type, $url_path, $file_path, $filename) {
+function advagg_install_chk_urls(array &$requirements, array $urls, array $options, $mod_url, $type, $url_path, $file_path, $filename) {
   // Ensure translations don't break at install time.
   $t = get_t();
 
@@ -1115,10 +1115,10 @@ function advagg_install_chk_urls(&$requirements, $urls, $options, $mod_url, $typ
       $modules = array();
       $matches = array();
       // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-      if (   !empty($request->headers['x-advagg'])
-          && preg_match('/Generated file at (\\d+)/is', $request->headers['x-advagg'], $matches)
-          && $matches[1] + 30 > REQUEST_TIME
-          ) {
+      if ( !empty($request->headers['x-advagg'])
+        && preg_match('/Generated file at (\\d+)/is', $request->headers['x-advagg'], $matches)
+        && $matches[1] + 30 > REQUEST_TIME
+      ) {
         $requirements['advagg_' . $type . '_loopback_issue' . $key] = array(
           'title' => $t('Adv CSS/JS Agg - Incorrect readings'),
           'severity' => REQUIREMENT_WARNING,
@@ -1370,9 +1370,6 @@ function advagg_install_get_first_advagg_file($file_path) {
  *   Options array for drupal_http_request().
  * @param bool $mod_url
  *   Set to TRUE to try and modify the $url variable.
- *
- * @return string
- *   URI is returned.
  */
 function advagg_install_url_mod(&$url, &$options, $mod_url = FALSE) {
   // Set the $options array.
@@ -1396,6 +1393,9 @@ function advagg_install_url_mod(&$url, &$options, $mod_url = FALSE) {
 
   if ($mod_url) {
     $parts = @parse_url($url);
+    if (!is_array($parts)) {
+      return;
+    }
 
     // Pass along user/pass in the URL.
     if (module_exists('shield')) {
@@ -1434,19 +1434,15 @@ function advagg_install_url_mod(&$url, &$options, $mod_url = FALSE) {
 /**
  * Alt to http_build_url().
  *
- * @see http://php.net/parse-url#85963
- *
  * @param array $parsed
- *   array from parse_url()
+ *   Array from parse_url().
  *
  * @return string
  *   URI is returned.
+ *
+ * @see http://php.net/parse-url#85963
  */
-function advagg_install_glue_url($parsed) {
-  if (!is_array($parsed)) {
-    return FALSE;
-  }
-
+function advagg_install_glue_url(array $parsed) {
   $uri = isset($parsed['scheme']) ? $parsed['scheme'] . ':' . ((strtolower($parsed['scheme']) === 'mailto') ? '' : '//') : '';
   $uri .= isset($parsed['user']) ? $parsed['user'] . (isset($parsed['pass']) ? ':' . $parsed['pass'] : '') . '@' : '';
   $uri .= isset($parsed['host']) ? $parsed['host'] : '';

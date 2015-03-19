@@ -24,7 +24,7 @@ class AdvAggCascadingStylesheetsUnitTest extends DrupalUnitTestCase {
   /**
    * Install the advagg module and include needed files.
    */
-  function setUp() {
+  public function setUp() {
     // Enable any modules required for the test. This should be an array of
     // module names.
     parent::setUp(array('advagg'));
@@ -36,7 +36,7 @@ class AdvAggCascadingStylesheetsUnitTest extends DrupalUnitTestCase {
   /**
    * Test for CSS optimizations, url(), and css include statements.
    */
-  function testLoadCssBasic() {
+  public function testLoadCssBasic() {
     // Array of files to test living in 'advagg/tests/css_test_files/'.
     // - Original: name.css
     // - Unoptimized expected content: name.css.unoptimized.css
@@ -56,7 +56,7 @@ class AdvAggCascadingStylesheetsUnitTest extends DrupalUnitTestCase {
     //   should not be expanded. (https://drupal.org/node/2014851)
     //
     // File in sub-folder. Tests: css_subfolder/css_input_with_import.css.
-    // - CSS import path is properly interpreted. (https://drupal.org/node/1198904)
+    // - CSS import path interpreted. (https://drupal.org/node/1198904)
     // - Don't adjust data URIs (https://drupal.org/node/2142441)
     //
     // File. Tests: comment_hacks.css.
@@ -65,7 +65,7 @@ class AdvAggCascadingStylesheetsUnitTest extends DrupalUnitTestCase {
       'css_input_without_import.css',
       'css_input_with_import.css',
       'css_subfolder/css_input_with_import.css',
-      'comment_hacks.css'
+      'comment_hacks.css',
     );
     $path = drupal_get_path('module', 'advagg') . '/tests/css_test_files';
     foreach ($testfiles as $file) {

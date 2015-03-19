@@ -389,9 +389,9 @@ Install AdvAgg Compress Javascript if not enabled and go to
 
 **Other things to consider**
 
-On the `admin/config/development/performance/advagg/mod` page there is the setting
-"Remove unused JavaScript tags if possible". This is a backport of D8 where it
-will not add any JS to the page if it is not being used.
+On the `admin/config/development/performance/advagg/mod` page there is the
+setting "Remove unused JavaScript tags if possible". This is a backport of D8
+where it will not add any JS to the page if it is not being used.
 https://drupal.org/node/1279226
 
 The AdvAgg Bundler module on the
