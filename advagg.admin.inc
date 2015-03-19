@@ -9,6 +9,7 @@
  * Form builder; Configure advagg settings.
  *
  * @ingroup forms
+ *
  * @see system_settings_form()
  */
 function advagg_admin_settings_form($form, $form_state) {
@@ -238,7 +239,6 @@ function advagg_admin_settings_form($form, $form_state) {
       ),
     ),
   );
-
 
   $form['css'] = array(
     '#type' => 'fieldset',
@@ -473,6 +473,7 @@ function advagg_admin_operations_form($form, $form_state) {
  * Form builder; Show info about advagg and advagg settings.
  *
  * @ingroup forms
+ *
  * @see system_settings_form()
  */
 function advagg_admin_info_form($form, $form_state) {
@@ -487,7 +488,7 @@ function advagg_admin_info_form($form, $form_state) {
   drupal_theme_initialize();
   $core_hooks = theme_get_registry();
   $advagg_hooks = advagg_hooks_implemented();
-  list( , $js_path) = advagg_get_root_files_dir();
+  list(, $js_path) = advagg_get_root_files_dir();
 
   // Output html process functions hooks.
   $form['info'] = array(

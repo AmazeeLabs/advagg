@@ -75,7 +75,7 @@ function hook_advagg_build_aggregate_plans_alter(array &$files, &$modified, $typ
  * @see advagg_push_new_changes()
  * @see advagg_js_compress_advagg_changed_files()
  */
-function hook_advagg_changed_files(array $files, $types) {
+function hook_advagg_changed_files(array $files, array $types) {
   // Only care about js files.
   if (empty($types['js'])) {
     return array();
@@ -262,7 +262,7 @@ function hook_advagg_get_css_file_contents_alter(&$contents, $file, array $aggre
  *
  * @param string $contents
  *   Raw file data.
- * @param string $file
+ * @param string $filename
  *   Filename.
  * @param array $aggregate_settings
  *   An associative array of hooks and settings used.
@@ -528,8 +528,8 @@ function hook_advagg_modify_js_pre_render_alter(array &$children, array &$elemen
  * @param array $aggregate_settings
  *   Array of contextual settings.
  * @param int $mode
- *   0 to change context to what is inside of $aggregate_settings.
- *   1 to change context back.
+ *   Use 0 to change context to what is inside of $aggregate_settings.
+ *   Use 1 to change context back.
  *
  * @see advagg_context_css()
  * @see advagg_advagg_context_alter()

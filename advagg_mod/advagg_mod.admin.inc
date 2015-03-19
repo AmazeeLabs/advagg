@@ -9,6 +9,7 @@
  * Form builder; Configure advagg settings.
  *
  * @ingroup forms
+ *
  * @see system_settings_form()
  */
 function advagg_mod_admin_settings_form() {
@@ -172,7 +173,6 @@ function advagg_mod_admin_settings_form() {
     '#description' => t('Rewrites all scripts in the page with an "async" attribute to an inline JavaScript loading the script asynchronously in an old browser compatible way. List of <a href="@link">supported browsers</a>. Once all commonly used browsers support the "async" attribute you can happily disable this checkbox.', array('@link' => 'http://caniuse.com/script-async')),
   );
 
-
   $config_path = advagg_admin_config_root_path();
   $form['css'] = array(
     '#type' => 'fieldset',
@@ -268,7 +268,7 @@ function advagg_mod_admin_settings_form() {
     '#options' => array(
       0 => t('Inline javascript loader library (If enabled this is recommended)'),
       2 => t('Local file included in aggregate'),
-//       4 => t('Externally load the latest from github (SLOW! Not a CDN!!!)'),
+      // 4 => t('Externally load the latest from github (SLOW! Not a CDN!!!)'),
     ),
     '#description' => t('The <a href="@link">loadCSS</a> library can be included in various ways.', array(
       '@link' => 'https://github.com/filamentgroup/loadCSS',
@@ -378,9 +378,9 @@ function advagg_mod_admin_settings_form_validate($form, &$form_state) {
   $css_dir = $multisite_dir . '/advagg_css';
   $js_dir = $multisite_dir . '/advagg_js';
   // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-  if (   !file_prepare_directory($css_dir, FILE_CREATE_DIRECTORY)
-      || !file_prepare_directory($js_dir, FILE_CREATE_DIRECTORY)
-      ) {
+  if ( !file_prepare_directory($css_dir, FILE_CREATE_DIRECTORY)
+    || !file_prepare_directory($js_dir, FILE_CREATE_DIRECTORY)
+  ) {
     if (!is_dir($multisite_dir) || !is_writable($multisite_dir)) {
       form_set_error('advagg_mod_unified_multisite_dir', t('%dir is not a directory or can not be written to. The shared directory needs to have the same permissions as the "Public file system path" found on the <a href="@file_system_link">File System configuration page</a>.', array(
         '%dir' => $multisite_dir,
