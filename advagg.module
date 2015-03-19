@@ -2684,7 +2684,7 @@ function advagg_pre_render_scripts(array $elements) {
 
 
 /**
- * #pre_render callback to add the elements needed for CSS tags to be rendered.
+ * A #pre_render callback to add elements needed for CSS tags to be rendered.
  *
  * For production websites, LINK tags are preferable to STYLE tags with @import
  * statements, because:
