@@ -46,28 +46,21 @@ function advagg_admin_settings_form($form, $form_state) {
     '#description' => t('If <a href="@link">HTTPRL</a> is installed, advagg will use it to generate aggregates on the fly in a background parallel process.', array('@link' => 'http://drupal.org/project/httprl')),
   );
 
-  $aggressive_cache_conflicts = advagg_aggressive_cache_conflicts();
-  if (empty($aggressive_cache_conflicts)) {
-    $description = t('It appears that there are no incompatible modules, so you should be able to safely use the Aggressive cache.');
-  }
-  else {
-    $description = t('It appears that there might be some incompatible modules. I would test these out before setting the cache to aggressive: %modules', array('%modules' => implode(', ', $aggressive_cache_conflicts)));
-  }
   $options = array(
-    -1 => t('Development ~ 100ms'),
-    1 => t('Normal ~ 10ms'),
-    3 => t('Aggressive ~ 4ms'),
+    -1 => t('Development ~ 300ms'),
+    1 => t('Normal ~ 60ms'),
+    3 => t('Aggressive ~ 12ms'),
   );
   $form['global']['advagg_cache_level'] = array(
     '#type' => 'radios',
     '#title' => t('AdvAgg Cache Settings'),
     '#default_value' => variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL),
     '#options' => $options,
-    '#description' => t("As a reference, core takes about 7 ms to run. Development will scan all files for a change on every page load. Normal is should be fine for all use cases. Aggressive might break depending on how various hook_alter's for CSS/JS are implemented; to see what modules are using css/js_alter you can go to the <a href='@information'>Information Page</a> and under 'AdvAgg CSS/JS hooks implemented by modules' modules using both of these hooks will be listed near the bottom of that section; more information about the Aggressive setting can be found in the advagg README.txt file.", array(
+    '#description' => t("As a reference, core takes about 25 ms to run. Development will scan all files for a change on every page load. Normal is fine for all use cases. Aggressive should be fine in almost all use cases; if your inline css/js changes based off of a variable then the aggressive cache hit ratio will be low; if that is the case consider using Drupal.settings for a better cache hit ratio.", array(
       '@information' => url($config_path . '/advagg/info', array(
         'fragment' => 'edit-hooks-implemented',
       )),
-    )) . ' ' . $description,
+    )),
   );
 
   $form['global']['dev_container'] = array(

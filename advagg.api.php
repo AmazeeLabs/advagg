@@ -658,22 +658,6 @@ function hook_advagg_hooks_implemented_alter(array &$hooks, $all) {
 }
 
 /**
- * Let other modules whitelist them self's for the advagg aggressive cache.
- *
- * Prevents warnings from being displayed on the admin page if a module safely
- * uses hook_js_alter and/or hook_css_alter.
- *
- * @param array $whitelist
- *   Array of hooks related to advagg.
- *
- * @see advagg_admin_settings_form()
- * @see advagg_aggressive_cache_conflicts()
- */
-function hook_advagg_aggressive_cache_conflicts_alter(array &$whitelist) {
-  $whitelist[] = 'jquery_update';
-}
-
-/**
  * Let other modules modify the analysis array before it is used.
  *
  * @param array $analysis

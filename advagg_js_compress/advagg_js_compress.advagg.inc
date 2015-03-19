@@ -346,10 +346,10 @@ function advagg_js_compress_prep(&$contents, $filename, $aggregate_settings, $ad
       $contents = jsmin($contents);
     }
     elseif ($compressor == 4) {
-      $contents = advagg_js_compress_jshrink($contents);
+      advagg_js_compress_jshrink($contents);
     }
     elseif ($compressor == 5) {
-      $contents = advagg_js_compress_jsqueeze($contents);
+      advagg_js_compress_jsqueeze($contents);
     }
 
     // Ensure that $contents ends with ; or }.
@@ -362,13 +362,14 @@ function advagg_js_compress_prep(&$contents, $filename, $aggregate_settings, $ad
     cache_set($cache_id, $contents, 'cache_advagg_aggregates', REQUEST_TIME + (86400 * 7));
   }
 
+  // Make sure compression ratios are good.
+  $after = strlen($contents);
+  $ratio = 0;
+  if ($before != 0) {
+    $ratio = ($before - $after) / $before;
+  }
+
   if ($test_ratios) {
-    // Make sure compression ratios are good.
-    $after = strlen($contents);
-    $ratio = 0;
-    if ($before != 0) {
-      $ratio = ($before - $after) / $before;
-    }
     // Make sure the returned string is not empty or has a VERY high
     // compression ratio.
     if (empty($contents) || empty($ratio) || $ratio > $aggregate_settings['variables']['advagg_js_max_compress_ratio'] || $ratio < 0) {
@@ -432,7 +433,7 @@ function advagg_js_compress_jsminplus(&$contents, $log_errors = TRUE) {
 function advagg_js_compress_jshrink(&$contents, $log_errors = TRUE) {
   $contents_before = $contents;
 
-  // Only include jshrink.inc if the \JShrink\Minifier class doesn't exist.
+  // Only include jshrink.inc if the JShrink\Minifier class doesn't exist.
   if (!class_exists('JShrink\Minifier')) {
     include drupal_get_path('module', 'advagg_js_compress') . '/jshrink.inc';
     $nesting_level = ini_get('xdebug.max_nesting_level');
@@ -472,7 +473,7 @@ function advagg_js_compress_jshrink(&$contents, $log_errors = TRUE) {
 function advagg_js_compress_jsqueeze(&$contents, $log_errors = TRUE) {
   $contents_before = $contents;
 
-  // Only include jshrink.inc if the \Patchwork\JSqueeze class doesn't exist.
+  // Only include jshrink.inc if the Patchwork\JSqueeze class doesn't exist.
   if (!class_exists('Patchwork\JSqueeze')) {
     include drupal_get_path('module', 'advagg_js_compress') . '/jsqueeze.inc';
     $nesting_level = ini_get('xdebug.max_nesting_level');
