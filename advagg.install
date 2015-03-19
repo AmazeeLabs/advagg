@@ -1003,7 +1003,7 @@ function advagg_install_check_via_http(array &$requirements) {
  * @param array $requirements
  *   Array of requirements used in hook_requirements().
  * @param array $urls
- *   Array of urls
+ *   Array of urls.
  * @param array $options
  *   Options array to pass to drupal_http_request().
  * @param bool $mod_url
@@ -1371,7 +1371,7 @@ function advagg_install_get_first_advagg_file($file_path) {
  * @param bool $mod_url
  *   Set to TRUE to try and modify the $url variable.
  */
-function advagg_install_url_mod(&$url, &$options, $mod_url = FALSE) {
+function advagg_install_url_mod(&$url, array &$options, $mod_url = FALSE) {
   // Set the $options array.
   // Set all timeouts to 8 seconds.
   $options += array(
