@@ -636,7 +636,6 @@ function advagg_generate_groups(array $files_to_aggregate) {
     foreach ($data as $values) {
 
       // Group into the biggest buckets possible.
-      $onload = array();
       $last_ext = '';
       foreach ($values['items'] as $file_info) {
         $parts = array();
@@ -748,34 +747,12 @@ function advagg_generate_groups(array $files_to_aggregate) {
           }
         }
 
-        // Handle onload.
-        if ($changed) {
-          $onload = array_filter(array_unique($onload));
-          if (!empty($onload)) {
-            end($groups[$location][$count]);
-            $key = key($groups[$location][$count]);
-            $groups[$location][$count][$key]['onload'] = implode(';', $onload) . ';';
-          }
-          $onload = array();
-        }
-        if (isset($file_info['onload'])) {
-          $onload[] = trim(rtrim($file_info['onload'], ';'));
-          unset($file_info['onload']);
-        }
-
         // If one of the above options changed, it needs to be in a different
         // aggregate.
         if (!empty($parts)) {
           foreach ($parts as $part) {
             ++$count;
             $groups[$location][$count][] = $part;
-          }
-          // Put onload on the last segment of the split file.
-          $onload_local = array_filter(array_unique($onload));
-          if (!empty($onload_local)) {
-            end($groups[$location][$count]);
-            $key = key($groups[$location][$count]);
-            $groups[$location][$count][$key]['onload'] = implode(';', $onload_local) . ';';
           }
         }
         else {
@@ -784,12 +761,6 @@ function advagg_generate_groups(array $files_to_aggregate) {
           }
           $groups[$location][$count][] = $file_info;
         }
-      }
-      $onload = array_filter(array_unique($onload));
-      if (!empty($onload)) {
-        end($groups[$location][$count]);
-        $key = key($groups[$location][$count]);
-        $groups[$location][$count][$key]['onload'] = implode(';', $onload) . ';';
       }
     }
     // Grouping if inline is mixed between files.
@@ -1130,8 +1101,25 @@ function advagg_build_aggregate_plans(array $files_to_aggregate, $type) {
       }
     }
 
+    // Get onload.
+    $onload = array();
+    foreach ($values['files'] as $items) {
+      if (!empty($items['onload'])) {
+        $onload[] = $items['onload'];
+      }
+    }
+    $onload = implode(';', array_unique(array_filter($onload)));
+
+    // Get onerror.
+    $onerror = array();
+    foreach ($values['files'] as $items) {
+      if (!empty($items['onerror'])) {
+        $onload[] = $items['onerror'];
+      }
+    }
+    $onerror = implode(';', array_unique(array_filter($onerror)));
+
     $first = reset($values['files']);
-    $last = end($values['files']);
     if (!empty($mixed_media)) {
       $first['media'] = 'all';
     }
@@ -1142,7 +1130,8 @@ function advagg_build_aggregate_plans(array $files_to_aggregate, $type) {
       'media' => isset($first['media']) ? $first['media'] : '',
       'defer' => isset($first['defer']) ? $first['defer'] : '',
       'async' => isset($first['async']) ? $first['async'] : '',
-      'onload' => isset($last['onload']) ? $last['onload'] : '',
+      'onload' => $onload,
+      'onerror' => $onerror,
       'browsers' => isset($first['browsers']) ? $first['browsers'] : array(),
       'cache' => isset($first['cache']) ? $first['cache'] : TRUE,
       'type' => $first['type'],
