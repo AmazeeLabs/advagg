@@ -562,7 +562,7 @@ function advagg_get_info_on_file($filename, $bypass_cache = FALSE, $run_alter = 
  *   String: The filename. No path info.
  */
 function advagg_build_filename($type, $aggregate_filenames_hash, $aggregate_contents_hash, $hooks_hash = NULL) {
-  if (is_null($hooks_hash)) {
+  if (empty($hooks_hash)) {
     $hooks_hash = advagg_get_current_hooks_hash();
   }
   return $type . ADVAGG_SPACE .
@@ -1273,7 +1273,7 @@ function advagg_context_css(array $aggregate_settings, $mode) {
   $original = &drupal_static(__FUNCTION__);
 
   // Use current $aggregate_settings if none was passed in.
-  if (is_null($aggregate_settings)) {
+  if (empty($aggregate_settings)) {
     $aggregate_settings = advagg_current_hooks_hash_array();
   }
 
