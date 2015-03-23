@@ -514,6 +514,9 @@ function advagg_cron($bypass_time_check = FALSE) {
   module_load_include('inc', 'advagg', 'advagg.cache');
   $return[] = advagg_delete_stale_aggregates();
 
+  // Remove orphaned files
+  $return[] = advagg_delete_orphaned_aggregates();
+
   // Remove aggregates that include missing files.
   $return[] = advagg_remove_missing_files_from_db();
 
@@ -3361,7 +3364,7 @@ function advagg_file_create_url($path, array $aggregate_settings = array()) {
  *
  * @see drupal_load_stylesheet()
  */
-function advagg_load_stylesheet($file, $optimize = NULL, $reset_basepath = TRUE) {
+function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE) {
   // These statics are not cache variables, so we don't use drupal_static().
   static $_optimize, $basepath;
   if ($reset_basepath) {

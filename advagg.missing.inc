@@ -355,12 +355,14 @@ function advagg_htaccess_check_generate(array $files_to_save, $type, $force = FA
  *
  * @param string $filename
  *   Just the filename no path information.
+ * @param bool $skip_hooks_check
+ *   Allows for the skipping of db lookup for required file hooks.
  *
  * @return mixed
  *   On failure a string saying why it failed.
  *   On success array($ext, $aggregate_hash, $files_hash).
  */
-function advagg_get_hashes_from_filename($filename) {
+function advagg_get_hashes_from_filename($filename, $skip_hooks_check = FALSE) {
   // Verify requested filename has the correct pattern.
   if (!advagg_match_file_pattern($filename)) {
     return t('Wrong pattern.');
@@ -389,10 +391,13 @@ function advagg_get_hashes_from_filename($filename) {
   $aggregate_contents_hash = substr($filename, $aggregate_contents_start, 43);
   $hooks_hashes_value = substr($filename, $hooks_hashes_start, 43);
 
-  // Verify that the hooks hashes is valid.
-  $aggregate_settings = advagg_get_hash_settings($hooks_hashes_value);
-  if (empty($aggregate_settings)) {
-    return t('Bad hooks hashes value.');
+  $aggregate_settings = array();
+  if ($skip_hooks_check) {
+    // Verify that the hooks hashes is valid.
+    $aggregate_settings = advagg_get_hash_settings($hooks_hashes_value);
+    if (empty($aggregate_settings)) {
+      return t('Bad hooks hashes value.');
+    }
   }
 
   return array(
