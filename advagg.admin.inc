@@ -912,7 +912,7 @@ function advagg_admin_remove_missing_files_from_db_button() {
   // Remove aggregates that include missing files.
   $deleted = advagg_remove_missing_files_from_db();
   if (empty($deleted)) {
-    drupal_set_message(t('No missing files found and/or could be safely cleared out of the database.'));
+    drupal_set_message(t('No missing files found or they could not be safely cleared out of the database.'));
   }
   else {
     drupal_set_message(t('Some missing files were found and could be safely cleared out of the database. <pre> @raw </pre>', array('@raw' => print_r($deleted, TRUE))));

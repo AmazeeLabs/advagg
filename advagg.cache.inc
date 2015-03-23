@@ -371,6 +371,7 @@ function advagg_remove_missing_files_from_db() {
           ->condition('aggregate_filenames_hash', $values['aggregate_filenames_hash'])
           ->condition('atime', REQUEST_TIME - variable_get('advagg_remove_missing_files_from_db_time', ADVAGG_REMOVE_MISSING_FILES_FROM_DB_TIME), '<')
           ->execute();
+
         if ($can_delete > 0) {
           $advagg_aggregates_versions_del += $can_delete;
           $advagg_aggregates_del += db_delete('advagg_aggregates')
@@ -390,15 +391,15 @@ function advagg_remove_missing_files_from_db() {
       $advagg_files_del += db_delete('advagg_files')
         ->condition('filename_hash', $filename_hash)
         ->execute();
-    }
 
-    // Add info to array.
-    $types[$ext] = TRUE;
-    $deleted[$filename] = array(
-      'advagg_files' => $advagg_files_del,
-      'advagg_aggregates_versions' => $advagg_aggregates_versions_del,
-      'advagg_aggregates' => $advagg_aggregates_del,
-    );
+      // Add info to array.
+      $types[$ext] = TRUE;
+      $deleted[$filename] = array(
+        'advagg_files' => $advagg_files_del,
+        'advagg_aggregates_versions' => $advagg_aggregates_versions_del,
+        'advagg_aggregates' => $advagg_aggregates_del,
+      );
+    }
   }
 
   // If something was deleted, clear the full aggregates cache.
