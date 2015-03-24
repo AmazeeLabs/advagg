@@ -531,7 +531,7 @@ function hook_advagg_modify_js_pre_render_alter(array &$children, array &$elemen
  *   Use 0 to change context to what is inside of $aggregate_settings.
  *   Use 1 to change context back.
  *
- * @see advagg_context_css()
+ * @see advagg_context_switch()
  * @see advagg_advagg_context_alter()
  */
 function hook_advagg_context_alter(array &$original, array $aggregate_settings, $mode) {

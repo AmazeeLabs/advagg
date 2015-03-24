@@ -280,7 +280,7 @@ function advagg_flush_all_cache_bins() {
 function advagg_remove_all_aggregated_files($kill_htaccess = FALSE) {
   $options = array(
     'callback' => 'file_unmanaged_delete',
-    'nomask' => '',
+    'nomask' => '/(\.\.?|CVS)$/',
   );
   list($css_files, $js_files) = advagg_get_all_files($options);
 

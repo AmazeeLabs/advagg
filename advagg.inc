@@ -1233,7 +1233,7 @@ function advagg_create_aggregate_files(array $plans, $type) {
  */
 function advagg_load_css_stylesheet($file, $optimize, array $aggregate_settings = array()) {
   // Change context to that of when this aggregate was created.
-  advagg_context_css($aggregate_settings, 0);
+  advagg_context_switch($aggregate_settings, 0);
 
   // Get the stylesheets contents.
   $contents = advagg_load_stylesheet($file, $optimize);
@@ -1254,14 +1254,14 @@ function advagg_load_css_stylesheet($file, $optimize, array $aggregate_settings 
   $contents = preg_replace_callback('%url\(\s*+[\'"]?+(?![a-z]++:|/|\#|\%23+)([^\'"()\s]++)[\'"]?+\s*+\)%i', '_advagg_build_css_path', $contents);
 
   // Change context back.
-  advagg_context_css($aggregate_settings, 1);
+  advagg_context_switch($aggregate_settings, 1);
 
   // Return the stylesheets contents.
   return $contents;
 }
 
 /**
- * Changes context when generating CSS.
+ * Changes context when generating CSS or JS files.
  *
  * @param array $aggregate_settings
  *   Array of settings.
@@ -1269,7 +1269,7 @@ function advagg_load_css_stylesheet($file, $optimize, array $aggregate_settings 
  *   Use 0 to change context to what is inside of $aggregate_settings.
  *   Use 1 to change context back.
  */
-function advagg_context_css(array $aggregate_settings, $mode) {
+function advagg_context_switch(array $aggregate_settings, $mode) {
   $original = &drupal_static(__FUNCTION__);
 
   // Use current $aggregate_settings if none was passed in.
