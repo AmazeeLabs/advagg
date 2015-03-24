@@ -1193,8 +1193,8 @@ function advagg_mod_match_path($pages, $visibility) {
       }
       // When $visibility has a value of 0 (ADVAGG_MOD_VISIBILITY_NOTLISTED),
       // the block is displayed on all pages except those listed in $pages.
-      // When set to 1 (ADVAGG_MOD_VISIBILITY_LISTED), it is displayed only on those
-      // pages listed in $block->pages.
+      // When set to 1 (ADVAGG_MOD_VISIBILITY_LISTED), it is displayed only on
+      // those pages listed in $block->pages.
       $page_match = !($visibility xor $page_match);
     }
     elseif (module_exists('php')) {
