@@ -438,7 +438,7 @@ function advagg_delete_orphaned_aggregates() {
  * @return array
  *   Array of files that got removed.
  */
-function advagg_delete_files_if_orphaned($files) {
+function advagg_delete_files_if_orphaned(array $files) {
   // Get the uri for the advagg_css/parts directory.
   list($css_path) = advagg_get_root_files_dir();
   $parts_uri = $css_path[0] . '/parts';
@@ -446,12 +446,12 @@ function advagg_delete_files_if_orphaned($files) {
   // Array used to record what files were deleted.
   $kill_list = $keyed_file_list = array();
 
-  // Create a listing of all file names and associated hashes
+  // Create a listing of all file names and associated hashes.
   foreach ($files as $uri => $file) {
     // Get info on file.
     $data = advagg_get_hashes_from_filename($file->filename, TRUE);
     if (is_array($data)) {
-      list($type, $aggregate_filenames_hash, $aggregate_contents_hash, $aggregate_settings) = $data;
+      list(, $aggregate_filenames_hash) = $data;
       // Check to see if the file is in the database.
       $keyed_file_list[$aggregate_filenames_hash] = $uri;
     }

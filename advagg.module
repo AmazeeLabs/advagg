@@ -363,7 +363,7 @@ function advagg_system_info_alter(&$info, $file, $type) {
     && ((!empty($info['dependencies'])
       && is_array($info['dependencies'])
       && in_array('advagg', $info['dependencies'])
-      ) || $file->name === 'advagg' )
+      ) || $file->name === 'advagg')
   ) {
     $pos = strpos($info['configure'], '/advagg') + 7;
     $substr = substr($info['configure'], 0, $pos);
@@ -514,7 +514,7 @@ function advagg_cron($bypass_time_check = FALSE) {
   module_load_include('inc', 'advagg', 'advagg.cache');
   $return[] = advagg_delete_stale_aggregates();
 
-  // Remove orphaned files
+  // Remove orphaned files.
   $return[] = advagg_delete_orphaned_aggregates();
 
   // Remove aggregates that include missing files.

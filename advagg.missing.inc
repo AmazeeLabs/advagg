@@ -400,7 +400,7 @@ function advagg_htaccess_check_generate(array $files_to_save, $type, $force = FA
  *
  * @param string $filename
  *   Just the filename no path information.
- * @param boolean $skip_hash_settings
+ * @param bool $skip_hash_settings
  *   Allows for the skipping of db lookup for required file hooks.
  *
  * @return mixed

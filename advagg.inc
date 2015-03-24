@@ -1088,7 +1088,7 @@ function advagg_build_aggregate_plans(array $files_to_aggregate, $type) {
     if ($type === 'css') {
       $mixed_media = FALSE;
       $media = NULL;
-      foreach ($values['files'] as $key => $value) {
+      foreach ($values['files'] as $value) {
         if (!isset($value['media'])) {
           continue;
         }
