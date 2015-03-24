@@ -140,7 +140,7 @@ class AdvAggCascadingStylesheetsUnitTest extends DrupalUnitTestCase {
       $expected = file_get_contents($file_path . '.optimized.css');
       $optimized_output = advagg_load_css_stylesheet($file_path, TRUE, $aggregate_settings);
       $optimized_output = str_replace('/' . drupal_get_path('module', 'advagg') . '/', '', $optimized_output);
-      $this->assertEqual($optimized_output, $expected, format_string('Optimized CSS file has expected contents (@file)', array('@file' => $file)));
+      $this->assertEqual($optimized_output, $expected, format_string('Optimized CSS file has expected contents (@file)', array('@file' => $file)) . "<br>\n<br>\n" . $path . "<br>\n<br>\n" . $file_path . "<br>\n<br>\n" . $file_url . "<br>\n<br>\n" . drupal_get_path('module', 'advagg') . "<br>\n<br>\n" . file_create_url($file_path));
 
       $expected = file_get_contents($file_path . '.optimized.css');
       $optimized_output_url = advagg_load_css_stylesheet($file_url, TRUE, $aggregate_settings);
