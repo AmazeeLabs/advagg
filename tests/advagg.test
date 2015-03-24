@@ -126,7 +126,7 @@ class AdvAggCascadingStylesheetsUnitTest extends DrupalUnitTestCase {
       $aggregate_settings = array(
         'variables' => array(
           'is_https' => FALSE,
-          'base_path' => $GLOBALS['base_path'] . 'advagg_base_path_test/',
+          'base_path' => ($GLOBALS['base_path'] === 'checkout') ? $GLOBALS['base_path'] : $GLOBALS['base_path'] . 'advagg_base_path_test/',
           'advagg_convert_absolute_to_relative_path' => TRUE,
           'advagg_convert_absolute_to_protocol_relative_path' => FALSE,
           'advagg_force_https_path' => FALSE,
