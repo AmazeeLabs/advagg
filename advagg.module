@@ -173,6 +173,16 @@ define('ADVAGG_CSS_IN_JS', FALSE);
  */
 define('ADVAGG_AJAX_RENDER_ALTER', TRUE);
 
+/**
+ * Workaroud for 401 errors.
+ */
+define('ADVAGG_AUTH_BASIC_USER', '');
+
+/**
+ * Workaroud for 401 errors.
+ */
+define('ADVAGG_AUTH_BASIC_PASS', '');
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
