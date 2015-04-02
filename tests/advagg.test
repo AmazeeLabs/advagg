@@ -1001,11 +1001,11 @@ class AdvAggThemeTestCase extends AJAXTestCase {
   }
 
   /**
-   * Ensures a theme's .info file is able to override a module CSS file from being added to the page.
-   *
-   * @see test_theme.info
+   * Check theme and ajax functions & commands.
    */
   public function testCssOverride() {
+    // Ensures a theme's .info file is able to override a module CSS file from
+    // being added to the page.
     advagg_test_reset_statics();
     // Reuse the same page as in testPreprocessForSuggestions(). We're testing
     // what is output to the HTML HEAD based on what is in a theme's .info file,
