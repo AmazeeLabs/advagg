@@ -783,10 +783,7 @@ $base_url = str_replace("http://", "https://", $base_url);
 function advagg_install_check_via_http(array &$requirements) {
   // If other checks have not passed, do not test this.
   if (!empty($requirements)) {
-    // Still check if it's only that the CDN patch has not been applied.
-    if (count($requirements) != 1 || !array_key_exists('advagg_module_cdn_patch', $requirements)) {
-      return;
-    }
+    return;
   }
 
   // Ensure translations don't break at install time.
