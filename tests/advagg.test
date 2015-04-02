@@ -23,7 +23,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
   /**
    * Store configured value for CSS preprocessing.
    */
-  protected $preprocess_css = NULL;
+  protected $preprocessCss = NULL;
 
   /**
    * Provide information to the UI for this test.
@@ -55,7 +55,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $GLOBALS['conf']['advagg_force_https_path'] = FALSE;
 
     // Disable CSS preprocessing.
-    $this->preprocess_css = variable_get('preprocess_css', 0);
+    $this->preprocessCss = variable_get('preprocess_css', 0);
     variable_set('preprocess_css', 0);
   }
 
@@ -64,7 +64,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
    */
   public function tearDown() {
     // Restore configured value for CSS preprocessing.
-    variable_set('preprocess_css', $this->preprocess_css);
+    variable_set('preprocess_css', $this->preprocessCss);
     parent::tearDown();
   }
 
@@ -82,7 +82,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($styles, $css) > 0, 'Rendered CSS includes the added stylesheet.');
     // Verify that newlines are properly added inside style tags.
     $query_string = variable_get('css_js_query_string', '0');
-    $css_processed = "<style type=\"text/css\" media=\"all\">\n@import url(\"" . check_plain(file_create_url($css)) . "?" . $query_string ."\");\n</style>";
+    $css_processed = "<style type=\"text/css\" media=\"all\">\n@import url(\"" . check_plain(file_create_url($css)) . "?" . $query_string . "\");\n</style>";
     $this->assertEqual(trim($styles), $css_processed, 'Rendered CSS includes newlines inside style tags for JavaScript use.');
 
     //
@@ -304,7 +304,8 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->drupalGet('menu-test/theme-callback/use-stark-theme');
     $this->assertText('Custom theme: stark. Actual theme: stark.', 'The theme callback system uses an optional theme once it has been enabled.');
     $this->assertRaw('stark/layout.css', "The optional theme's CSS appears on the page.");
-    // Test the theme callback when it is set to use a theme that does not exist.
+    // Test the theme callback when it is set to use a theme that does not
+    // exist.
     $this->drupalGet('menu-test/theme-callback/use-fake-theme');
     $this->assertText('Custom theme: NONE. Actual theme: bartik.', 'The theme callback system falls back on the default theme when a theme that does not exist is requested.');
     $this->assertRaw('bartik/css/style.css', "The default theme's CSS appears on the page.");
@@ -343,6 +344,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->assertRaw('seven/style.css', "The Seven theme's CSS appears on the page.");
 
     //
+    // Test css file processing.
     advagg_test_reset_statics();
     // Array of files to test living in 'advagg/tests/css_test_files/'.
     // - Original: name.css
@@ -465,7 +467,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
   /**
    * Store configured value for JavaScript preprocessing.
    */
-  protected $preprocess_js = NULL;
+  protected $preprocessJs = NULL;
 
   /**
    * Provide information to the UI for this test.
@@ -474,7 +476,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     return array(
       'name' => 'JavaScript',
       'description' => 'Tests the JavaScript system.',
-      'group' => 'AdvAgg'
+      'group' => 'AdvAgg',
     );
   }
 
@@ -483,14 +485,21 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
    */
   public function setUp() {
     // Enable Locale and SimpleTest in the test environment.
-    parent::setUp(array('locale', 'simpletest', 'common_test', 'form_test', 'advagg', 'color'));
+    parent::setUp(array(
+      'locale',
+      'simpletest',
+      'common_test',
+      'form_test',
+      'advagg',
+      'color',
+    ));
 
     // Include the advagg.module file.
     drupal_load('module', 'advagg');
     module_load_include('inc', 'advagg', 'advagg');
 
-    // Disable preprocessing
-    $this->preprocess_js = variable_get('preprocess_js', 0);
+    // Disable preprocessing.
+    $this->preprocessJs = variable_get('preprocess_js', 0);
     variable_set('preprocess_js', 0);
 
     // Reset before each test.
@@ -508,14 +517,14 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
    */
   public function tearDown() {
     // Restore configured value for JavaScript preprocessing.
-    variable_set('preprocess_js', $this->preprocess_js);
+    variable_set('preprocess_js', $this->preprocessJs);
     parent::tearDown();
   }
 
   /**
    * Test the 'javascript_always_use_jquery' variable.
    */
-  public function testJavaScriptAlwaysUseJQuery() {
+  public function testJavaScriptAlwaysUsejQuery() {
     // The default front page of the site should use jQuery and other standard
     // scripts and settings.
     advagg_test_reset_statics();
@@ -666,7 +675,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $js_items = drupal_add_js();
     drupal_build_js_cache(array(
       'misc/ajax.js' => $js_items['misc/ajax.js'],
-      'misc/autocomplete.js' => $js_items['misc/autocomplete.js']
+      'misc/autocomplete.js' => $js_items['misc/autocomplete.js'],
     ));
     // Store the expected key for the first item in the cache.
     $cache = array_keys(variable_get('drupal_js_cache_files', array()));
@@ -681,7 +690,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $js_items = drupal_add_js();
     drupal_build_js_cache(array(
       'misc/ajax.js' => $js_items['misc/ajax.js'],
-      'misc/autocomplete.js' => $js_items['misc/autocomplete.js']
+      'misc/autocomplete.js' => $js_items['misc/autocomplete.js'],
     ));
     // Compare the expected key for the first file to the current one.
     $cache = array_keys(variable_get('drupal_js_cache_files', array()));
@@ -693,16 +702,53 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     // Test JavaScript ordering.
     advagg_test_reset_statics();
     // Add a bunch of JavaScript in strange ordering.
-    drupal_add_js('(function($){alert("Weight 5 #1");})(jQuery);', array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
-    drupal_add_js('(function($){alert("Weight 0 #1");})(jQuery);', array('type' => 'inline', 'scope' => 'footer'));
-    drupal_add_js('(function($){alert("Weight 0 #2");})(jQuery);', array('type' => 'inline', 'scope' => 'footer'));
-    drupal_add_js('(function($){alert("Weight -8 #1");})(jQuery);', array('type' => 'inline', 'scope' => 'footer', 'weight' => -8));
-    drupal_add_js('(function($){alert("Weight -8 #2");})(jQuery);', array('type' => 'inline', 'scope' => 'footer', 'weight' => -8));
-    drupal_add_js('(function($){alert("Weight -8 #3");})(jQuery);', array('type' => 'inline', 'scope' => 'footer', 'weight' => -8));
-    drupal_add_js('http://example.com/example.js?Weight -5 #1', array('type' => 'external', 'scope' => 'footer', 'weight' => -5));
-    drupal_add_js('(function($){alert("Weight -8 #4");})(jQuery);', array('type' => 'inline', 'scope' => 'footer', 'weight' => -8));
-    drupal_add_js('(function($){alert("Weight 5 #2");})(jQuery);', array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
-    drupal_add_js('(function($){alert("Weight 0 #3");})(jQuery);', array('type' => 'inline', 'scope' => 'footer'));
+    drupal_add_js('(function($){alert("Weight 5 #1");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+      'weight' => 5,
+    ));
+    drupal_add_js('(function($){alert("Weight 0 #1");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+    ));
+    drupal_add_js('(function($){alert("Weight 0 #2");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+    ));
+    drupal_add_js('(function($){alert("Weight -8 #1");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+      'weight' => -8,
+    ));
+    drupal_add_js('(function($){alert("Weight -8 #2");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+      'weight' => -8,
+    ));
+    drupal_add_js('(function($){alert("Weight -8 #3");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+      'weight' => -8,
+    ));
+    drupal_add_js('http://example.com/example.js?Weight -5 #1', array(
+      'type' => 'external',
+      'scope' => 'footer',
+      'weight' => -5,
+    ));
+    drupal_add_js('(function($){alert("Weight -8 #4");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+      'weight' => -8,
+    ));
+    drupal_add_js('(function($){alert("Weight 5 #2");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+      'weight' => 5,
+    ));
+    drupal_add_js('(function($){alert("Weight 0 #3");})(jQuery);', array(
+      'type' => 'inline',
+      'scope' => 'footer',
+    ));
     // Construct the expected result from the regex.
     $expected = array(
       "-8 #1",
@@ -799,7 +845,11 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     // JavaScript files are sorted first by group, then by the 'every_page'
     // flag, then by weight (see drupal_sort_css_js()), so to test the effect of
     // weight, we need the other two options to be the same.
-    drupal_add_js('misc/collapse.js', array('group' => JS_LIBRARY, 'every_page' => TRUE, 'weight' => -21));
+    drupal_add_js('misc/collapse.js', array(
+      'group' => JS_LIBRARY,
+      'every_page' => TRUE,
+      'weight' => -21,
+    ));
     $render_array = advagg_get_js();
     $javascript = drupal_render($render_array);
     $this->assertTrue(strpos($javascript, 'misc/collapse.js') < strpos($javascript, 'misc/jquery.js'), 'Rendering a JavaScript file above jQuery.');
@@ -807,7 +857,8 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     //
     // Test altering a JavaScript's weight via hook_js_alter().
     advagg_test_reset_statics();
-    // Add both tableselect.js and simpletest.js, with a larger weight on SimpleTest.
+    // Add both tableselect.js and simpletest.js, with a larger weight on
+    // SimpleTest.
     drupal_add_js('misc/tableselect.js');
     drupal_add_js(drupal_get_path('module', 'simpletest') . '/simpletest.js', array('weight' => 9999));
     // Render the JavaScript, testing if simpletest.js was altered to be before
@@ -854,7 +905,8 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($scripts, 'unknown') === FALSE, 'Unknown library was not added to the page.');
 
     //
-    // Tests the addition of libraries through the #attached['library'] property.
+    // Tests the addition of libraries through the #attached['library']
+    // property.
     advagg_test_reset_statics();
     $element['#attached']['library'][] = array('system', 'farbtastic');
     drupal_render($element);
@@ -953,7 +1005,7 @@ class AdvAggThemeTestCase extends AJAXTestCase {
    *
    * @see test_theme.info
    */
-  public function testCSSOverride() {
+  public function testCssOverride() {
     advagg_test_reset_statics();
     // Reuse the same page as in testPreprocessForSuggestions(). We're testing
     // what is output to the HTML HEAD based on what is in a theme's .info file,
@@ -1008,7 +1060,7 @@ class AdvAggThemeTestCase extends AJAXTestCase {
       'command' => 'alert',
       'text' => $edit['message'],
     );
-     $this->assertCommand($commands, $expected, t('Custom error message is output.'));
+    $this->assertCommand($commands, $expected, t('Custom error message is output.'));
 
     //
     // Test that new JavaScript and CSS files added during an AJAX request are
@@ -1233,4 +1285,3 @@ class AdvAggThemeTestCase extends AJAXTestCase {
   }
 
 }
-
