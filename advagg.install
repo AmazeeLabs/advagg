@@ -1432,7 +1432,8 @@ function advagg_install_url_mod(&$url, array &$options, $mod_url = FALSE) {
   if ($mod_url) {
     if (function_exists('httprl_build_url_self')) {
       // Remove the base_path from path.
-      $parts = substr($parts['path'], strlen($GLOBALS['base_path']));
+      $path = substr($parts['path'], strlen($GLOBALS['base_path']));
+      $new_url = httprl_build_url_self($path);
     }
     else {
       if (!empty($_SERVER['HTTP_HOST']) && $parts['host'] != $_SERVER['HTTP_HOST']) {
@@ -1450,7 +1451,9 @@ function advagg_install_url_mod(&$url, array &$options, $mod_url = FALSE) {
     }
   }
 
-  $new_url = advagg_install_glue_url($parts);
+  if (empty($new_url)) {
+    $new_url = advagg_install_glue_url($parts);
+  }
   $url = $new_url;
 }
 
