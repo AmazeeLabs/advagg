@@ -648,10 +648,13 @@ function advagg_ajax_render_alter(&$commands) {
   list(, $core_scripts_header, $core_scripts_footer, $items, $settings) = advagg_build_ajax_js_css();
 
   // Get AdvAgg JS.
-  $scripts_footer = advagg_get_js('footer', $items['js'], TRUE);
-  $scripts_footer = drupal_render($scripts_footer);
-  $scripts_header = advagg_get_js('header', $items['js'], TRUE);
-  $scripts_header = drupal_render($scripts_header);
+  $scripts_header = $scripts_footer = '';
+  if (!empty($items['js'])) {
+    $scripts_footer_array = advagg_get_js('footer', $items['js'], TRUE);
+    $scripts_footer = drupal_render($scripts_footer_array);
+    $scripts_header_array = advagg_get_js('header', $items['js'], TRUE);
+    $scripts_header = drupal_render($scripts_header_array);
+  }
 
   // Remove core JS.
   foreach ($commands as $key => $values) {
@@ -1736,7 +1739,7 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   $javascript_settings_data = &drupal_static(__FUNCTION__, array());
 
   // Add in javascript if none was passed in.
-  if (empty($javascript)) {
+  if (empty($javascript) && !$ajax) {
     $javascript = advagg_get_full_js();
   }
 
