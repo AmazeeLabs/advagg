@@ -1279,6 +1279,50 @@ function advagg_get_render_cache(array $full_css, array $js_scope_array) {
  * Replacement for template_process_html().
  */
 function _advagg_process_html(&$variables) {
+  // Don't fail even if the menu router failed.
+  if (drupal_get_http_header('status') === '404 Not Found') {
+    // See if the URI contains advagg.
+    $uri = request_uri();
+    if (stripos($uri, '/advagg_') !== FALSE) {
+      $advagg_items = advagg_menu();
+
+      // Check css.
+      $css = reset($advagg_items);
+      $css_path = key($advagg_items);
+      $css_path = substr($css_path, 0, strlen($css_path)-1);
+      $css_start = strpos($uri, $css_path);
+      if ($css_start !== FALSE) {
+        $filename = substr($uri, $css_start + strlen($css_path) + 1);
+      }
+
+      // Check js.
+      if (empty($filename)) {
+        $js = next($advagg_items);
+        $js_path = key($advagg_items);
+        $js_path = substr($js_path, 0, strlen($js_path)-1);
+        $js_start = strpos($uri, $js_path);
+        if ($js_start !== FALSE) {
+          $filename = substr($uri, $js_start + strlen($js_path) + 1);
+        }
+      }
+
+      // If we have a filename call the page callback.
+      if (!empty($filename)) {
+        $router_item = $css;
+        if (isset($js)) {
+          $router_item = $js;
+        }
+
+        // Include the file if needed.
+        if ($router_item['file']) {
+          module_load_include($router_item['file'], 'advagg');
+        }
+        // Call the function.
+        call_user_func_array($router_item['page callback'], array($filename));
+      }
+    }
+  }
+
   if (!advagg_enabled()) {
     template_process_html($variables);
     return;
