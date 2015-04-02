@@ -20,6 +20,10 @@ function advagg_test_reset_statics() {
  * Test the Drupal CSS system.
  */
 class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
+  /**
+   * Store configured value for CSS preprocessing.
+   */
+  protected $preprocess_css = NULL;
 
   /**
    * Provide information to the UI for this test.
@@ -50,7 +54,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $GLOBALS['conf']['advagg_convert_absolute_to_protocol_relative_path'] = FALSE;
     $GLOBALS['conf']['advagg_force_https_path'] = FALSE;
 
-    // Disable CSS preprocessing
+    // Disable CSS preprocessing.
     $this->preprocess_css = variable_get('preprocess_css', 0);
     variable_set('preprocess_css', 0);
   }
@@ -58,7 +62,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
   /**
    * Restore any variables we set.
    */
-  function tearDown() {
+  public function tearDown() {
     // Restore configured value for CSS preprocessing.
     variable_set('preprocess_css', $this->preprocess_css);
     parent::tearDown();
@@ -67,7 +71,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
   /**
    * Tests rendering the stylesheets.
    */
-  function testRenderFile() {
+  public function testRenderFile() {
     // Add the css file.
     $css = drupal_get_path('module', 'simpletest') . '/simpletest.css';
     drupal_add_css($css);
@@ -463,6 +467,9 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
    */
   protected $preprocess_js = NULL;
 
+  /**
+   * Provide information to the UI for this test.
+   */
   public static function getInfo() {
     return array(
       'name' => 'JavaScript',
@@ -471,7 +478,10 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     );
   }
 
-  function setUp() {
+  /**
+   * Install the advagg module and include needed files.
+   */
+  public function setUp() {
     // Enable Locale and SimpleTest in the test environment.
     parent::setUp(array('locale', 'simpletest', 'common_test', 'form_test', 'advagg', 'color'));
 
@@ -493,7 +503,10 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $GLOBALS['conf']['advagg_mod_js_footer'] = 0;
   }
 
-  function tearDown() {
+  /**
+   * Restore any variables we set.
+   */
+  public function tearDown() {
     // Restore configured value for JavaScript preprocessing.
     variable_set('preprocess_js', $this->preprocess_js);
     parent::tearDown();
@@ -502,7 +515,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
   /**
    * Test the 'javascript_always_use_jquery' variable.
    */
-  function testJavaScriptAlwaysUseJQuery() {
+  public function testJavaScriptAlwaysUseJQuery() {
     // The default front page of the site should use jQuery and other standard
     // scripts and settings.
     advagg_test_reset_statics();
@@ -902,8 +915,10 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
  * Unit tests for the Theme API.
  */
 class AdvAggThemeTestCase extends AJAXTestCase {
-  protected $profile = 'testing';
 
+  /**
+   * Provide information to the UI for this test.
+   */
   public static function getInfo() {
     return array(
       'name' => 'Theme API & AJAX',
@@ -912,7 +927,10 @@ class AdvAggThemeTestCase extends AJAXTestCase {
     );
   }
 
-  function setUp() {
+  /**
+   * Install the advagg module and include needed files.
+   */
+  public function setUp() {
     parent::setUp(array('advagg'));
 
     // Include the advagg.module file.
@@ -935,7 +953,7 @@ class AdvAggThemeTestCase extends AJAXTestCase {
    *
    * @see test_theme.info
    */
-  function testCSSOverride() {
+  public function testCSSOverride() {
     advagg_test_reset_statics();
     // Reuse the same page as in testPreprocessForSuggestions(). We're testing
     // what is output to the HTML HEAD based on what is in a theme's .info file,
