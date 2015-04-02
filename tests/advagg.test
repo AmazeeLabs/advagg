@@ -20,6 +20,7 @@ function advagg_test_reset_statics() {
  * Test the Drupal CSS system.
  */
 class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
+
   /**
    * Provide information to the UI for this test.
    */
@@ -70,7 +71,6 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     // Add the css file.
     $css = drupal_get_path('module', 'simpletest') . '/simpletest.css';
     drupal_add_css($css);
-
     // Get the render array.
     $full_css = advagg_get_css();
     // Render the CSS.
@@ -81,13 +81,12 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $css_processed = "<style type=\"text/css\" media=\"all\">\n@import url(\"" . check_plain(file_create_url($css)) . "?" . $query_string ."\");\n</style>";
     $this->assertEqual(trim($styles), $css_processed, 'Rendered CSS includes newlines inside style tags for JavaScript use.');
 
-
+    //
     // Tests rendering an external stylesheet.
     advagg_test_reset_statics();
     // Add the css file.
     $css = 'http://example.com/style.css';
     drupal_add_css($css, 'external');
-
     // Get the render array.
     $full_css = advagg_get_css();
     // Render the CSS.
@@ -96,7 +95,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     // of a STYLE tag.
     $this->assertTrue(strpos($styles, 'href="' . $css) > 0 || strpos($styles, '@import url("' . $css . '")') > 0, 'Rendering an external CSS file.');
 
-
+    //
     // Tests rendering inline stylesheets with preprocessing on.
     advagg_test_reset_statics();
     // Add the inline css.
@@ -111,7 +110,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $styles = drupal_render($full_css);
     $this->assertEqual(trim($styles), $css_preprocessed, 'Rendering preprocessed inline CSS adds it to the page.');
 
-
+    //
     // Tests removing charset when rendering stylesheets with preprocessing on.
     advagg_test_reset_statics();
     $cases = array(
@@ -133,19 +132,19 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
       );
     }
 
-
+    //
     // Tests rendering inline stylesheets with preprocessing off.
     advagg_test_reset_statics();
     // Add the inline css.
     $css = 'body { padding: 0px; }';
     drupal_add_css($css, array('type' => 'inline', 'preprocess' => FALSE));
-
     // Get the render array.
     $full_css = advagg_get_css();
     // Render the CSS.
     $styles = drupal_render($full_css);
     $this->assertTrue(strpos($styles, $css) > 0, 'Rendering non-preprocessed inline CSS adds it to the page.');
 
+    //
     // Test CSS ordering.
     advagg_test_reset_statics();
     // A module CSS file.
@@ -155,14 +154,12 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     drupal_add_css($system_path . '/system.menus.css', array('group' => CSS_SYSTEM));
     drupal_add_css($system_path . '/system.base.css', array('group' => CSS_SYSTEM, 'weight' => -10));
     drupal_add_css($system_path . '/system.theme.css', array('group' => CSS_SYSTEM));
-
     $expected = array(
       $system_path . '/system.base.css',
       $system_path . '/system.menus.css',
       $system_path . '/system.theme.css',
       drupal_get_path('module', 'simpletest') . '/simpletest.css',
     );
-
     // Get the render array.
     $full_css = advagg_get_css();
     // Render the CSS.
@@ -177,15 +174,13 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     }
     $this->assertIdentical($result, $expected, 'The CSS files are in the expected order.');
 
-
+    //
     // Test CSS override.
     advagg_test_reset_statics();
     $system = drupal_get_path('module', 'system');
     $simpletest = drupal_get_path('module', 'simpletest');
-
     drupal_add_css($system . '/system.base.css');
     drupal_add_css($simpletest . '/tests/system.base.css');
-
     // The dummy stylesheet should be the only one included.
     // Get the render array.
     $full_css = advagg_get_css();
@@ -193,8 +188,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $styles = drupal_render($full_css);
     $this->assert(strpos($styles, $simpletest . '/tests/system.base.css') !== FALSE, 'The overriding CSS file is output.');
     $this->assert(strpos($styles, $system . '/system.base.css') === FALSE, 'The overridden CSS file is not output.');
-
-    // The rest is needed here until this is fixed
+    // The reset is needed here until this is fixed
     // https://www.drupal.org/node/1388546
     advagg_test_reset_statics();
     drupal_add_css($simpletest . '/tests/system.base.css');
@@ -207,7 +201,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->assert(strpos($styles, $system . '/system.base.css') !== FALSE, 'The overriding CSS file is output.');
     $this->assert(strpos($styles, $simpletest . '/tests/system.base.css') === FALSE, 'The overridden CSS file is not output.');
 
-
+    //
     //  Tests Locale module's CSS Alter to include RTL overrides.
     advagg_test_reset_statics();
     // Switch the language to a right to left language and add system.base.css.
@@ -224,8 +218,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     // Change the language back to left to right.
     $language->direction = LANGUAGE_LTR;
 
-
-
+    //
     // Tests rendering inline stylesheets through a full page request.
     advagg_test_reset_statics();
     $css = 'body { font-size: 254px; }';
@@ -251,7 +244,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->drupalGet('node/' . $node->nid);
     $this->assertRaw($expected, 'Inline stylesheets appear in the full page rendering.');
 
-
+    //
     // Tests that the query string remains intact when adding CSS files that
     // have query string parameters.
     advagg_test_reset_statics();
@@ -260,7 +253,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->assertRaw(drupal_get_path('module', 'node') . '/node.css?' . $query_string, 'Query string was appended correctly to css.');
     $this->assertRaw(drupal_get_path('module', 'node') . '/node-fake.css?arg1=value1&amp;arg2=value2', 'Query string not escaped on a URI.');
 
-
+    //
     // Make the tests below more robust by explicitly setting the default theme
     // and administrative theme that they expect.
     theme_enable(array('bartik'));
@@ -272,14 +265,14 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->assertText('Custom theme: seven. Actual theme: seven.', 'The administrative theme can be correctly set in a theme callback.');
     $this->assertRaw('seven/style.css', "The administrative theme's CSS appears on the page.");
 
-
+    //
     // Test that the theme callback is properly inherited.
     advagg_test_reset_statics();
     $this->drupalGet('menu-test/theme-callback/use-admin-theme/inheritance');
     $this->assertText('Custom theme: seven. Actual theme: seven. Theme callback inheritance is being tested.', 'Theme callback inheritance correctly uses the administrative theme.');
     $this->assertRaw('seven/style.css', "The administrative theme's CSS appears on the page.");
 
-
+    //
     // Test the theme callback when the site is in maintenance mode.
     advagg_test_reset_statics();
     variable_set('maintenance_mode', TRUE);
@@ -295,34 +288,31 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->assertRaw('seven/style.css', "The administrative theme's CSS appears on the page.");
     variable_set('maintenance_mode', FALSE);
 
-
+    //
     // Test the theme callback when it is set to use an optional theme.
     advagg_test_reset_statics();
     // Request a theme that is not enabled.
     $this->drupalGet('menu-test/theme-callback/use-stark-theme');
     $this->assertText('Custom theme: NONE. Actual theme: bartik.', 'The theme callback system falls back on the default theme when a theme that is not enabled is requested.');
     $this->assertRaw('bartik/css/style.css', "The default theme's CSS appears on the page.");
-
     // Now enable the theme and request it again.
     theme_enable(array('stark'));
     $this->drupalGet('menu-test/theme-callback/use-stark-theme');
     $this->assertText('Custom theme: stark. Actual theme: stark.', 'The theme callback system uses an optional theme once it has been enabled.');
     $this->assertRaw('stark/layout.css', "The optional theme's CSS appears on the page.");
-
-
     // Test the theme callback when it is set to use a theme that does not exist.
     $this->drupalGet('menu-test/theme-callback/use-fake-theme');
     $this->assertText('Custom theme: NONE. Actual theme: bartik.', 'The theme callback system falls back on the default theme when a theme that does not exist is requested.');
     $this->assertRaw('bartik/css/style.css', "The default theme's CSS appears on the page.");
 
-
+    //
     // Test the theme callback when no theme is requested.
     advagg_test_reset_statics();
     $this->drupalGet('menu-test/theme-callback/no-theme-requested');
     $this->assertText('Custom theme: NONE. Actual theme: bartik.', 'The theme callback system falls back on the default theme when no theme is requested.');
     $this->assertRaw('bartik/css/style.css', "The default theme's CSS appears on the page.");
 
-
+    //
     // Test that hook_custom_theme() can control the theme of a page.
     advagg_test_reset_statics();
     // Trigger hook_custom_theme() to dynamically request the Stark theme for
@@ -335,7 +325,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->assertText('Custom theme: stark. Actual theme: stark.', 'The result of hook_custom_theme() is used as the theme for the current page.');
     $this->assertRaw('stark/layout.css', "The Stark theme's CSS appears on the page.");
 
-
+    //
     // Test that the theme callback wins out over hook_custom_theme().
     advagg_test_reset_statics();
     // Trigger hook_custom_theme() to dynamically request the Stark theme for
@@ -348,7 +338,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
     $this->assertText('Custom theme: seven. Actual theme: seven.', 'The result of hook_custom_theme() does not override what was set in a theme callback.');
     $this->assertRaw('seven/style.css', "The Seven theme's CSS appears on the page.");
 
-
+    //
     advagg_test_reset_statics();
     // Array of files to test living in 'advagg/tests/css_test_files/'.
     // - Original: name.css
@@ -526,6 +516,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertRaw('Drupal.settings', 'Default behavior: The front page of the site includes Drupal settings.');
     $this->assertRaw('basePath', 'Default behavior: The front page of the site includes the basePath Drupal setting.');
 
+    //
     // The default front page should not use jQuery and other standard scripts
     // and settings when the 'javascript_always_use_jquery' variable is set to
     // FALSE.
@@ -533,7 +524,6 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     variable_set('javascript_always_use_jquery', FALSE);
     $render_array = advagg_get_js();
     $javascript = drupal_render($render_array);
-
     $this->drupalGet('');
     $this->assertNoRaw('misc/jquery.js', 'When "javascript_always_use_jquery" is FALSE: The front page of the site does not include jquery.js.');
     $this->assertNoRaw('misc/drupal.js', 'When "javascript_always_use_jquery" is FALSE: The front page of the site does not include drupal.js.');
@@ -541,6 +531,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertNoRaw('basePath', 'When "javascript_always_use_jquery" is FALSE: The front page of the site does not include the basePath Drupal setting.');
     variable_del('javascript_always_use_jquery');
 
+    //
     // When only settings have been added via drupal_add_js(), drupal_get_js()
     // should still return jQuery and other standard scripts and settings.
     advagg_test_reset_statics();
@@ -553,6 +544,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($javascript, 'basePath') !== FALSE, 'Default behavior: The JavaScript returned by drupal_get_js() when only settings have been added includes the basePath Drupal setting.');
     $this->assertTrue(strpos($javascript, 'testJavaScriptSetting') !== FALSE, 'Default behavior: The JavaScript returned by drupal_get_js() when only settings have been added includes the added Drupal settings.');
 
+    //
     // When only settings have been added via drupal_add_js() and the
     // 'javascript_always_use_jquery' variable is set to FALSE, drupal_get_js()
     // should not return jQuery and other standard scripts and settings, nor
@@ -570,6 +562,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($javascript, 'testJavaScriptSetting') === FALSE, 'When "javascript_always_use_jquery" is FALSE: The JavaScript returned by drupal_get_js() when only settings have been added does not include the added Drupal settings.');
     variable_del('javascript_always_use_jquery');
 
+    //
     // When a regular file has been added via drupal_add_js(), drupal_get_js()
     // should return jQuery and other standard scripts and settings.
     advagg_test_reset_statics();
@@ -582,6 +575,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($javascript, 'basePath') !== FALSE, 'Default behavior: The JavaScript returned by drupal_get_js() when a custom JavaScript file has been added includes the basePath Drupal setting.');
     $this->assertTrue(strpos($javascript, 'misc/collapse.js') !== FALSE, 'Default behavior: The JavaScript returned by drupal_get_js() when a custom JavaScript file has been added includes the custom file.');
 
+    //
     // When a regular file has been added via drupal_add_js() and the
     // 'javascript_always_use_jquery' variable is set to FALSE, drupal_get_js()
     // should still return jQuery and other standard scripts and settings
@@ -598,6 +592,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($javascript, 'misc/collapse.js') !== FALSE, 'When "javascript_always_use_jquery" is FALSE: The JavaScript returned by drupal_get_js() when a custom JavaScript file has been added includes the custom file.');
     variable_del('javascript_always_use_jquery');
 
+    //
     // When a file that does not require jQuery has been added via
     // drupal_add_js(), drupal_get_js() should still return jQuery and other
     // standard scripts and settings by default.
@@ -611,6 +606,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($javascript, 'basePath') !== FALSE, 'Default behavior: The JavaScript returned by drupal_get_js() when a custom JavaScript file that does not require jQuery has been added includes the basePath Drupal setting.');
     $this->assertTrue(strpos($javascript, 'misc/collapse.js') !== FALSE, 'Default behavior: The JavaScript returned by drupal_get_js() when a custom JavaScript file that does not require jQuery has been added includes the custom file.');
 
+    //
     // When a file that does not require jQuery has been added via
     // drupal_add_js() and the 'javascript_always_use_jquery' variable is set
     // to FALSE, drupal_get_js() should not return jQuery and other standard
@@ -627,6 +623,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($javascript, 'misc/collapse.js') !== FALSE, 'When "javascript_always_use_jquery" is FALSE: The JavaScript returned by drupal_get_js() when a custom JavaScript file that does not require jQuery has been added includes the custom file.');
     variable_del('javascript_always_use_jquery');
 
+    //
     // When 'javascript_always_use_jquery' is set to FALSE and a file that does
     // not require jQuery is added, followed by one that does, drupal_get_js()
     // should return jQuery and other standard scripts and settings, in
@@ -645,7 +642,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($javascript, 'misc/ajax.js') !== FALSE, 'When "javascript_always_use_jquery" is FALSE: The JavaScript returned by drupal_get_js() when at least one custom JavaScript file that requires jQuery has been added includes the second custom file.');
     variable_del('javascript_always_use_jquery');
 
-
+    //
     // Tests JavaScript aggregation when files are added to a different scope.
     advagg_test_reset_statics();
     // Enable JavaScript aggregation.
@@ -679,7 +676,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertEqual($key, $expected_key, 'JavaScript aggregation is not affected by ordering in different scopes.');
     variable_set('preprocess_js', 0);
 
-
+    //
     // Test JavaScript ordering.
     advagg_test_reset_statics();
     // Add a bunch of JavaScript in strange ordering.
@@ -718,12 +715,12 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     }
     $this->assertIdentical($result, $expected, 'JavaScript is added in the expected weight order.');
 
-
+    //
     // Test default JavaScript is empty.
     advagg_test_reset_statics();
     $this->assertEqual(array(), drupal_add_js(), 'Default JavaScript is empty.');
 
-
+    //
     // Test drupal_get_js() for JavaScript settings.
     advagg_test_reset_statics();
     // Only the second of these two entries should appear in Drupal.settings.
@@ -736,28 +733,24 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     // Only the second of these two entries should appear in Drupal.settings.
     drupal_add_js(array('commonTestArray' => array('key' => 'commonTestOldValue')), 'setting');
     drupal_add_js(array('commonTestArray' => array('key' => 'commonTestNewValue')), 'setting');
-
     $render_array = advagg_get_js('header');
     $javascript = drupal_render($render_array);
     $this->assertTrue(strpos($javascript, 'basePath') > 0, 'Rendered JavaScript header returns basePath setting.');
     $this->assertTrue(strpos($javascript, 'misc/jquery.js') > 0, 'Rendered JavaScript header includes jQuery.');
     $this->assertTrue(strpos($javascript, 'pathPrefix') > 0, 'Rendered JavaScript header returns pathPrefix setting.');
-
     // Test whether drupal_add_js can be used to override a previous setting.
     $this->assertTrue(strpos($javascript, 'commonTestShouldAppear') > 0, 'Rendered JavaScript header returns custom setting.');
     $this->assertTrue(strpos($javascript, 'commonTestShouldNotAppear') === FALSE, 'drupal_add_js() correctly overrides a custom setting.');
-
     // Test whether drupal_add_js can be used to add numerically indexed values
     // to an array.
     $array_values_appear = strpos($javascript, 'commonTestValue0') > 0 && strpos($javascript, 'commonTestValue1') > 0 && strpos($javascript, 'commonTestValue2') > 0;
     $this->assertTrue($array_values_appear, 'drupal_add_js() correctly adds settings to the end of an indexed array.');
-
     // Test whether drupal_add_js can be used to override the entry for an
     // existing key in an associative array.
     $associative_array_override = strpos($javascript, 'commonTestNewValue') > 0 && strpos($javascript, 'commonTestOldValue') === FALSE;
     $this->assertTrue($associative_array_override, 'drupal_add_js() correctly overrides settings within an associative array.');
 
-
+    //
     // Test rendering an external JavaScript file.
     advagg_test_reset_statics();
     $GLOBALS['conf']['advagg_convert_absolute_to_relative_path'] = FALSE;
@@ -770,7 +763,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     // Local files have a base_path() prefix, external files should not.
     $this->assertTrue(strpos($javascript, 'src="' . $external) > 0, 'Rendering an external JavaScript file.');
 
-
+    //
     // Test drupal_get_js() with a footer scope.
     advagg_test_reset_statics();
     $inline = 'jQuery(function () { });';
@@ -779,7 +772,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $javascript = drupal_render($render_array);
     $this->assertTrue(strpos($javascript, $inline) > 0, 'Rendered JavaScript footer returns the inline code.');
 
-
+    //
     // Ensures that vertical-tabs.js is included before collapse.js.
     advagg_test_reset_statics();
     $this->drupalGet('form_test/vertical-tabs');
@@ -787,7 +780,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $position2 = strpos($this->content, 'misc/collapse.js');
     $this->assertTrue($position1 !== FALSE && $position2 !== FALSE && $position1 < $position2, 'vertical-tabs.js is included before collapse.js');
 
-
+    //
     // Test rendering the JavaScript with a file's weight above jQuery's.
     advagg_test_reset_statics();
     // JavaScript files are sorted first by group, then by the 'every_page'
@@ -798,7 +791,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $javascript = drupal_render($render_array);
     $this->assertTrue(strpos($javascript, 'misc/collapse.js') < strpos($javascript, 'misc/jquery.js'), 'Rendering a JavaScript file above jQuery.');
 
-
+    //
     // Test altering a JavaScript's weight via hook_js_alter().
     advagg_test_reset_statics();
     // Add both tableselect.js and simpletest.js, with a larger weight on SimpleTest.
@@ -811,7 +804,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $javascript = drupal_render($render_array);
     $this->assertTrue(strpos($javascript, 'simpletest.js') < strpos($javascript, 'misc/tableselect.js'), 'Altering JavaScript weight through the alter hook.');
 
-
+    //
     // Adds a library to the page and tests for both its JavaScript and its CSS.
     advagg_test_reset_statics();
     $result = drupal_add_library('system', 'farbtastic');
@@ -823,7 +816,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($scripts, 'misc/farbtastic/farbtastic.js'), 'JavaScript of library was added to the page.');
     $this->assertTrue(strpos($styles, 'misc/farbtastic/farbtastic.css'), 'Stylesheet of library was added to the page.');
 
-
+    //
     // Adds a JavaScript library to the page and alters it.
     advagg_test_reset_statics();
     // Verify that common_test altered the title of Farbtastic.
@@ -835,7 +828,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $scripts = drupal_render($render_array);
     $this->assertTrue(strpos($scripts, 'misc/jquery.form.js'), 'Altered library dependencies are added to the page.');
 
-
+    //
     // Tests non-existing libraries.
     advagg_test_reset_statics();
     $result = drupal_get_library('unknown', 'unknown');
@@ -847,7 +840,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $scripts = drupal_render($render_array);
     $this->assertTrue(strpos($scripts, 'unknown') === FALSE, 'Unknown library was not added to the page.');
 
-
+    //
     // Tests the addition of libraries through the #attached['library'] property.
     advagg_test_reset_statics();
     $element['#attached']['library'][] = array('system', 'farbtastic');
@@ -856,7 +849,7 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
     $scripts = drupal_render($render_array);
     $this->assertTrue(strpos($scripts, 'misc/farbtastic/farbtastic.js'), 'The attached_library property adds the additional libraries.');
 
-
+    //
     // Test #attached functionality in children elements.
     advagg_test_reset_statics();
     // The cache system is turned off for POST requests.
@@ -960,8 +953,8 @@ class AdvAggThemeTestCase extends AJAXTestCase {
     $this->drupalGet('theme-test/suggestion');
     variable_set('preprocess_css', 0);
 
-
-
+    //
+    // Test ajax & js settings.
     advagg_test_reset_statics();
     $commands = $this->drupalGetAJAX('ajax-test/render');
     // Verify that there is a command to load settings added with
@@ -977,7 +970,7 @@ class AdvAggThemeTestCase extends AJAXTestCase {
     $this->assertEqual($settings['ajax']['ajax-link']['url'], url('filter/tips'));
     $this->assertEqual($settings['ajax']['ajax-link']['wrapper'], 'block-system-main');
 
-
+    //
     // Test behavior of ajax_render_error().
     // Reset before each test.
     advagg_test_reset_statics();
@@ -999,7 +992,7 @@ class AdvAggThemeTestCase extends AJAXTestCase {
     );
      $this->assertCommand($commands, $expected, t('Custom error message is output.'));
 
-
+    //
     // Test that new JavaScript and CSS files added during an AJAX request are
     // returned.
     // Reset before each test.
@@ -1072,7 +1065,7 @@ class AdvAggThemeTestCase extends AJAXTestCase {
     $this->assertEqual($new_js, $original_js + array($expected['js'] => 1), t('Page state now has the %js file.', array('%js' => $expected['js'])));
     $this->assertCommand($commands, array('data' => $expected_js_html), t('Page now has the %js file.', array('%js' => $expected['js'])));
 
-
+    //
     // Tests that overridden CSS files are not added during lazy load.
     // Reset before each test.
     advagg_test_reset_statics();
@@ -1080,11 +1073,9 @@ class AdvAggThemeTestCase extends AJAXTestCase {
     // thereby removing it.
     theme_enable(array('test_theme'));
     variable_set('theme_default', 'test_theme');
-
     // This gets the form, and emulates an Ajax submission on it, including
     // adding markup to the HEAD and BODY for any lazy loaded JS/CSS files.
     $this->drupalPostAJAX('ajax_forms_test_lazy_load_form', array('add_files' => TRUE), array('op' => t('Submit')));
-
     // Verify that the resulting HTML does not load the overridden CSS file.
     // We add a "?" to the assertion, because Drupal.settings may include
     // information about the file; we only really care about whether it appears
@@ -1092,7 +1083,7 @@ class AdvAggThemeTestCase extends AJAXTestCase {
     // cache control.
     $this->assertNoText('system.base.css?', 'Ajax lazy loading does not add overridden CSS files.');
 
-
+    //
     // Test the various Ajax Commands.
     // Reset before each test.
     advagg_test_reset_statics();
