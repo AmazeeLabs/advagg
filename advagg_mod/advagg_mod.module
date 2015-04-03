@@ -429,7 +429,7 @@ function advagg_mod_js_alter(&$js) {
         }
       }
 
-      // Wistia
+      // Wistia.
       if (strpos($name, '//fast.wistia.') !== FALSE) {
         // Do not defer/async the loading of any wistia js.
         if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
