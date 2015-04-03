@@ -765,6 +765,7 @@ function advagg_js_alter(&$js) {
       $value['data'] = substr($value['data'], stripos($value['data'], $mod_base_url) + $mod_base_url_len);
     }
   }
+  unset($value);
 }
 
 /**
@@ -804,6 +805,7 @@ function advagg_css_alter(&$css) {
       $value['type'] = 'external';
     }
   }
+  unset($value);
 }
 
 /**
@@ -905,6 +907,7 @@ function advagg_modify_js_pre_render(array $elements) {
     }
     $children[$key] = &$value;
   }
+  unset($value);
 
   // Allow other modules to modify $children & $elements before they are
   // rendered.
@@ -938,6 +941,7 @@ function advagg_modify_css_pre_render(array $elements) {
     }
     $children[$key] = &$value;
   }
+  unset($value);
 
   // Allow other modules to modify $children & $elements before they are
   // rendered.
@@ -1112,6 +1116,7 @@ function _advagg_aggregate_js(array &$js_groups) {
           break;
       }
     }
+    unset($group);
   }
 
   if (!empty($files_to_aggregate)) {
@@ -3286,9 +3291,12 @@ function advagg_drupal_sort_css_js_stable(array &$items) {
         foreach ($weight_items as $key => &$item) {
           $sorted[$key] = $item;
         }
+        unset($item);
       }
     }
+    unset($ep_items);
   }
+  unset($group_items);
   $items = $sorted;
 }
 
