@@ -280,7 +280,7 @@ function advagg_mod_js_alter(&$js) {
 
     if (module_exists('openlayers')) {
       $has_openlayers = FALSE;
-      foreach ($js as $name => $values) {
+      foreach ($js as $name => &$values) {
         if ($values['type'] === 'inline' || !is_string($values['data'])) {
           continue;
         }
@@ -315,7 +315,7 @@ function advagg_mod_js_alter(&$js) {
       $jquery_update_ui_fallback = '';
       $inline_array = array();
       if (module_exists('jquery_update') && variable_get('jquery_update_jquery_cdn', 'none') !== 'none') {
-        foreach ($js as $name => $values) {
+        foreach ($js as $name => &$values) {
           if ($values['type'] !== 'inline') {
             continue;
           }
@@ -424,6 +424,18 @@ function advagg_mod_js_alter(&$js) {
           }
         }
       }
+
+      // Wistia
+      if (strpos($name, '//fast.wistia.') !== FALSE) {
+        // Do not defer/async the loading of any wistia js.
+        if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
+          $values['defer'] = FALSE;
+        }
+        if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
+          $values['async'] = FALSE;
+        }
+      }
+
     }
   }
 }

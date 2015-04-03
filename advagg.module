@@ -1501,13 +1501,13 @@ function _advagg_process_html(&$variables) {
     $js_cache['scripts'] = '';
     if (!empty($js_scope_array)) {
       // Add JS to the header and footer of the page.
-      foreach ($js_scope_array as $scope => $scripts) {
+      foreach ($js_scope_array as $scope => $scripts_array) {
         // Add js settings.
         if (!empty($js_scope_settings_array[$scope]['settings'])) {
-          $scripts['#items']['settings'] = $js_scope_settings_array[$scope]['settings'];
+          $scripts_array['#items']['settings'] = $js_scope_settings_array[$scope]['settings'];
         }
         // Render js.
-        $scripts = drupal_render($scripts);
+        $scripts = drupal_render($scripts_array);
 
         if ($scope === 'header') {
           // Add to the top of this section.
