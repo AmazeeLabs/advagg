@@ -126,7 +126,10 @@ define('ADVAGG_MOD_GA_INLINE_TO_FILE', FALSE);
  */
 define('ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST', '');
 
-define('ADVAGG_MOD_WRAP_INLINE_JS_XPATH', TRUE);
+/**
+ * Default value for detection of inline scripts.
+ */
+define('ADVAGG_MOD_WRAP_INLINE_JS_XPATH', FALSE);
 
 // Core hook implementations.
 /**
