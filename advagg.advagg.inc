@@ -242,22 +242,32 @@ function advagg_advagg_get_info_on_files_alter(&$return, $cached_data, $bypass_c
   unset($info);
 }
 
-function advagg_advagg_changed_files($files, $types) {
+/**
+ * Implements hook_advagg_changed_files().
+ *
+ * If the color module is enabled regenerate color module css when it changes.
+ *
+ * @param array $files
+ *   List of files that have changed.
+ * @param array $types
+ *   Array with the css and or the js key.
+ */
+function advagg_advagg_changed_files(array $files, array $types) {
   // Skip if no css changed; or color module is not enabled.
   if (empty($types['css']) || !module_exists('color')) {
     return;
   }
 
-  // Save error states.
+  // Save error states & clear them.
   $errors_before = drupal_static('form_set_error', array());
-  // Clear all errors.
   form_clear_error();
 
+  // See if the css file is used by the color module in the theme.
   $themes = list_themes();
   $changed_files = array_keys($files);
   $themes_done = array();
-  foreach ($changed_files as $css_file) {
-    foreach ($themes as $theme_name => $theme_values) {
+  foreach ($themes as $theme_name => $theme_values) {
+    foreach ($changed_files as $css_file) {
       // Skip if we already did a form submit.
       if (!empty($themes_done[$theme_name])) {
         continue;
@@ -324,4 +334,8 @@ function advagg_advagg_changed_files($files, $types) {
   $form_set_error = &drupal_static('form_set_error', array());
   $form_set_error = $errors_before;
 
+  // Rescan again as the submit will generate new files in the css dir.
+  if (!empty($themes_done)) {
+    advagg_push_new_changes();
+  }
 }
