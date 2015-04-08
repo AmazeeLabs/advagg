@@ -549,8 +549,10 @@ function advagg_cron($bypass_time_check = FALSE) {
  *
  * @param bool $all_bins
  *   TRUE: Get all advagg cache bins.
+ * @param bool $push_new_changes
+ *   FALSE: Do not scan for changes.
  */
-function advagg_flush_caches($all_bins = FALSE) {
+function advagg_flush_caches($all_bins = FALSE, $push_new_changes = TRUE) {
   // Send back a blank array if aav table doesn't exist.
   if (!db_table_exists('advagg_aggregates_versions')) {
     return array();
@@ -558,7 +560,9 @@ function advagg_flush_caches($all_bins = FALSE) {
 
   // Scan for & push new changes.
   module_load_include('inc', 'advagg', 'advagg.cache');
-  advagg_push_new_changes();
+  if ($push_new_changes) {
+    advagg_push_new_changes();
+  }
 
   // Get list of cache bins to clear.
   $bins = array('cache_advagg_aggregates');
