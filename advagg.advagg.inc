@@ -241,3 +241,87 @@ function advagg_advagg_get_info_on_files_alter(&$return, $cached_data, $bypass_c
   }
   unset($info);
 }
+
+function advagg_advagg_changed_files($files, $types) {
+  // Skip if no css changed; or color module is not enabled.
+  if (empty($types['css']) || !module_exists('color')) {
+    return;
+  }
+
+  // Save error states.
+  $errors_before = drupal_static('form_set_error', array());
+  // Clear all errors.
+  form_clear_error();
+
+  $themes = list_themes();
+  $changed_files = array_keys($files);
+  $themes_done = array();
+  foreach ($changed_files as $css_file) {
+    foreach ($themes as $theme_name => $theme_values) {
+      // Skip if we already did a form submit.
+      if (!empty($themes_done[$theme_name])) {
+        continue;
+      }
+
+      // Skip if the file that was changed is not in this themes directory.
+      $theme_path = drupal_get_path('theme', $theme_name);
+      if (strpos($css_file, $theme_path) !== 0) {
+        continue;
+      }
+
+      // Get the form for this theme.
+      $router_item = menu_get_item('admin/appearance/settings/' . $theme_name);
+      if ($router_item ['include_file']) {
+        require_once DRUPAL_ROOT . '/' . $router_item ['include_file'];
+      }
+      $form = drupal_get_form('system_theme_settings', $theme_name);
+
+      // Skip if color module is not enabled.
+      if (!isset($form['color'])) {
+        continue;
+      }
+
+      // Skip if the file that was changed is not a color module file.
+      $hit = FALSE;
+      foreach ($form['color']['info']['#value']['css'] as $theme_file) {
+        if ($theme_path . '/' . $theme_file === $css_file) {
+          $hit = TRUE;
+        }
+      }
+      if (empty($hit)) {
+        continue;
+      }
+
+      // Build the palette.
+      $palette = array();
+      foreach (element_children($form['color']['palette']) as $key) {
+        $palette[$key] = $form['color']['palette'][$key]['#value'];
+      }
+
+      // Build the form state array from already saved defaults.
+      $form_state = array(
+        'values' => array(
+          'theme' => $theme_name,
+          'info' => $form['color']['info']['#value'],
+          'palette' => $palette,
+          'scheme' => $form['color']['scheme']['#value'],
+        ),
+      );
+
+      // Validate form.
+      color_scheme_form_validate($form, $form_state);
+      $errors = form_set_error();
+      if (empty($errors)) {
+        // Only submit if no errors.
+        color_scheme_form_submit($form, $form_state);
+        $themes_done[$theme_name] = TRUE;
+      }
+      // Reset form errors.
+      form_clear_error();
+    }
+  }
+  // Save error states back.
+  $form_set_error = &drupal_static('form_set_error', array());
+  $form_set_error = $errors_before;
+
+}
