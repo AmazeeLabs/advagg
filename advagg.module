@@ -373,7 +373,7 @@ function advagg_module_implements_alter(&$implementations, $hook) {
  */
 function _advagg_locale_js_alter(&$js) {
   $count = 0;
-  while (!lock_acquire('locale_js_alter')) {
+  while (!lock_acquire('locale_js_alter', 5)) {
     ++$count;
     // If we've waited over 5 times then skip.
     if ($count > 5) {
