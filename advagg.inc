@@ -189,18 +189,23 @@ function advagg_insert_update_files(array $files, $type) {
 
     // Check the file in the database.
     if (empty($files_in_db[$filename])) {
-      // Insert into database.
-      $record['changes'] = 1;
+      try {
+        // Insert into database.
+        $record['changes'] = 1;
 
-      $return = db_merge('advagg_files')
-        ->key(array(
-          'filename_hash' => $record['filename_hash'],
-          ))
-        ->insertFields($record)
-        ->execute();
-
-      if ($return) {
-        $write_done = TRUE;
+        $return = db_merge('advagg_files')
+          ->key(array(
+            'filename_hash' => $record['filename_hash'],
+            ))
+          ->insertFields($record)
+          ->execute();
+          if ($return) {
+            $write_done = TRUE;
+          }
+      }
+      catch {
+        // If it fails we don't care, the file was added to the table by another
+        // process then.
       }
     }
     else {
