@@ -378,10 +378,10 @@ function advagg_module_implements_alter(&$implementations, $hook) {
  */
 function _advagg_locale_js_alter(&$js) {
   $count = 0;
-  while (!lock_acquire('locale_js_alter', 5)) {
+  while (!lock_acquire('locale_js_alter', 10)) {
     ++$count;
-    // If we've waited over 5 times then skip.
-    if ($count > 5) {
+    // If we've waited over 3 times then skip.
+    if ($count > 3) {
       lock_release('locale_js_alter');
       return;
     }
@@ -391,7 +391,13 @@ function _advagg_locale_js_alter(&$js) {
   }
 
   // Run the alter and return.
-  $return = locale_js_alter($js);
+  try {
+    $return = locale_js_alter($js);
+  }
+  catch (Exception $e) {
+    // If it fails we don't care, javascript_parsed is either already written or
+    // it will happen again on the next request.
+  }
   lock_release('locale_js_alter');
   return $return;
 }
