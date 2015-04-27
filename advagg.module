@@ -183,6 +183,11 @@ define('ADVAGG_AUTH_BASIC_USER', '');
  */
 define('ADVAGG_AUTH_BASIC_PASS', '');
 
+/**
+ * Skip far future check on status page.
+ */
+define('ADVAGG_SKIP_FAR_FUTURE_CHECK', FALSE);
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
