@@ -565,6 +565,8 @@ function advagg_requirements($phase) {
   if ($phase !== 'runtime') {
     return $requirements;
   }
+  // Make sure the advagg default values for variable_get are available.
+  drupal_load('module', 'advagg');
 
   // Do the following checks only at runtime.
   list($css_path, $js_path) = advagg_get_root_files_dir();
