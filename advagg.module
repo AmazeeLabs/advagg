@@ -1528,7 +1528,7 @@ function _advagg_process_html(&$variables) {
           // Record that this is being used.
           $js_settings_used[$scope_settings] = TRUE;
           // Replace Drupal.settings json.
-          $value = substr($value, 0, $start + 30) . $json_data . substr($value, strpos($value, '});', $start) + 1);
+          $value = substr($value, 0, $start + 30) . $json_data . substr($value, strripos($value, '});', $start) + 1);
         }
       }
       $add_to_variables[$scope] = $value;
