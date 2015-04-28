@@ -56,15 +56,16 @@ function advagg_admin_settings_form($form, $form_state) {
   }
   $options = array(
     -1 => t('Development ~ 300ms'),
-    3 => t('Normal ~ 30ms'),
-    5 => t('Aggressive ~ 10ms'),
+    1 => t('Normal ~ 60ms'),
+    3 => t('Render Cache ~ 30ms'),
+    5 => t('Aggressive Render Cache ~ 10ms'),
   );
   $form['global']['advagg_cache_level'] = array(
     '#type' => 'radios',
     '#title' => t('AdvAgg Cache Settings'),
     '#default_value' => variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL),
     '#options' => $options,
-    '#description' => t("As a reference, core takes about 25 ms to run. Development will scan all files for a change on every page load. Normal is fine for all use cases. Aggressive should be fine for most use cases. If your inline css/js changes based off of a variable then the cache hit ratio will be low; if that is the case consider using Drupal.settings for a better cache hit ratio.", array(
+    '#description' => t("As a reference, core takes about 25 ms to run. Development will scan all files for a change on every page load. Normal & the render cache is fine for all use cases. Aggressive should be fine for most use cases. If your inline css/js changes based off of a variable then the cache hit ratio will be low; if that is the case consider using Drupal.settings for a better cache hit ratio when using the render cache. The aggressive render cache will cache the output from js_alter & css_alter.", array(
       '@information' => url($config_path . '/advagg/info', array(
         'fragment' => 'edit-hooks-implemented',
       )),
