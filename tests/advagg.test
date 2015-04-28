@@ -413,7 +413,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
 
       $expected = file_get_contents($file_path . '.optimized.css');
       $optimized_output = advagg_load_stylesheet($file_path, TRUE);
-      $this->assertEqual($optimized_output, $expected, format_string('Optimized CSS file has expected contents (@file)' . httprl_pr(nl2br($optimized_output), nl2br($expected)), array('@file' => $file)));
+      $this->assertEqual($optimized_output, $expected, format_string('Optimized CSS file has expected contents (@file)', array('@file' => $file)));
 
       $expected = file_get_contents($file_path . '.optimized.css');
       $optimized_output_url = advagg_load_stylesheet($file_url, TRUE);
