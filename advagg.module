@@ -394,7 +394,7 @@ function _advagg_locale_js_alter(&$js) {
   try {
     $return = locale_js_alter($js);
   }
-  catch (Exception $e) {
+  catch (PDOException $e) {
     // If it fails we don't care, javascript_parsed is either already written or
     // it will happen again on the next request.
   }

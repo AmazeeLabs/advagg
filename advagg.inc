@@ -203,7 +203,7 @@ function advagg_insert_update_files(array $files, $type) {
             $write_done = TRUE;
           }
       }
-      catch (Exception $e) {
+      catch (PDOException $e) {
         // If it fails we don't care, the file was added to the table by another
         // process then.
       }
