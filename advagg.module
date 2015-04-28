@@ -1241,7 +1241,7 @@ function _advagg_build_js_arrays_for_rendering($skip_alter = FALSE) {
       // Get the js settings.
       $js_scope_settings_array[$scope]['settings'] = $scripts['#items']['settings'];
       // Exclude JS Settings from the array; we'll add it back later.
-      unset($scripts['#items']['settings']);
+      $scripts['#items']['settings'] = array();
     }
     $js_scope_array[$scope] = $scripts;
   }
@@ -2811,9 +2811,11 @@ function advagg_admin_flush_cache() {
 function advagg_pre_render_scripts(array $elements) {
   // Group and aggregate the items.
   if (isset($elements['#group_callback'])) {
+    // Call advagg_group_js().
     $elements['#groups'] = $elements['#group_callback']($elements['#items']);
   }
   if (isset($elements['#aggregate_callback'])) {
+    // Call _advagg_aggregate_js().
     $elements['#aggregate_callback']($elements['#groups']);
   }
 
@@ -3037,9 +3039,11 @@ function advagg_get_css_prefix_suffix() {
 function advagg_pre_render_styles(array $elements) {
   // Group and aggregate the items.
   if (isset($elements['#group_callback'])) {
+    // Call drupal_group_css().
     $elements['#groups'] = $elements['#group_callback']($elements['#items']);
   }
   if (isset($elements['#aggregate_callback'])) {
+    // Call _advagg_aggregate_css().
     $elements['#aggregate_callback']($elements['#groups']);
   }
 
