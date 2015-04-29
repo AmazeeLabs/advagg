@@ -3715,10 +3715,6 @@ function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE
  * @see drupal_load_stylesheet_content()
  */
 function advagg_load_stylesheet_content($contents, $optimize = FALSE) {
-  // Remove multiple charset declarations for standards compliance (and fixing
-  // Safari problems).
-  $contents = preg_replace('/^@charset\s+[\'"](\S*?)\b[\'"];/i', '', $contents);
-
   if ($optimize) {
     // Perform some safe CSS optimizations.
     // Regexp to match comment blocks.
@@ -3761,6 +3757,10 @@ function advagg_load_stylesheet_content($contents, $optimize = FALSE) {
     $contents = trim($contents);
     $contents .= "\n";
   }
+
+  // Remove multiple charset declarations for standards compliance (and fixing
+  // Safari problems).
+  $contents = preg_replace('/^@charset\s+[\'"](\S*?)\b[\'"];/i', '', $contents);
 
   // Replaces @import commands with the actual stylesheet content.
   // This happens recursively but omits external files.
