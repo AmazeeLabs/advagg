@@ -775,7 +775,8 @@ class AdvAggJavaScriptTestCase extends DrupalWebTestCase {
       "-8 #2",
       "-8 #3",
       "-8 #4",
-      "-5 #1", // The external script.
+      // -5 #1: The external script.
+      "-5 #1",
       "0 #1",
       "0 #2",
       "0 #3",
@@ -1103,7 +1104,7 @@ class AdvAggThemeTestCase extends AJAXTestCase {
         'media' => 'all',
         'preprocess' => TRUE,
         'data' => $expected['css'],
-        'browsers' => array('IE' => TRUE, '!IE' => TRUE),
+        'browsers' => array('IE' => TRUE, '!IE' => TRUE,),
       )
     ), TRUE);
     $expected_css_html = drupal_render($expected_css_render_array);

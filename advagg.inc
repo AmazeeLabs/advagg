@@ -199,9 +199,9 @@ function advagg_insert_update_files(array $files, $type) {
             ))
           ->insertFields($record)
           ->execute();
-          if ($return) {
-            $write_done = TRUE;
-          }
+        if ($return) {
+          $write_done = TRUE;
+        }
       }
       catch (PDOException $e) {
         // If it fails we don't care, the file was added to the table by another

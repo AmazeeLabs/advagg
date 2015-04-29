@@ -3847,29 +3847,29 @@ function advagg_aggressive_cache_conflicts() {
     //
     // ais_adaptive_styles variable; Default: array().
     // ais_adaptive_styles_method; Default: 'both-max'.
-//     'ais',
+    // 'ais',
 
     // No control; same every time.
     'bluecheese',
 
     // drupal_static('clientside_validation_settings') array.
-//     'clientside_validation',
+    // 'clientside_validation',
 
     // _css_injector_load_rule() function.
     // Changes the weight of all files added in init so no special handling.
-//     'css_injector',
+    // 'css_injector',
 
     // disable_css_ . $theme . _all variable; default: FALSE.
     // disable_css_ . $theme . _modules; default: array().
     // disable_css_ . $theme . _files; default: array().
-//     'disable_css',
+    // 'disable_css',
 
     // Empty call; commented code is same every time.
     'elfinder',
 
     // excluded_css_custom variable; Default: ''.
     // excluded_javascript_custom variable; Default: ''.
-//     'excluded',
+    // 'excluded',
 
     // No control; same every time.
     'fences',
@@ -3877,7 +3877,7 @@ function advagg_aggressive_cache_conflicts() {
     // jqmulti_jquery_path() function.
     // jqmulti_get_files() function.
     // jqmulti_load_always variable; Default: FALSE.
-//     'jqmulti',
+    // 'jqmulti',
 
     // No control; same every time.
     'jquery_dollar',

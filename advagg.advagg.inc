@@ -265,14 +265,13 @@ function advagg_advagg_changed_files(array $files, array $types) {
     return;
   }
 
-  $return = array();
   foreach ($files as $filename => $meta_data) {
     // Only care about css files.
     $ext = pathinfo($filename, PATHINFO_EXTENSION);
     if ($ext != 'css') {
       continue;
     }
-    $return[$filename] = advagg_advagg_scan_for_changes($filename, TRUE);
+    advagg_advagg_scan_for_changes($filename, TRUE);
   }
 
   // Save error states & clear them.

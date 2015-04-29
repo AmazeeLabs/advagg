@@ -1352,7 +1352,7 @@ function advagg_install_get_first_advagg_file($directory) {
       }
     }
 
-    $gzip_filename = $scanned_directory[$key+1];
+    $gzip_filename = $scanned_directory[$key + 1];
     if (variable_get('advagg_gzip', ADVAGG_GZIP)) {
       // Skip if the next file is not a .gz file.
       if (strcmp($filename . '.gz', $gzip_filename) !== 0) {
