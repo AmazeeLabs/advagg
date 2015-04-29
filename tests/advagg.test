@@ -17,6 +17,20 @@ function advagg_test_reset_statics() {
 }
 
 /**
+ * Strip the codingStandardsIgnoreFile string from the input.
+ *
+ * @param string $input
+ *   The input string.
+ *
+ * @return string
+ *   The input string with codingStandardsIgnoreFile removed from it.
+ */
+function advagg_test_remove_sniffer_comments($input) {
+  $string = "/* @codingStandardsIgnoreFile */\n";
+  return str_replace($string, '', $input);
+}
+
+/**
  * Test the Drupal CSS system.
  */
 class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
@@ -386,6 +400,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
       $this->assertEqual($unoptimized_output, $expected, format_string('Unoptimized CSS file has expected contents (@file)', array('@file' => $file)));
 
       $expected = file_get_contents($file_path . '.optimized.css');
+      $expected = advagg_test_remove_sniffer_comments($expected);
       $optimized_output = advagg_load_stylesheet($file_path, TRUE);
       $this->assertEqual($optimized_output, $expected, format_string('Optimized CSS file has expected contents (@file)', array('@file' => $file)));
 
@@ -395,6 +410,7 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
       $this->assertEqual($unoptimized_output_url, $expected, format_string('Unoptimized CSS file (loaded from an URL) has expected contents (@file)', array('@file' => $file)));
 
       $expected = file_get_contents($file_path . '.optimized.css');
+      $expected = advagg_test_remove_sniffer_comments($expected);
       $optimized_output_url = advagg_load_stylesheet($file_url, TRUE);
       $this->assertEqual($optimized_output_url, $expected, format_string('Optimized CSS file (loaded from an URL) has expected contents (@file)', array('@file' => $file)));
     }
@@ -412,10 +428,12 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
       $file_url = $GLOBALS['base_url'] . '/' . $file_path;
 
       $expected = file_get_contents($file_path . '.optimized.css');
+      $expected = advagg_test_remove_sniffer_comments($expected);
       $optimized_output = advagg_load_stylesheet($file_path, TRUE);
       $this->assertEqual($optimized_output, $expected, format_string('Optimized CSS file has expected contents (@file)', array('@file' => $file)));
 
       $expected = file_get_contents($file_path . '.optimized.css');
+      $expected = advagg_test_remove_sniffer_comments($expected);
       $optimized_output_url = advagg_load_stylesheet($file_url, TRUE);
       $this->assertEqual($optimized_output_url, $expected, format_string('Optimized CSS file (loaded from an URL) has expected contents (@file)', array('@file' => $file)));
     }
@@ -447,11 +465,13 @@ class AdvAggCascadingStylesheetsTestCase extends DrupalWebTestCase {
       }
 
       $expected = file_get_contents($file_path . '.optimized.css');
+      $expected = advagg_test_remove_sniffer_comments($expected);
       $optimized_output = advagg_load_css_stylesheet($file_path, TRUE, $aggregate_settings);
       $optimized_output = str_replace($aggregate_settings['variables']['base_path'] . drupal_get_path('module', 'advagg') . '/', '', $optimized_output);
       $this->assertEqual($optimized_output, $expected, format_string('Optimized CSS file has expected contents (@file)', array('@file' => $file)) . "<br>\n<br>\n" . $path . "<br>\n<br>\n" . $file_path . "<br>\n<br>\n" . $file_url . "<br>\n<br>\n" . drupal_get_path('module', 'advagg') . "<br>\n<br>\n" . file_create_url($file_path) . "<br>\n<br>\n" . $optimized_output . "<br>\n<br>\n" . $GLOBALS['base_url'] . "<br>\n<br>\n" . $GLOBALS['base_path'] . "<br>\n<br>\n" . $GLOBALS['base_root'] . "<br>\n<br>\n" . $aggregate_settings['variables']['base_path']);
 
       $expected = file_get_contents($file_path . '.optimized.css');
+      $expected = advagg_test_remove_sniffer_comments($expected);
       $optimized_output_url = advagg_load_css_stylesheet($file_url, TRUE, $aggregate_settings);
       $optimized_output_url = str_replace($aggregate_settings['variables']['base_path'] . drupal_get_path('module', 'advagg') . '/', '', $optimized_output_url);
       $this->assertEqual($optimized_output_url, $expected, format_string('Optimized CSS file (loaded from an URL) has expected contents (@file)', array('@file' => $file)));
