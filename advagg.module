@@ -390,16 +390,24 @@ function _advagg_locale_js_alter(&$js) {
     lock_wait('locale_js_alter');
   }
 
-  // Run the alter and return.
   try {
-    $return = locale_js_alter($js);
+    // If the variable is empty then get the latest variable from the database.
+    $name = 'javascript_parsed';
+    $parsed = variable_get($name, array());
+    if (empty($parsed)) {
+      $variables = array_map('unserialize', db_query('SELECT name, value FROM {variable} WHERE name = :name', array(':name' => $name))->fetchAllKeyed());
+      if (!empty($variables[$name])) {
+        $conf[$name] = $variables[$name];
+      }
+    }
+    // Run the alter.
+    locale_js_alter($js);
   }
   catch (PDOException $e) {
     // If it fails we don't care, javascript_parsed is either already written or
     // it will happen again on the next request.
   }
   lock_release('locale_js_alter');
-  return $return;
 }
 
 /**
