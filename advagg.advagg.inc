@@ -117,13 +117,12 @@ function advagg_advagg_context_alter(&$original, $aggregate_settings, $mode) {
     $GLOBALS['is_https'] = $aggregate_settings['variables']['is_https'];
     if ($aggregate_settings['variables']['is_https']) {
       $GLOBALS['base_root'] = str_replace('http://', 'https://', $GLOBALS['base_root']);
-      $GLOBALS['base_url'] = str_replace('http://', 'https://', $GLOBALS['base_url']);
     }
     else {
       $GLOBALS['base_root'] = str_replace('https://', 'http://', $GLOBALS['base_root']);
-      $GLOBALS['base_url'] = str_replace('https://', 'http://', $GLOBALS['base_url']);
     }
     $GLOBALS['base_path'] = $aggregate_settings['variables']['base_path'];
+    $GLOBALS['base_url'] = rtrim($GLOBALS['base_root'] . $GLOBALS['base_path'], '/');
 
     if (isset($aggregate_settings['variables']['language'])) {
       $languages = language_list();

@@ -1233,6 +1233,8 @@ function advagg_create_aggregate_files(array $plans, $type) {
  *   Contents of the stylesheet, including any resolved @import commands.
  */
 function advagg_load_css_stylesheet($file, $optimize, array $aggregate_settings = array()) {
+  $old_base_path = $GLOBALS['base_path'];
+
   // Change context to that of when this aggregate was created.
   advagg_context_switch($aggregate_settings, 0);
 
@@ -1248,6 +1250,12 @@ function advagg_load_css_stylesheet($file, $optimize, array $aggregate_settings 
   if (count($url_parts) === 2) {
     $css_base_url = $url_parts[1];
   }
+  // Replace the old base path with the one that was passed in.
+  $pos = strpos($css_base_url, $old_base_path);
+  if ($pos !== FALSE) {
+    $css_base_url = substr_replace($css_base_url, $GLOBALS['base_path'], $pos, strlen($old_base_path));
+  }
+
   _advagg_build_css_path(array(), $css_base_url . '/', $aggregate_settings);
 
   // Anchor all paths in the CSS with its base URL, ignoring external,

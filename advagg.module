@@ -3548,7 +3548,12 @@ function advagg_match_file_pattern($filename) {
  */
 function advagg_convert_abs_to_rel($path) {
   if (strpos($path, $GLOBALS['base_url']) === 0) {
-    $path = str_replace($GLOBALS['base_url'] . '/', $GLOBALS['base_path'], $path);
+    $base_url = $GLOBALS['base_url'];
+    // Add a slash if none is found.
+    if (stripos(strrev($base_url), '/') !== 0) {
+      $base_url .= '/';
+    }
+    $path = str_replace($base_url, $GLOBALS['base_path'], $path);
   }
   return $path;
 }
