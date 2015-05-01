@@ -172,15 +172,25 @@ function advagg_bundler_analysis($filename = '', $force = FALSE) {
         // MS SQL does not support LPAD.
         $subquery_aggregates->addExpression("RIGHT(REPLICATE('0',8) + CAST(COUNT(aav.aggregate_filenames_hash) AS char(8)),8)", 'counter');
       }
+      elseif ($db_type === 'sqlite') {
+        // SQLite does not support LPAD.
+        $subquery_aggregates->addExpression("substr('00000000' || CAST(COUNT(aav.aggregate_filenames_hash) AS char(8)), -8, 8)", 'counter');
+      }
       else {
         $subquery_aggregates->addExpression("LPAD(CAST(COUNT(aav.aggregate_filenames_hash) AS char(8)), 8, '0')", 'counter');
       }
 
       $fields = array('counter');
-      if ($db_type === 'mysql') {
-        db_query('SET SESSION group_concat_max_len = 65535');
+      if ($db_type === 'mysql' || $db_type === 'sqlite') {
         $fields = array('counter', 'hashlist');
-        $subquery_aggregates->addExpression('GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash ORDER BY aa.aggregate_filenames_hash ASC)', 'hashlist');
+        if ($db_type === 'mysql') {
+          db_query('SET SESSION group_concat_max_len = 65535');
+          $subquery_aggregates->addExpression('TO_BASE64(UNHEX(SHA1(GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash ORDER BY aa.aggregate_filenames_hash ASC))))', 'hashlist');
+        }
+        else {
+          $subquery_aggregates->addExpression('GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash)', 'hashlist');
+          $subquery_aggregates->orderBy("aa.aggregate_filenames_hash", "ASC");
+        }
       }
 
       // Create join for the advagg_aggregates_versions table.
@@ -230,8 +240,11 @@ function advagg_bundler_analysis($filename = '', $force = FALSE) {
           $row->hashlist = implode(',', $aa_rows);
         }
 
+        if (strlen($row->hashlist) > 43) {
+          $row->hashlist = drupal_hash_base64($row->hashlist);
+        }
         $analysis[$row->filename] = array(
-          'group_hash' => $row->counter . ' ' . drupal_hash_base64($row->hashlist),
+          'group_hash' => $row->counter . ' ' . $row->hashlist,
           'mtime' => $row->mtime,
           'filesize' => $row->filesize,
           'linecount' => $row->linecount,
