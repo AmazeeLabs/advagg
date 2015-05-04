@@ -185,7 +185,7 @@ function advagg_bundler_analysis($filename = '', $force = FALSE) {
         $fields = array('counter', 'hashlist');
         if ($db_type === 'mysql') {
           db_query('SET SESSION group_concat_max_len = 65535');
-          $subquery_aggregates->addExpression('TO_BASE64(UNHEX(SHA1(GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash ORDER BY aa.aggregate_filenames_hash ASC))))', 'hashlist');
+          $subquery_aggregates->addExpression('HEX(SHA1(GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash ORDER BY aa.aggregate_filenames_hash ASC)))', 'hashlist');
         }
         else {
           $subquery_aggregates->addExpression('GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash)', 'hashlist');
@@ -240,9 +240,7 @@ function advagg_bundler_analysis($filename = '', $force = FALSE) {
           $row->hashlist = implode(',', $aa_rows);
         }
 
-        if (strlen($row->hashlist) > 43) {
-          $row->hashlist = drupal_hash_base64($row->hashlist);
-        }
+        $row->hashlist = drupal_hash_base64($row->hashlist);
         $analysis[$row->filename] = array(
           'group_hash' => $row->counter . ' ' . $row->hashlist,
           'mtime' => $row->mtime,
