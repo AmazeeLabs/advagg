@@ -312,6 +312,18 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
   if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
     return;
   }
+  // Do nothing if the file is already minified.
+  $semicolon_count = substr_count($contents, ';');
+  if ( $compressor != 2
+    && $semicolon_count > 10
+    && $semicolon_count > (substr_count($contents, "\n", strpos($contents, ';')) * 5)
+  ) {
+    if ($add_licensing && variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE)) {
+      $url = url($filename, array('absolute' => TRUE));
+      $contents = "/* Source and licensing information for the line(s) below can be found at $url. */\n" . $contents . ";\n/* Source and licensing information for the above line(s) can be found at $url. */\n";
+    }
+    return;
+  }
 
   // Get the JS string length before the compression operation.
   $contents_before = $contents;
