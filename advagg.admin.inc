@@ -505,15 +505,46 @@ function advagg_admin_info_form($form, $form_state) {
   list(, $js_path) = advagg_get_root_files_dir();
 
   // Output html process functions hooks.
-  $form['info'] = array(
+  $form['theme_info'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Hook Theme Info'),
   );
   $data = implode("\n", $core_hooks['html']['process functions']);
-  $form['info']['advagg_debug_info'] = array(
+  $form['theme_info']['advagg_theme_info'] = array(
     '#markup' => '<pre>' . $data . '</pre>',
+  );
+
+  $form['render_info'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Hook Render Info'),
+  );
+  $element_info = array();
+  $element_info['scripts'] = element_info('scripts');
+  $element_info['styles'] = element_info('styles');
+  $output = '';
+  foreach ($element_info as $type => &$values) {
+    $output .= $type . ":\n";
+    foreach ($values as $key => &$value) {
+      if ($key === '#items' || $key === '#type') {
+        continue;
+      }
+      if (empty($value)) {
+        $output .= '  ' . $key . ' - ' . str_replace(array("\r", "\n"), '', (string) var_export($value, TRUE)) . "\n";
+      }
+      elseif (is_array($value)) {
+        $output .= '  ' . $key . ' - ' . implode(', ', $value) . "\n";
+      }
+      else {
+        $output .= '  ' . $key . ' - ' . print_r($value, TRUE) . "\n";
+      }
+    }
+  }
+  $form['render_info']['advagg_render_info'] = array(
+    '#markup' => '<pre>' . $output . '</pre>',
   );
 
   // Get all parent css and js files.
