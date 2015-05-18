@@ -2647,6 +2647,7 @@ function advagg_build_ajax_js_css() {
     }
     else {
       $function = 'drupal_add_' . $type;
+      // Get the current css/js needed for this page.
       $items[$type] = $function();
       // Call hook_js_alter() OR hook_css_alter().
       drupal_alter($type, $items[$type]);
@@ -3276,8 +3277,32 @@ function advagg_group_js(array $javascript) {
       $item['browsers'] = array();
     }
 
-    if (empty($item['type']) && $key === 'settings') {
-      $item['type'] = 'setting';
+    // Fix missing types.
+    if (empty($item['type'])) {
+      // Setting is easy.
+      if ($key === 'settings') {
+        $item['type'] = 'setting';
+      }
+      // Check for the schema or // for protocol-relative.
+      elseif ( (stripos($item['data'], 'http://') === 0
+            || stripos($item['data'], 'https://') === 0
+            || (stripos($item['data'], '//') === 0 && stripos($item['data'], '///') === FALSE))
+      ) {
+        $item['type'] = 'external';
+      }
+      // See if the data contains a semicolon, new line, $, or quotes.
+      elseif ( stripos($item['data'], ';') !== FALSE
+            || stripos($item['data'], "\n")
+            || stripos($item['data'], "$")
+            || stripos($item['data'], "'")
+            || stripos($item['data'], '"')
+      ) {
+        $item['type'] = 'inline';
+      }
+      // Ends in .js.
+      elseif (stripos(strrev($item['data']), strrev('.js')) === 0) {
+        $item['type'] = 'file';
+      }
     }
 
     switch ($item['type']) {
@@ -3304,6 +3329,11 @@ function advagg_group_js(array $javascript) {
       default:
         // Define this here so we don't get undefined alerts down below.
         $group_keys = NULL;
+        // Log the error as well.
+        watchdog('advagg', 'Bad javascript was added. Type is unknown. @key - @item', array(
+            '@key' => $key,
+            '@item' => print_r($item, TRUE),
+          ), WATCHDOG_NOTICE);
         break;
 
     }
