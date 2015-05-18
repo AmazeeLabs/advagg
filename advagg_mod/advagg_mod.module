@@ -131,6 +131,16 @@ define('ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST', '');
  */
 define('ADVAGG_MOD_WRAP_INLINE_JS_XPATH', FALSE);
 
+/**
+ * Default value to wrap inline content javascript so it runs defered.
+ */
+define('ADVAGG_MOD_JS_DEFER_INLINE_ALTER', FALSE);
+
+/**
+ * Default value for inline scripts that should not be deferred.
+ */
+define('ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST', '');
+
 // Core hook implementations.
 /**
  * Implements hook_init().
@@ -445,6 +455,21 @@ function advagg_mod_js_alter(&$js) {
 
     }
     unset($values);
+  }
+
+  if (variable_get('advagg_mod_js_defer_inline_alter', ADVAGG_MOD_JS_DEFER_INLINE_ALTER)) {
+    foreach ($js as $name => &$values) {
+      // Skip if not inline.
+      if ($values['type'] !== 'inline') {
+        continue;
+      }
+      // Skip if advagg has already wrapped this inline code.
+      if (strpos($values['data'], 'advagg_mod_') !== FALSE) {
+        continue;
+      }
+
+      $values['data'] = advagg_mod_defer_inline_js($values['data']);
+    }
   }
 }
 
@@ -886,6 +911,45 @@ function advagg_mod_advagg_current_hooks_hash_array_alter(&$aggregate_settings) 
 /**
  * Callback for preg_replace_callback.
  *
+ * Used to wrap inline JS in a function in order to defer the inline js code.
+
+ * @param string $input
+ *   JavaScript code to wrap in setTimeout.
+ * @param int $ms_wait
+ *   Default amount of time to wait until the required code is available.
+ *
+ * @return string
+ *   Inline javascript code wrapped up in a loader.
+ */
+function advagg_mod_defer_inline_js($input) {
+  // Get inline js skip list string and convert it to an array.
+  $inline_js_skip_list = array_filter(array_map('trim', explode("\n", variable_get('advagg_mod_defer_inline_js_skip_list', ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST))));
+  if (!empty($inline_js_skip_list)) {
+    // If the line is on the skip list then do not inline the script.
+    foreach ($inline_js_skip_list as $string_to_check) {
+      if (stripos($input, $string_to_check) !== FALSE) {
+        return $input;
+      }
+    }
+  }
+
+  // Use a counter in order to create unique function names.
+  static $counter;
+  ++$counter;
+
+  // JS wrapper code.
+  $new = "
+function advagg_mod_defer_${counter}() {
+  ${input};
+}
+window.setTimeout(advagg_mod_defer_${counter}, 0);";
+
+  return $new;
+}
+
+/**
+ * Callback for preg_replace_callback.
+ *
  * Used to wrap inline JS in a function in order to prevent js errors when JS is
  * moved to the footer, or when js is loaded async.
  *
@@ -905,7 +969,7 @@ function advagg_mod_wrap_inline_js(array $matches, $check_string = NULL, $ms_wai
   }
 
   // Get inline js skip list string and convert it to an array.
-  $inline_js_skip_list = array_filter(array_map('trim', explode("\n", variable_get('advagg_mod_wrap_inline_js_skip_list', ''))));
+  $inline_js_skip_list = array_filter(array_map('trim', explode("\n", variable_get('advagg_mod_wrap_inline_js_skip_list', ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST))));
   if (!empty($inline_js_skip_list)) {
     // If the line is on the skip list then do not inline the script.
     foreach ($inline_js_skip_list as $string_to_check) {

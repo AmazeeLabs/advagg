@@ -144,6 +144,30 @@ function advagg_mod_admin_settings_form() {
     '#default_value' => variable_get('advagg_mod_wrap_inline_js_xpath', ADVAGG_MOD_WRAP_INLINE_JS_XPATH),
     '#description' => t('In general this should be disabled due to the unpredictable nature of parsing html snippets using DOMDocument loadHTML(). Only enable if you have script tags inside a textarea that have not been ran through htmlentities().'),
   );
+  $form['js']['placement']['advagg_mod_js_defer_inline_alter'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Deferred inline JavaScript Execution: Put a wrapper around inline JS so it runs from a setTimeout call.'),
+    '#default_value' => variable_get('advagg_mod_js_defer_inline_alter', ADVAGG_MOD_JS_DEFER_INLINE_ALTER),
+    '#description' => t('This will put a wrapper around any inline JavaScript.'),
+  );
+  $advagg_mod_defer_inline_js_skip_list = trim(variable_get('advagg_mod_defer_inline_js_skip_list', ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST));
+  $form['js']['placement']['advagg_mod_defer_inline'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Deferred Inline Settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => empty($advagg_mod_defer_inline_js_skip_list),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="advagg_mod_js_defer_inline_alter"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $form['js']['placement']['advagg_mod_defer_inline']['advagg_mod_defer_inline_js_skip_list'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Inline skip list for wrapper code'),
+    '#default_value' => variable_get('advagg_mod_defer_inline_js_skip_list', ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST),
+    '#description' => t("If the inline JavaScript matches a given string then the whole inline script will not be wrapped. Enter one per line."),
+  );
   $form['js']['placement']['expert'] = array(
     '#type' => 'fieldset',
     '#title' => t('Experimental Settings'),
