@@ -626,39 +626,43 @@ function advagg_flush_caches($all_bins = FALSE, $push_new_changes = TRUE) {
  * Implements hook_element_info_alter().
  */
 function advagg_element_info_alter(&$type) {
-  // Swap in our own aggregation callback.
-  if (isset($type['styles']['#aggregate_callback'])) {
-    $type['styles']['#aggregate_callback'] = '_advagg_aggregate_css';
-
-    // Replace drupal_pre_render_styles with advagg_pre_render_styles.
-    $key = array_search('drupal_pre_render_styles', $type['styles']['#pre_render']);
-    if ($key !== FALSE) {
-      $type['styles']['#pre_render'][$key] = 'advagg_pre_render_styles';
-    }
-    else {
-      $type['styles']['#pre_render'][] = 'advagg_pre_render_styles';
-    }
-
-    // Allow for other code to easily change the render with alter hooks.
-    $type['styles']['#pre_render'][] = 'advagg_modify_css_pre_render';
+  // Replace drupal_pre_render_styles with advagg_pre_render_styles.
+  $type['styles']['#items'] = array();
+  if (!isset($type['styles']['#pre_render'])) {
+    $type['styles']['#pre_render'] = array();
   }
-
-  // Swap in our own aggregation callback.
-  if (isset($type['scripts']['#aggregate_callback'])) {
-    $type['scripts']['#aggregate_callback'] = '_advagg_aggregate_js';
+  $key = array_search('drupal_pre_render_styles', $type['styles']['#pre_render']);
+  if ($key !== FALSE) {
+    $type['styles']['#pre_render'][$key] = 'advagg_pre_render_styles';
   }
   else {
-    $type['scripts'] = array(
-      '#items' => array(),
-      '#pre_render' => array('advagg_pre_render_scripts'),
-      '#group_callback' => 'advagg_group_js',
-      '#aggregate_callback' => '_advagg_aggregate_js',
-      '#type' => 'scripts',
-    );
+    $type['styles']['#pre_render'][] = 'advagg_pre_render_styles';
   }
+  // Allow for other code to easily change the render with alter hooks.
+  $type['styles']['#pre_render'][] = 'advagg_modify_css_pre_render';
+  $type['styles']['#group_callback'] = 'drupal_group_css';
+  // Swap in our own aggregation callback.
+  $type['styles']['#aggregate_callback'] = '_advagg_aggregate_css';
+  $type['styles']['#type'] = 'styles';
 
+  // Replace drupal_pre_render_scripts with advagg_pre_render_scripts.
+  $type['scripts']['#items'] = array();
+  if (!isset($type['scripts']['#pre_render'])) {
+    $type['scripts']['#pre_render'] = array();
+  }
+  $key = array_search('drupal_pre_render_scripts', $type['scripts']['#pre_render']);
+  if ($key !== FALSE) {
+    $type['scripts']['#pre_render'][$key] = 'advagg_pre_render_scripts';
+  }
+  else {
+    $type['scripts']['#pre_render'][] = 'advagg_pre_render_scripts';
+  }
   // Allow for other code to easily change the render with alter hooks.
   $type['scripts']['#pre_render'][] = 'advagg_modify_js_pre_render';
+  $type['scripts']['#group_callback'] = 'advagg_group_js';
+  // Swap in our own aggregation callback.
+  $type['scripts']['#aggregate_callback'] = '_advagg_aggregate_js';
+  $type['scripts']['#type'] = 'scripts';
 }
 
 /**
