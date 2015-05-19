@@ -271,13 +271,6 @@ function advagg_mod_js_alter(&$js) {
     unset($values);
   }
 
-  // Do not use preprocessing if JS is inlined.
-  // Do not use defer if JS is inlined.
-  if (advagg_mod_inline_page()) {
-    advagg_mod_inline_js($js);
-    return;
-  }
-
   // Force all JS to be preprocessed.
   if (variable_get('advagg_mod_js_preprocess', ADVAGG_MOD_JS_PREPROCESS)) {
     foreach ($js as $name => &$values) {
@@ -474,6 +467,93 @@ function advagg_mod_js_alter(&$js) {
 }
 
 /**
+ * Implements hook_element_info_alter().
+ */
+function advagg_mod_element_info_alter(&$type) {
+  if (!isset($type['styles']['#pre_render'])) {
+    $type['styles']['#pre_render'] = array();
+  }
+  $key_drupal = array_search('drupal_pre_render_styles', $type['styles']['#pre_render']);
+  $key_advagg = array_search('advagg_pre_render_styles', $type['styles']['#pre_render']);
+  if ($key_drupal !== FALSE) {
+    $type['styles']['#pre_render'] = advagg_insert_into_array_at_location($type['styles']['#pre_render'], array('_advagg_mod_pre_render_styles'), $key_drupal);
+  }
+  elseif ($key_advagg !== FALSE) {
+    $type['styles']['#pre_render'] = advagg_insert_into_array_at_location($type['styles']['#pre_render'], array('_advagg_mod_pre_render_styles'), $key_advagg);
+  }
+  else {
+    $type['styles']['#pre_render'][] = '_advagg_mod_pre_render_styles';
+  }
+
+  if (!isset($type['scripts']['#pre_render'])) {
+    $type['scripts']['#pre_render'] = array();
+  }
+  $key_drupal = array_search('drupal_pre_render_scripts', $type['scripts']['#pre_render']);
+  $key_advagg = array_search('advagg_pre_render_scripts', $type['scripts']['#pre_render']);
+  if ($key_drupal !== FALSE) {
+    $type['scripts']['#pre_render'] = advagg_insert_into_array_at_location($type['scripts']['#pre_render'], array('_advagg_mod_pre_render_scripts'), $key_drupal);
+  }
+  elseif ($key_advagg !== FALSE) {
+    $type['scripts']['#pre_render'] = advagg_insert_into_array_at_location($type['scripts']['#pre_render'], array('_advagg_mod_pre_render_scripts'), $key_advagg);
+  }
+  else {
+    $type['scripts']['#pre_render'][] = '_advagg_mod_pre_render_scripts';
+  }
+}
+
+/**
+ * Callback for pre_render to inline all JavaScript on this page.
+ *
+ * @param array $elements
+ *   A render array containing:
+ *   - #items: The JavaScript items as returned by drupal_add_js() and
+ *     altered by drupal_get_js().
+ *   - #group_callback: A function to call to group #items. Following
+ *     this function, #aggregate_callback is called to aggregate items within
+ *     the same group into a single file.
+ *   - #aggregate_callback: A function to call to aggregate the items within
+ *     the groups arranged by the #group_callback function.
+ *
+ * @return array
+ *   A render array that will render to a string of JavaScript tags.
+ *
+ * @see drupal_get_js()
+ */
+function _advagg_mod_pre_render_scripts(array $elements) {
+  if (advagg_mod_inline_page() || advagg_mod_inline_page_js()) {
+    advagg_mod_inline_js($elements['#items']);
+  }
+
+  return $elements;
+}
+
+/**
+ * A #pre_render callback to inline all CSS on this page.
+ *
+ * @param array $elements
+ *   A render array containing:
+ *   - '#items': The CSS items as returned by drupal_add_css() and altered by
+ *     drupal_get_css().
+ *   - '#group_callback': A function to call to group #items to enable the use
+ *     of fewer tags by aggregating files and/or using multiple @import
+ *     statements within a single tag.
+ *   - '#aggregate_callback': A function to call to aggregate the items within
+ *     the groups arranged by the #group_callback function.
+ *
+ * @return array
+ *   A render array that will render to a string of XHTML CSS tags.
+ *
+ * @see drupal_get_css()
+ */
+function _advagg_mod_pre_render_styles(array $elements) {
+  if (advagg_mod_inline_page() || advagg_mod_inline_page_css()) {
+    advagg_mod_inline_css($elements['#items']);
+  }
+
+  return $elements;
+}
+
+/**
  * Implements hook_css_alter().
  */
 function advagg_mod_css_alter(&$css) {
@@ -488,12 +568,6 @@ function advagg_mod_css_alter(&$css) {
     || variable_get('advagg_mod_css_adjust_sort_browsers', ADVAGG_MOD_CSS_ADJUST_SORT_BROWSERS)
   ) {
     advagg_mod_sort_css_js($css, 'css');
-  }
-
-  // Do not use preprocessing if CSS is inlined.
-  if (advagg_mod_inline_page()) {
-    advagg_mod_inline_css($css);
-    return;
   }
 
   // Force all CSS to be preprocessed.
@@ -695,7 +769,7 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
   }
 
   // Do not use defer/async shim if JS is inlined.
-  if (advagg_mod_inline_page()) {
+  if (advagg_mod_inline_page() || advagg_mod_inline_page_js()) {
     return;
   }
 
@@ -1258,6 +1332,30 @@ function advagg_mod_sort_css_js(array &$array, $type) {
 function advagg_mod_inline_page() {
   $visibility = variable_get('advagg_mod_inline_visibility', ADVAGG_MOD_VISIBILITY_LISTED);
   $pages = variable_get('advagg_mod_inline_pages', '');
+  return advagg_mod_match_path($pages, $visibility);
+}
+
+/**
+ * Returns TRUE if this page should have inline CSS.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function advagg_mod_inline_page_css() {
+  $visibility = variable_get('advagg_mod_inline_css_visibility', ADVAGG_MOD_VISIBILITY_LISTED);
+  $pages = variable_get('advagg_mod_inline_css_pages', '');
+  return advagg_mod_match_path($pages, $visibility);
+}
+
+/**
+ * Returns TRUE if this page should have inline JS.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function advagg_mod_inline_page_js() {
+  $visibility = variable_get('advagg_mod_inline_js_visibility', ADVAGG_MOD_VISIBILITY_LISTED);
+  $pages = variable_get('advagg_mod_inline_js_pages', '');
   return advagg_mod_match_path($pages, $visibility);
 }
 

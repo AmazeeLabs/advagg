@@ -666,6 +666,23 @@ function advagg_element_info_alter(&$type) {
 }
 
 /**
+ * Insert element into an array at a specific position.
+ *
+ * @param array $input_array
+ *   The original array.
+ * @param array $new_value
+ *   The element that is getting inserted.
+ * @param int $location_key
+ *   The key location.
+ *
+ * @return array
+ *   The new array with the element merged in.
+ */
+function advagg_insert_into_array_at_location(array $input_array, array $new_value, $location_key) {
+  return array_merge(array_slice($input_array, 0, $location_key), $new_value, array_slice($input_array, $location_key));
+}
+
+/**
  * Implements hook_theme_registry_alter().
  *
  * Replace template_process_html with _advagg_process_html
