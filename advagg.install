@@ -151,6 +151,7 @@ function advagg_schema() {
         'default' => '',
         'binary' => TRUE,
         'collation' => 'ascii_bin',
+        'charset' => 'ascii',
       ),
       'content_hash' => array(
         'description' => 'Hash of the file content. Used to see if the file has changed.',
@@ -160,6 +161,7 @@ function advagg_schema() {
         'default' => '',
         'binary' => TRUE,
         'collation' => 'ascii_bin',
+        'charset' => 'ascii',
       ),
       'filetype' => array(
         'description' => 'Filetype.',
@@ -213,6 +215,7 @@ function advagg_schema() {
         'default' => '',
         'binary' => TRUE,
         'collation' => 'ascii_bin',
+        'charset' => 'ascii',
       ),
       'filename_hash' => array(
         'description' => 'Hash of path and filename.',
@@ -222,6 +225,7 @@ function advagg_schema() {
         'default' => '',
         'binary' => TRUE,
         'collation' => 'ascii_bin',
+        'charset' => 'ascii',
       ),
       'porder' => array(
         'description' => 'Processing order.',
@@ -255,6 +259,7 @@ function advagg_schema() {
         'default' => '',
         'binary' => TRUE,
         'collation' => 'ascii_bin',
+        'charset' => 'ascii',
       ),
       'aggregate_contents_hash' => array(
         'description' => 'Hash of all content_hashes in this aggregate. Simple Version control of the aggregate.',
@@ -264,6 +269,7 @@ function advagg_schema() {
         'default' => '',
         'binary' => TRUE,
         'collation' => 'ascii_bin',
+        'charset' => 'ascii',
       ),
       'atime' => array(
         'description' => 'Last access time for this version of the aggregate. Updated every 12 hours.',

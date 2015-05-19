@@ -45,6 +45,7 @@ function advagg_validator_schema() {
         'default' => '',
         'binary' => TRUE,
         'collation' => 'ascii_bin',
+        'charset' => 'ascii',
       ),
       'content_hash' => array(
         'description' => 'Hash of the file content. Used to see if the file has changed.',
@@ -54,6 +55,7 @@ function advagg_validator_schema() {
         'default' => '',
         'binary' => TRUE,
         'collation' => 'ascii_bin',
+        'charset' => 'ascii',
       ),
       'filetype' => array(
         'description' => 'Filetype.',
