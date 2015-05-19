@@ -386,7 +386,7 @@ function advagg_mod_admin_settings_form() {
       '#description' => $description,
     );
   }
-  $visibility_js = variable_get('advagg_mod_inline_css_visibility', ADVAGG_MOD_VISIBILITY_LISTED);
+  $visibility_js = variable_get('advagg_mod_inline_js_visibility', ADVAGG_MOD_VISIBILITY_LISTED);
   if ($visibility_js == ADVAGG_MOD_VISIBILITY_PHP && !$access) {
     $form['landing_page']['path']['visibility_all'] = array(
       '#type' => 'value',
