@@ -6,6 +6,31 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function advagg_install() {
+  $tables = array(
+    'advagg_aggregates' => array(
+      'aggregate_filenames_hash',
+      'filename_hash',
+    ),
+    'advagg_aggregates_versions' => array(
+      'aggregate_filenames_hash',
+      'aggregate_contents_hash',
+    ),
+    'advagg_files' => array(
+      'filename_hash',
+      'content_hash',
+    ),
+  );
+
+  foreach ($tables as $table => $fields) {
+    // Change utf8_bin to ascii_bin.
+    advagg_install_change_table_collation($table, $fields, 'ascii_bin');
+  }
+}
+
+/**
  * Implements hook_enable().
  */
 function advagg_enable() {
@@ -120,19 +145,21 @@ function advagg_schema() {
       ),
       'filename_hash' => array(
         'description' => 'Hash of path and filename. Used to join tables.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 43,
         'not null' => TRUE,
         'default' => '',
         'binary' => TRUE,
+        'collation' => 'ascii_bin',
       ),
       'content_hash' => array(
         'description' => 'Hash of the file content. Used to see if the file has changed.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 43,
         'not null' => TRUE,
         'default' => '',
         'binary' => TRUE,
+        'collation' => 'ascii_bin',
       ),
       'filetype' => array(
         'description' => 'Filetype.',
@@ -180,19 +207,21 @@ function advagg_schema() {
     'fields' => array(
       'aggregate_filenames_hash' => array(
         'description' => 'Hash of the aggregates list of files. Keep track of what files are in the aggregate.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 43,
         'not null' => TRUE,
         'default' => '',
         'binary' => TRUE,
+        'collation' => 'ascii_bin',
       ),
       'filename_hash' => array(
         'description' => 'Hash of path and filename.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 43,
         'not null' => TRUE,
         'default' => '',
         'binary' => TRUE,
+        'collation' => 'ascii_bin',
       ),
       'porder' => array(
         'description' => 'Processing order.',
@@ -220,19 +249,21 @@ function advagg_schema() {
     'fields' => array(
       'aggregate_filenames_hash' => array(
         'description' => 'Hash of the aggregates list of files. Keep track of what files are in the aggregate.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 43,
         'not null' => TRUE,
         'default' => '',
         'binary' => TRUE,
+        'collation' => 'ascii_bin',
       ),
       'aggregate_contents_hash' => array(
         'description' => 'Hash of all content_hashes in this aggregate. Simple Version control of the aggregate.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 43,
         'not null' => TRUE,
         'default' => '',
         'binary' => TRUE,
+        'collation' => 'ascii_bin',
       ),
       'atime' => array(
         'description' => 'Last access time for this version of the aggregate. Updated every 12 hours.',
@@ -428,6 +459,69 @@ function advagg_update_7206(&$sandbox) {
   }
 
   return t('The following columns inside of these database tables where converted to utf8_bin: <br />@data', array('@data' => print_r($tables_altered, TRUE)));
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Update schema making the varchar columns char. Change utf8_bin to ascii_bin.
+ */
+function advagg_update_7207(&$sandbox) {
+  $tables = array(
+    'advagg_aggregates' => array(
+      'aggregate_filenames_hash',
+      'filename_hash',
+    ),
+    'advagg_aggregates_versions' => array(
+      'aggregate_filenames_hash',
+      'aggregate_contents_hash',
+    ),
+    'advagg_files' => array(
+      'filename_hash',
+      'content_hash',
+    ),
+  );
+
+  $schema = advagg_schema();
+  foreach ($tables as $table => $fields) {
+    foreach ($fields as $field) {
+      // Change varchar to char.
+      db_change_field($table, $field, $field, $schema[$table]['fields'][$field]);
+    }
+    // Change utf8_bin to ascii_bin.
+    advagg_install_change_table_collation($table, $fields, 'ascii_bin');
+  }
+}
+
+/**
+ * Convert the table to the specified collation.
+ *
+ * @param string $table_name
+ *   Preform the operation on this table.
+ * @param array $fields
+ *   An array of field names
+ * @param string $collation
+ *   The db collation to change to table columns to.
+ *
+ * @return array
+ *   Returns an array of tables and column names.
+ */
+function advagg_install_change_table_collation($table_name, array $fields, $collation) {
+  $db_type = Database::getConnection()->databaseType();
+  // Skip if not MySQL.
+  if ($db_type !== 'mysql') {
+    return FALSE;
+  }
+  $table_name = Database::getConnection()->prefixTables('{' . db_escape_table($table_name) . '}');
+  $results = db_query("SHOW FULL FIELDS FROM $table_name")->fetchAllAssoc('Field');
+  foreach ($results as $row) {
+    if (!in_array($row->Field, $fields)) {
+      continue;
+    }
+    $charset = strtolower(substr($collation, 0, strpos($collation, '_')));
+    $query = "ALTER TABLE $table_name MODIFY {$row->Field} {$row->Type} CHARACTER SET $charset COLLATE $collation";
+    db_query($query);
+  }
 }
 
 /**
