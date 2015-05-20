@@ -223,7 +223,7 @@ function advagg_insert_update_files(array $files, $type) {
           ->key(array(
             'filename_hash' => $diff['filename_hash'],
             ))
-          ->updateFields($diff)
+          ->fields($diff)
           ->execute();
         if ($return) {
           $write_done = TRUE;

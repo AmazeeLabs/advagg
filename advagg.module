@@ -2430,7 +2430,7 @@ function advagg_get_current_hooks_hash() {
 function advagg_set_hash_settings($hash, $settings) {
   return db_merge('advagg_aggregates_hashes')
     ->key(array('hash' => $hash))
-    ->insertFields(array(
+    ->fields(array(
       'hash' => $hash,
       'settings' => serialize($settings),
     ))
@@ -2780,7 +2780,7 @@ function advagg_multi_update_atime(array $files) {
         'aggregate_filenames_hash' => $record['aggregate_filenames_hash'],
         'aggregate_contents_hash' => $record['aggregate_contents_hash'],
         ))
-      ->updateFields(array('atime' => $record['atime']))
+      ->fields(array('atime' => $record['atime']))
       ->execute();
     if (!$write_done && $result) {
       $write_done = TRUE;
