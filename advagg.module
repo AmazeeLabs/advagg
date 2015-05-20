@@ -650,9 +650,17 @@ function advagg_element_info_alter(&$type) {
   if (!isset($type['scripts']['#pre_render'])) {
     $type['scripts']['#pre_render'] = array();
   }
-  $key = array_search('drupal_pre_render_scripts', $type['scripts']['#pre_render']);
-  if ($key !== FALSE) {
-    $type['scripts']['#pre_render'][$key] = 'advagg_pre_render_scripts';
+  $key_drupal = array_search('drupal_pre_render_scripts', $type['scripts']['#pre_render']);
+  $key_omega = array_search('omega_pre_render_scripts', $type['scripts']['#pre_render']);
+  $key_aurora = array_search('aurora_pre_render_scripts', $type['scripts']['#pre_render']);
+  if ($key_drupal !== FALSE) {
+    $type['scripts']['#pre_render'][$key_drupal] = 'advagg_pre_render_scripts';
+  }
+  elseif ($key_omega !== FALSE) {
+    $type['scripts']['#pre_render'][$key_omega] = 'advagg_pre_render_scripts';
+  }
+  elseif ($key_aurora !== FALSE) {
+    $type['scripts']['#pre_render'][$key_aurora] = 'advagg_pre_render_scripts';
   }
   else {
     $type['scripts']['#pre_render'][] = 'advagg_pre_render_scripts';
@@ -1986,6 +1994,9 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
       // Directly alter the static.
       $element_info = &drupal_static('element_info');
       advagg_element_info_alter($element_info);
+      if (function_exists('advagg_mod_element_info_alter')) {
+        advagg_mod_element_info_alter($element_info);
+      }
     }
   }
 
@@ -3283,6 +3294,9 @@ function advagg_group_js(array $javascript) {
   $current_group_keys = NULL;
   $index = -1;
   foreach ($javascript as $key => $item) {
+    if (empty($item)) {
+      continue;
+    }
     // The browsers for which the JavaScript item needs to be loaded is part of
     // the information that determines when a new group is needed, but the order
     // of keys in the array doesn't matter, and we don't want a new group if all

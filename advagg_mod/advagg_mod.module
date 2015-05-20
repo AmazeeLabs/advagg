@@ -490,11 +490,19 @@ function advagg_mod_element_info_alter(&$type) {
   }
   $key_drupal = array_search('drupal_pre_render_scripts', $type['scripts']['#pre_render']);
   $key_advagg = array_search('advagg_pre_render_scripts', $type['scripts']['#pre_render']);
+  $key_omega = array_search('omega_pre_render_scripts', $type['scripts']['#pre_render']);
+  $key_aurora = array_search('aurora_pre_render_scripts', $type['scripts']['#pre_render']);
   if ($key_drupal !== FALSE) {
     $type['scripts']['#pre_render'] = advagg_insert_into_array_at_location($type['scripts']['#pre_render'], array('_advagg_mod_pre_render_scripts'), $key_drupal);
   }
   elseif ($key_advagg !== FALSE) {
     $type['scripts']['#pre_render'] = advagg_insert_into_array_at_location($type['scripts']['#pre_render'], array('_advagg_mod_pre_render_scripts'), $key_advagg);
+  }
+  elseif ($key_omega !== FALSE) {
+    $type['scripts']['#pre_render'] = advagg_insert_into_array_at_location($type['scripts']['#pre_render'], array('_advagg_mod_pre_render_scripts'), $key_omega);
+  }
+  elseif ($key_aurora !== FALSE) {
+    $type['scripts']['#pre_render'] = advagg_insert_into_array_at_location($type['scripts']['#pre_render'], array('_advagg_mod_pre_render_scripts'), $key_aurora);
   }
   else {
     $type['scripts']['#pre_render'][] = '_advagg_mod_pre_render_scripts';
