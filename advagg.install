@@ -505,7 +505,7 @@ function advagg_update_7207(&$sandbox) {
  * @param string $table_name
  *   Preform the operation on this table.
  * @param array $fields
- *   An array of field names
+ *   An array of field names.
  * @param string $collation
  *   The db collation to change to table columns to.
  *
@@ -826,7 +826,8 @@ function advagg_requirements($phase) {
   || (isset($_SERVER[\'HTTP_HTTPS\']) && $_SERVER[\'HTTP_HTTPS\'] == \'on\')
 ) {
   $_SERVER[\'HTTPS\'] = \'on\';
-}')));
+}',
+      )));
   }
 
   // Make sure $base_url is correct.

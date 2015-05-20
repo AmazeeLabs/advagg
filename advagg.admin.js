@@ -1,9 +1,9 @@
-/** global Drupal:false */
-
 /**
  * @file
  * Used to toggle the AdvAgg Bypass Cookie client side.
  */
+
+/** global Drupal:false */
 
 /**
  * Test to see if the given string contains unicode.

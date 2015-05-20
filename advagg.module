@@ -693,7 +693,7 @@ function advagg_insert_into_array_at_location(array $input_array, array $new_val
 /**
  * Implements hook_theme_registry_alter().
  *
- * Replace template_process_html with _advagg_process_html
+ * Replace template_process_html with _advagg_process_html.
  */
 function advagg_theme_registry_alter(&$theme_registry) {
   if (!isset($theme_registry['html'])) {
@@ -3744,8 +3744,8 @@ function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE
   if ($reset_basepath) {
     $basepath = '';
   }
-  // Store the value of $optimize for preg_replace_callback with nested
-  // @import loops.
+  // Store the value of $optimize for preg_replace_callback with nested @import
+  // loops.
   if (isset($optimize)) {
     $_optimize = $optimize;
   }
