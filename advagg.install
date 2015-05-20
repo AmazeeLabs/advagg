@@ -840,7 +840,8 @@ function advagg_requirements($phase) {
         '@code' => 'if (isset($_SERVER["HTTPS"]) && strtolower($_SERVER["HTTPS"]) == "on" && isset($base_url)) {
 $base_url = str_replace("http://", "https://", $base_url);
 }
-')));
+',
+      )));
   }
 
   // Make sure http requests will work correctly.
