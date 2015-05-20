@@ -3,7 +3,7 @@
  * Used to toggle the AdvAgg Bypass Cookie client side.
  */
 
-/** global Drupal:false */
+/* global Drupal:false */
 
 /**
  * Test to see if the given string contains unicode.
