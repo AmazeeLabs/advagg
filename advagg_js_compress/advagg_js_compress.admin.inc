@@ -173,6 +173,9 @@ function advagg_js_compress_admin_settings_form_submit($form, &$form_state) {
       continue;
     }
     $new_settings[substr($key, 35)] = $value;
+
+    // Do not save this field into its own variable.
+    unset($form_state['values'][$key]);
   }
   if (!empty($new_settings) || !empty($file_settings)) {
     if (empty($new_settings)) {
