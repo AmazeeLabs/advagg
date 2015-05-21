@@ -141,6 +141,11 @@ define('ADVAGG_MOD_JS_DEFER_INLINE_ALTER', FALSE);
  */
 define('ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST', '');
 
+/**
+ * Default value to move async js to the header.
+ */
+define('ADVAGG_MOD_JS_ASYNC_IN_HEADER', FALSE);
+
 // Core hook implementations.
 /**
  * Implements hook_init().
@@ -461,7 +466,25 @@ function advagg_mod_js_alter(&$js) {
         continue;
       }
 
+      // Defer the inline script by wrapping the code in a setTimeout callback.
       $values['data'] = advagg_mod_defer_inline_js($values['data']);
+    }
+  }
+
+  if (variable_get('advagg_mod_js_async_in_header', ADVAGG_MOD_JS_ASYNC_IN_HEADER)) {
+    foreach ($js as $name => &$values) {
+      // Skip if not file or external.
+      if ($values['type'] !== 'file' && $values['type'] !== 'external') {
+        continue;
+      }
+      // Skip if not async.
+      if (empty($values['async']) && empty($values['attributes']['async'])) {
+        continue;
+      }
+
+      // Move to the header with a group of 1000.
+      $values['scope'] = 'header';
+      $values['group'] = 1000;
     }
   }
 }

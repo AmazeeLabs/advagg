@@ -171,17 +171,22 @@ function advagg_mod_admin_settings_form() {
   $form['js']['placement']['expert'] = array(
     '#type' => 'fieldset',
     '#title' => t('Experimental Settings'),
-    '#description' => t('Here there be dragons.'),
     '#collapsible' => TRUE,
-    '#collapsed' => !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC),
+    '#collapsed' => !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC) && !variable_get('advagg_mod_js_async_in_header', ADVAGG_MOD_JS_ASYNC_IN_HEADER),
   );
   $form['js']['placement']['expert']['advagg_mod_js_async'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Asynchronous JavaScript Execution: Add The async Tag To All Script Tags'),
+    '#title' => t('Here there be dragons! Asynchronous JavaScript Execution: Add The async Tag To All Script Tags'),
     '#default_value' => variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC),
     '#description' => t('This will cause the script to be downloaded in the background and executed out of order. This will break most javascript as most code is not async safe; only use after extensive testing! <a href="@link">More Info</a>', array(
       '@link' => 'http://peter.sh/experiments/asynchronous-and-deferred-javascript-execution-explained/',
     )),
+  );
+  $form['js']['placement']['expert']['advagg_mod_js_async_in_header'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Asynchronous JavaScript Execution: Group together in the header'),
+    '#default_value' => variable_get('advagg_mod_js_async_in_header', ADVAGG_MOD_JS_ASYNC_IN_HEADER),
+    '#description' => t('This will move all async JavaScript code to the header in the same group.'),
   );
   // Outdated settings.
   $form['js']['old'] = array(
