@@ -5,6 +5,17 @@
  * Advanced aggregation validation module.
  */
 
+// Define default variables.
+/**
+ * Default css lint ignore settings.
+ */
+define('ADVAGG_VALIDATOR_CSSLINT_IGNORE', '');
+
+/**
+ * Default js hint ignore settings.
+ */
+define('ADVAGG_VALIDATOR_JSHINT_IGNORE', '');
+
 /**
  * Implements hook_menu().
  */
