@@ -133,3 +133,15 @@ function advagg_js_compress_update_7202(&$sandbox) {
     variable_set('advagg_js_compress_max_ratio', $old);
   }
 }
+
+/**
+ * Remove unused variables from the variable table.
+ *
+ * Implements hook_update_N().
+ */
+function advagg_js_compress_update_7203(&$sandbox) {
+  // Remove all old advagg css compress variables.
+  db_delete('variable')
+    ->condition('name', 'advagg_js_compressor_file_settings_%', 'LIKE')
+    ->execute();
+}
