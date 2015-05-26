@@ -37,7 +37,7 @@ function advagg_js_compress_admin_settings_form($form, $form_state) {
     $description .= t('JSMin is the very fast C complied version. Recommend using it.');
   }
   else {
-    if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50310) {
+    if (!defined('PHP_VERSION_ID') || constant('PHP_VERSION_ID') < 50310) {
       $link = 'http://www.ypass.net/software/php_jsmin/';
     }
     else {
@@ -46,7 +46,7 @@ function advagg_js_compress_admin_settings_form($form, $form_state) {
     $description .= t('You can use the much faster C version of JSMin (~2ms) by installing the <a href="@php_jsmin">JSMin PHP Extension</a> on this server.', array('@php_jsmin' => $link));
   }
   // Add in JShrink & JSqueeze if using php 5.3 or higher.
-  if (defined('PHP_VERSION_ID') & PHP_VERSION_ID >= 50300) {
+  if (defined('PHP_VERSION_ID') & constant('PHP_VERSION_ID') >= 50300) {
     $options += array(
       4 => t('JShrink ~1000ms'),
       5 => t('JSqueeze ~600ms'),
