@@ -5,7 +5,7 @@
  * Advanced CSS/JS aggregation js compression module.
  */
 
-if (defined('PHP_VERSION_ID') & constant('PHP_VERSION_ID') >= 50300) {
+if (defined('PHP_VERSION_ID') && constant('PHP_VERSION_ID') >= 50300) {
   // Include functions that use namespaces.
   module_load_include('inc', 'advagg_js_compress', 'advagg_js_compress.php53');
 }
@@ -227,7 +227,7 @@ function advagg_js_compress_get_enabled_compressors(array $aggregate_settings = 
   if ($compressor == -1) {
     return $compressors;
   }
-  if (defined('PHP_VERSION_ID') & constant('PHP_VERSION_ID') >= 50300) {
+  if (defined('PHP_VERSION_ID') && constant('PHP_VERSION_ID') >= 50300) {
     $compressors += array(
       4 => 'jshrink',
       5 => 'jsqueeze',
@@ -331,7 +331,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
 
   // Do not use jsmin() if the function can not be called.
   if ($compressor == 3 && !function_exists('jsmin')) {
-    if (defined('PHP_VERSION_ID') & constant('PHP_VERSION_ID') >= 50300) {
+    if (defined('PHP_VERSION_ID') && constant('PHP_VERSION_ID') >= 50300) {
       $compressor = 5;
       watchdog('advagg_js_compress', 'The jsmin function does not exist. Using JSqueeze.');
     }
