@@ -1605,7 +1605,7 @@ function advagg_mod_ga_inline_to_file(array &$js) {
     $ga_script = substr($ga_script, stripos($ga_script, $mod_base_url) + $mod_base_url_len);
   }
 
-  if (!empty($ga_script)) {
+  if (!empty($ga_script) && !empty($ga_script_len)) {
     foreach ($js as $key => $value) {
       // Skip if not inline.
       if ($value['type'] !== 'inline') {
