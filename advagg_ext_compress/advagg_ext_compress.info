@@ -1,0 +1,7 @@
+name = AdvAgg External Compression
+description = Compress Javascript and/or CSS with a command line compressor.
+package = Advanced CSS/JS Aggregation
+core = 7.x
+dependencies[] = advagg
+
+configure = admin/config/development/performance/advagg/ext-compress

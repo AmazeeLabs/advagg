@@ -217,21 +217,9 @@ function advagg_js_compress_advagg_save_aggregate_alter(&$files_to_save, $aggreg
  */
 function advagg_js_compress_get_enabled_compressors(array $aggregate_settings = array(), $compressor = 0) {
   // Create array.
-  $compressors = array(
-    1 => 'jsminplus',
-    2 => 'packer',
-  );
-  if (function_exists('jsmin')) {
-    $compressors[3] = 'jsmin';
-  }
+  list(, , $compressors) = advagg_js_compress_configuration();
   if ($compressor == -1) {
     return $compressors;
-  }
-  if (defined('PHP_VERSION_ID') && constant('PHP_VERSION_ID') >= 50300) {
-    $compressors += array(
-      4 => 'jshrink',
-      5 => 'jsqueeze',
-    );
   }
 
   $return_compressors = array();
@@ -253,8 +241,8 @@ function advagg_js_compress_get_enabled_compressors(array $aggregate_settings = 
       $packer = variable_get('advagg_js_compress_packer', ADVAGG_JS_COMPRESS_PACKER);
     }
 
-    if ($file == 1) {
-      $return_compressors[1] = $compressors[1];
+    if (isset($compressors[$file])) {
+      $return_compressors[$file] = $compressors[$file];
     }
     if ($packer) {
       $return_compressors[2] = $compressors[2];
@@ -272,12 +260,6 @@ function advagg_js_compress_get_enabled_compressors(array $aggregate_settings = 
       else {
         $return_compressors[1] = $compressors[1];
       }
-    }
-    if ($file == 4) {
-      $return_compressors[4] = $compressors[4];
-    }
-    if ($file == 5) {
-      $return_compressors[5] = $compressors[5];
     }
   }
 
@@ -357,17 +339,10 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     if ($compressor == 1) {
       advagg_js_compress_jsminplus($contents, $log_errors);
     }
-    elseif ($compressor == 2) {
-      advagg_js_compress_jspacker($contents);
-    }
-    elseif ($compressor == 3) {
-      $contents = jsmin($contents);
-    }
-    elseif ($compressor == 4) {
-      advagg_js_compress_jshrink($contents);
-    }
-    elseif ($compressor == 5) {
-      advagg_js_compress_jsqueeze($contents);
+    else {
+      list(, , , $functions) = advagg_js_compress_configuration();
+      $run = $functions[$compressor];
+      $run($contents);
     }
 
     // Ensure that $contents ends with ; or }.
@@ -463,6 +438,16 @@ function advagg_js_compress_jspacker(&$contents) {
 
   $packer = new JavaScriptPacker($contents, 62, TRUE, FALSE);
   $contents = $packer->pack();
+}
+
+/**
+ * Compress a JS string using jsmin.
+ *
+ * @param string $contents
+ *   Javascript string.
+ */
+function advagg_js_compress_jsmin(&$contents) {
+  $contents = jsmin($contents);
 }
 
 /**
