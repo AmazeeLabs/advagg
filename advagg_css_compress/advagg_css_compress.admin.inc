@@ -23,11 +23,8 @@ function advagg_css_compress_admin_settings_form($form, $form_state) {
     );
   }
 
-  $description = '';
-  $options = array(
-    0 => t('Disabled'),
-    2 => t('YUI'),
-  );
+  list($options, $description) = advagg_css_compress_configuration();
+
   $form['advagg_css_compressor'] = array(
     '#type' => 'radios',
     '#title' => t('File Compression: Select a Compressor'),

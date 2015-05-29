@@ -86,3 +86,29 @@ function advagg_css_compress_advagg_modify_css_pre_render_alter(&$children, &$el
     unset($values);
   }
 }
+
+/**
+ * Generate the js compress configuration.
+ *
+ * @return array
+ *   Array($options, $description, $compressors, $functions).
+ */
+function advagg_css_compress_configuration() {
+  $description = '';
+  $options = array(
+    0 => t('Disabled'),
+    2 => t('YUI'),
+  );
+
+  $compressors = array();
+  $functions = array(
+    2 => 'advagg_css_compress_yui_cssmin',
+  );
+
+  // Allow for other modules to alter this list.
+  $options_desc = array($options, $description);
+  drupal_alter('advagg_css_compress_configuration', $options_desc, $compressors, $functions);
+  list($options, $description) = $options_desc;
+
+  return array($options, $description, $compressors, $functions);
+}

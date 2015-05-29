@@ -33,8 +33,13 @@ function advagg_css_compress_advagg_get_css_aggregate_contents_alter(&$data, $fi
     return;
   }
 
-  if ($aggregate_settings['variables']['advagg_css_compressor'] == 2) {
-    advagg_css_compress_yui_cssmin($data);
+  list(, , , $functions) = advagg_css_compress_configuration();
+
+  if (isset($functions[$aggregate_settings['variables']['advagg_css_compressor']])) {
+    $run = $functions[$aggregate_settings['variables']['advagg_css_compressor']];
+    if (function_exists($run)) {
+      $functions[$aggregate_settings['variables']['advagg_css_compressor']]($data);
+    }
   }
 }
 

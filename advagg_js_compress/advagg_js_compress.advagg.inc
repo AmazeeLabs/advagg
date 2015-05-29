@@ -339,10 +339,15 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     if ($compressor == 1) {
       advagg_js_compress_jsminplus($contents, $log_errors);
     }
-    else {
+    elseif (isset($functions[$compressor])) {
       list(, , , $functions) = advagg_js_compress_configuration();
       $run = $functions[$compressor];
-      $run($contents);
+      if (function_exists($run)) {
+        $run($contents);
+      }
+    }
+    else {
+      return;
     }
 
     // Ensure that $contents ends with ; or }.
