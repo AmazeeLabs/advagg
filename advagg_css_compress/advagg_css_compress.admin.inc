@@ -32,11 +32,14 @@ function advagg_css_compress_admin_settings_form($form, $form_state) {
     '#options' => $options,
     '#description' => filter_xss($description),
   );
+  $inline_options = $options;
+  unset($inline_options[-1]);
+  $inline_options[0] = t('Disabled');
   $form['advagg_css_compress_inline'] = array(
     '#type' => 'radios',
     '#title' => t('Inline Compression: Select a Compressor'),
     '#default_value' => variable_get('advagg_css_compress_inline', ADVAGG_CSS_COMPRESS_INLINE),
-    '#options' => $options,
+    '#options' => $inline_options,
     '#description' => filter_xss($description),
   );
   $form['advagg_css_compress_inline_if_not_cacheable'] = array(
@@ -51,7 +54,7 @@ function advagg_css_compress_admin_settings_form($form, $form_state) {
     ),
   );
 
-  $options[-1] = t('Default');
+  $options[ADVAGG_CSS_COMPRESSOR_FILE_SETTINGS] = t('Default');
   ksort($options);
 
   $form['per_file_settings'] = array(

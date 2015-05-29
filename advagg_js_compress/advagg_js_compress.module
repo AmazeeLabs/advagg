@@ -270,6 +270,7 @@ function advagg_js_compress_configuration() {
 
   // Allow for other modules to alter this list.
   $options_desc = array($options, $description);
+  // Call hook_advagg_js_compress_configuration_alter().
   drupal_alter('advagg_js_compress_configuration', $options_desc, $compressors, $functions);
   list($options, $description) = $options_desc;
 

@@ -23,7 +23,7 @@ define('ADVAGG_CSS_COMPRESS_INLINE_IF_NOT_CACHEABLE', FALSE);
 /**
  * Default value for per file compression settings.
  */
-define('ADVAGG_CSS_COMPRESSOR_FILE_SETTINGS', -1);
+define('ADVAGG_CSS_COMPRESSOR_FILE_SETTINGS', -10);
 
 /**
  * Implements hook_menu().
@@ -96,7 +96,8 @@ function advagg_css_compress_advagg_modify_css_pre_render_alter(&$children, &$el
 function advagg_css_compress_configuration() {
   $description = '';
   $options = array(
-    0 => t('Disabled'),
+    -1 => t('Disable Core'),
+    0 => t('Core'),
     2 => t('YUI'),
   );
 

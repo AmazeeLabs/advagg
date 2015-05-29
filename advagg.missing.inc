@@ -558,7 +558,14 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
     $last_media = NULL;
     $import_statements = array();
     module_load_include('inc', 'advagg', 'advagg');
+    $original_settings = array($optimize, $aggregate_settings);
     foreach ($files as $file => $settings) {
+      list($optimize, $aggregate_settings) = $original_settings;
+      // Allow other modules to modify aggregate_settings optimize.
+      // Call hook_advagg_get_css_file_contents_pre_alter().
+      if (empty($aggregate_settings['settings']['no_alters'])) {
+        drupal_alter('advagg_get_css_file_contents_pre', $file, $optimize, $aggregate_settings);
+      }
       $contents = advagg_load_css_stylesheet($file, $optimize, $aggregate_settings);
 
       // Allow other modules to modify this files contents.
@@ -742,16 +749,27 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
  */
 function advagg_save_aggregate($filename, array $files, $type, array $aggregate_settings) {
   list($css_path, $js_path) = advagg_get_root_files_dir();
+  $uri = '';
+  if ($type === 'css') {
+    $uri = $css_path[0] . '/' . $filename;
+  }
+  elseif ($type === 'js') {
+    $uri = $js_path[0] . '/' . $filename;
+  }
+
+  // Allow other modules to alter the location, files included, and settings.
+  if (empty($aggregate_settings['settings']['no_alters'])) {
+    // Call hook_advagg_save_aggregate_pre_alter().
+    drupal_alter('advagg_save_aggregate_pre', $uri, $files, $aggregate_settings);
+  }
 
   // Build the aggregates contents.
   $contents = '';
   if ($type === 'css') {
     $contents = advagg_get_css_aggregate_contents($files, $aggregate_settings);
-    $uri = $css_path[0] . '/' . $filename;
   }
   elseif ($type === 'js') {
     $contents = advagg_get_js_aggregate_contents($files, $aggregate_settings);
-    $uri = $js_path[0] . '/' . $filename;
   }
   if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
     $contents = "/* This aggregate contains the following files:\n" . implode(",\n", array_keys($files)) . ". */\n\n" . $contents;

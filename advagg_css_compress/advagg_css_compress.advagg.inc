@@ -6,6 +6,23 @@
  */
 
 /**
+ * Implements hook_advagg_get_css_file_contents_pre_alter().
+ */
+function advagg_css_compress_advagg_get_css_file_contents_pre_alter(&$file, &$optimize, &$aggregate_settings) {
+  // Get per file settings.
+  if (!empty($aggregate_settings['variables']['advagg_css_compressor_file_settings'])) {
+    $form_api_filename = str_replace(array('/', '.'), array('__', '--'), $file);
+    if (isset($aggregate_settings['variables']['advagg_css_compressor_file_settings'][$form_api_filename])) {
+      $aggregate_settings['variables']['advagg_css_compressor'] = $aggregate_settings['variables']['advagg_css_compressor_file_settings'][$form_api_filename];
+    }
+  }
+
+  if (isset($aggregate_settings['variables']['advagg_css_compressor']) && $aggregate_settings['variables']['advagg_css_compressor'] == -1) {
+    $optimize = FALSE;
+  }
+}
+
+/**
  * Implements hook_advagg_get_css_aggregate_contents_alter().
  */
 function advagg_css_compress_advagg_get_css_aggregate_contents_alter(&$data, $files, $aggregate_settings) {
