@@ -336,11 +336,11 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     // Strip Byte Order Marks (BOM's), preg_* cannot parse these well.
     $contents = str_replace(pack("CCC", 0xef, 0xbb, 0xbf), "", $contents);
     // Use the compressor.
+    list(, , , $functions) = advagg_js_compress_configuration();
     if ($compressor == 1) {
       advagg_js_compress_jsminplus($contents, $log_errors);
     }
     elseif (isset($functions[$compressor])) {
-      list(, , , $functions) = advagg_js_compress_configuration();
       $run = $functions[$compressor];
       if (function_exists($run)) {
         $run($contents);

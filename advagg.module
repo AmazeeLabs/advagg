@@ -3169,7 +3169,7 @@ function advagg_pre_render_styles(array $elements) {
             if (file_exists($item['data'])) {
               // The dummy query string needs to be added to the URL to control
               // browser-caching. IE7 does not support a media type on the
-              // @import statement, so we instead specify the media for the
+              // "@import" statement, so we instead specify the media for the
               // group on the STYLE tag.
               $import[] = '@import url("' . check_plain(advagg_file_create_url($item['data']) . '?' . $query_string) . '");';
             }

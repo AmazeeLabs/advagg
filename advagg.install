@@ -829,7 +829,8 @@ function advagg_requirements($phase) {
 ) {
   $_SERVER[\'HTTPS\'] = \'on\';
 }',
-      )));
+      )),
+    );
   }
 
   // Make sure $base_url is correct.
@@ -843,7 +844,8 @@ function advagg_requirements($phase) {
 $base_url = str_replace("http://", "https://", $base_url);
 }
 ',
-      )));
+      )),
+    );
   }
 
   // Make sure http requests will work correctly.

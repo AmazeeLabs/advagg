@@ -14,7 +14,6 @@
  */
 function advagg_ext_compress_admin_settings_form($form, $form_state) {
   drupal_set_title(t('AdvAgg: External Compressor'));
-  $config_path = advagg_admin_config_root_path();
 
   $form = array();
   // CSS command line.
@@ -28,7 +27,7 @@ function advagg_ext_compress_admin_settings_form($form, $form_state) {
 /**
  * Generate a form for css or js depending on the input.
  *
- * @param arary $form
+ * @param array $form
  *   The form array to add to.
  * @param array $params
  *   An array where key 0 is the machine name and key 1 is the title.

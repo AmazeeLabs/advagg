@@ -70,8 +70,6 @@ function advagg_validator_menu() {
 function advagg_validator_menu_alter(&$items) {
   // Make sure the advagg_admin_config_root_path() function is available.
   drupal_load('module', 'advagg');
-
-  $file_path = drupal_get_path('module', 'advagg_validator');
   $config_path = advagg_admin_config_root_path();
 
   if (!isset($items[$config_path . '/advagg'])) {

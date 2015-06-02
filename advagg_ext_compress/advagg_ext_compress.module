@@ -99,7 +99,7 @@ function advagg_ext_compress_execute_cmd($input_file, $ext = '') {
   @rename($temp_file, $new_temp_file);
   $output = advagg_get_relative_path($new_temp_file);
 
-  // Create command to run
+  // Create command to run.
   $run = variable_get("advagg_ext_compress_{$ext}_cmd", '');
   $run = str_replace(array(
     '{%CWD%}',
@@ -114,7 +114,7 @@ function advagg_ext_compress_execute_cmd($input_file, $ext = '') {
   ), $run);
 
   // Run command and return the output file.
-  $result = shell_exec($run);
+  shell_exec($run);
   return $output;
 }
 
