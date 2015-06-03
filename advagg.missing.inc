@@ -605,8 +605,6 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
             $media_rules = $settings['media'];
             $css_selectors_rules = $css_rules;
           }
-          // Remove the all rule.
-          $media_rules = str_replace('all', '', $media_rules);
           $media_rules = trim($media_rules);
           $css_selectors_rules = trim($css_selectors_rules);
 
@@ -649,7 +647,7 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
       $contents = preg_replace($regexp, '', $contents);
       // Add the import statements with the media query of the current file.
       $import_media = isset($settings['media']) ? $settings['media'] : '';
-      $import_media = trim(str_replace('all', '', $import_media));
+      $import_media = trim($import_media);
       $import_statements[] = array($import_media, $matches[0]);
 
       // Close any open comment blocks.
