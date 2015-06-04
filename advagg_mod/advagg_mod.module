@@ -763,11 +763,11 @@ function advagg_mod_xpath_script_wrapper($html) {
   $dom = new DOMDocument();
   // Load html with full tags all around.
   $dom->loadHTML('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
-  <html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body>' . $html . '</body></html>');
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body>' . $html . '</body></html>');
   $xpath = new DOMXPath($dom);
   // Get all script tags that are not inside of a textarea and do not contain a
-  // src attribute.
-  $nodes = $xpath->query('//script[not(@src)][not(ancestor::textarea)]');
+  // src attribute and the type is not a template.
+  $nodes = $xpath->query("//script[not(@src)][not(ancestor::textarea)][not(contains(@type, 'template'))]");
 
   foreach ($nodes as $node) {
     $matches[2] = $node->nodeValue;
@@ -784,7 +784,7 @@ function advagg_mod_xpath_script_wrapper($html) {
   // Remove the tags we added.
   $output = str_replace(array(
     '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
-  <html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body>',
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body>',
     '</body></html>',
   ), array('', ''), $output);
 
