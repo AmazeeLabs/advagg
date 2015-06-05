@@ -1638,11 +1638,6 @@ function advagg_mod_ga_inline_to_file(array &$js) {
  *   JS array.
  */
 function advagg_remove_js_if_not_used(array &$js) {
-  // Do not run the following code if drupal_add_js_page_defaults exists.
-  if (function_exists('drupal_add_js_page_defaults')) {
-    return;
-  }
-
   $files_skiplist = array(
     'drupal.js',
     'jquery.js',
@@ -1664,15 +1659,15 @@ function advagg_remove_js_if_not_used(array &$js) {
   // Look at each JavaScript entry & get the info on it.
   $files_info_filenames = array();
   foreach ($js as &$values) {
-    if ($values['type'] === 'file' || $values['type'] === 'external') {
-      foreach ($files_skiplist as $skip_name) {
-        if (substr_compare($values['data'], $skip_name, -strlen($skip_name), strlen($skip_name)) === 0) {
-          continue 2;
-        }
-      }
-      $files_info_filenames[] = $values['data'];
-
+    if ($values['type'] !== 'file') {
+      continue;
     }
+    foreach ($files_skiplist as $skip_name) {
+      if (substr_compare($values['data'], $skip_name, -strlen($skip_name), strlen($skip_name)) === 0) {
+        continue 2;
+      }
+    }
+    $files_info_filenames[] = $values['data'];
   }
   unset($values);
   $files_info = advagg_get_info_on_files($files_info_filenames);
@@ -1693,15 +1688,21 @@ function advagg_remove_js_if_not_used(array &$js) {
         }
       }
     }
-    // Get advagg_mod info if not set.
-    if (!isset($files_info[$name]['advagg_mod'])) {
+    // Get advagg_mod info if not set; skip external files.
+    if (!isset($files_info[$name]['advagg_mod']) && $values['type'] !== 'external') {
       $files_info[$name]['advagg_mod'] = advagg_mod_js_contains_jquery_drupal($values['data'], $values['type']);
     }
-    if ($files_info[$name]['advagg_mod']['contents']['drupal']) {
+
+    // See what needs to be included.
+    if (!empty($files_info[$name]['advagg_mod']['contents']['drupal'])) {
       $include_jquery = TRUE;
       $include_drupal = TRUE;
+      break;
     }
-    elseif ($files_info[$name]['advagg_mod']['contents']['jquery']) {
+    elseif (!empty($files_info[$name]['advagg_mod']['contents']['jquery'])) {
+      $include_jquery = TRUE;
+    }
+    elseif (isset($values['requires_jquery']) && !empty($values['requires_jquery'])) {
       $include_jquery = TRUE;
     }
   }
