@@ -193,6 +193,12 @@ define('ADVAGG_SKIP_FAR_FUTURE_CHECK', FALSE);
  */
 define('ADVAGG_SKIP_ENABLED_PREPROCESS_CHECK', FALSE);
 
+/**
+ * Prefetch External domains for CSS/JS.
+ */
+define('ADVAGG_BROWSER_DNS_PREFETCH', FALSE);
+
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
@@ -1333,11 +1339,11 @@ function advagg_get_render_cache(array $full_css, array $js_scope_array) {
   $hooks_hash = advagg_get_current_hooks_hash();
   if (advagg_file_aggregation_enabled('css')) {
     // Generate css cache id.
-    $cids[] = $css_cache_id = 'advagg:css:full:' . $hooks_hash . ':' . drupal_hash_base64(serialize($full_css));
+    $cids[] = $css_cache_id = 'advagg:css:full:1.1:' . $hooks_hash . ':' . drupal_hash_base64(serialize($full_css));
   }
   if (advagg_file_aggregation_enabled('js')) {
     // Generate js cache id.
-    $cids[] = $js_cache_id = 'advagg:js:full:' . $hooks_hash . ':' . drupal_hash_base64(serialize($js_scope_array));
+    $cids[] = $js_cache_id = 'advagg:js:full:1.1:' . $hooks_hash . ':' . drupal_hash_base64(serialize($js_scope_array));
   }
 
   if (!empty($cids)) {
@@ -1500,7 +1506,7 @@ function _advagg_process_html(&$variables) {
   // CSS has nice hooks so we don't need to work around it.
   if (!empty($css_cache->data)) {
     // Use render cache.
-    $variables['styles'] = $css_cache->data;
+    list($variables['styles'], $full_css) = $css_cache->data;
   }
   else {
     // Get the css if we have not done so.
@@ -1511,11 +1517,11 @@ function _advagg_process_html(&$variables) {
     $variables['styles'] = drupal_render($full_css);
     if (!empty($css_cache_id)) {
       // Save to the cache.
-      cache_set($css_cache_id, $variables['styles'], 'cache_advagg_aggregates', CACHE_TEMPORARY);
+      cache_set($css_cache_id, array($variables['styles'], $full_css), 'cache_advagg_aggregates', CACHE_TEMPORARY);
     }
     if (!empty($css_cache_id_no_alter)) {
       // Save to the cache.
-      cache_set($css_cache_id_no_alter, $variables['styles'], 'cache_advagg_aggregates', CACHE_TEMPORARY);
+      cache_set($css_cache_id_no_alter, array($variables['styles'], $full_css), 'cache_advagg_aggregates', CACHE_TEMPORARY);
     }
   }
 
@@ -1546,7 +1552,9 @@ function _advagg_process_html(&$variables) {
       }
     }
 
-    foreach ($js_cache->data as $scope => $value) {
+    list($js_cache_data, $js_scope_array) = $js_cache->data;
+
+    foreach ($js_cache_data as $scope => $value) {
       $scope_settings = $scope;
       if ($scope_settings === 'scripts') {
         $scope_settings = 'header';
@@ -1659,12 +1667,54 @@ function _advagg_process_html(&$variables) {
       }
 
       if (!empty($js_cache_id) && !empty($js_cache)) {
-        cache_set($js_cache_id, $js_cache, 'cache_advagg_aggregates', CACHE_TEMPORARY);
+        cache_set($js_cache_id, array($js_cache, $js_scope_array), 'cache_advagg_aggregates', CACHE_TEMPORARY);
       }
       if (!empty($js_cache_id_no_alter) && !empty($js_cache)) {
-        cache_set($js_cache_id_no_alter, $js_cache, 'cache_advagg_aggregates', CACHE_TEMPORARY);
+        cache_set($js_cache_id_no_alter, array($js_cache, $js_scope_array), 'cache_advagg_aggregates', CACHE_TEMPORARY);
       }
     }
+  }
+
+  if (variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH)) {
+    // Prefetch css domains.
+    foreach ($full_css['#items'] as $values) {
+      if ($values['type'] === 'external') {
+        // Get external domains.
+        advagg_add_dns_prefetch($values['data']);
+      }
+      if (!empty($values['dns_prefetch'])) {
+        // Grab domains that will be access when this file is loaded.
+        if (is_array($values['dns_prefetch'])) {
+          foreach ($values['dns_prefetch'] as $url) {
+            advagg_add_dns_prefetch($url);
+          }
+        }
+        else {
+          advagg_add_dns_prefetch($values['dns_prefetch']);
+        }
+      }
+    }
+    // Prefetch js domains.
+    foreach ($js_scope_array as $scope_js) {
+      foreach ($scope_js['#items'] as $values) {
+        if (!empty($values['type']) && $values['type'] === 'external') {
+          // Get external domains.
+          advagg_add_dns_prefetch($values['data']);
+        }
+        if (!empty($values['dns_prefetch'])) {
+          // Grab domains that will be access when this file is loaded.
+          if (is_array($values['dns_prefetch'])) {
+            foreach ($values['dns_prefetch'] as $url) {
+              advagg_add_dns_prefetch($url);
+            }
+          }
+          else {
+            advagg_add_dns_prefetch($values['dns_prefetch']);
+          }
+        }
+      }
+    }
+    $variables['head'] .= advagg_add_dns_prefetch();
   }
 
   // Output debug info.
@@ -1678,6 +1728,48 @@ function _advagg_process_html(&$variables) {
     }
     watchdog('advagg_debug', $output, array(), WATCHDOG_DEBUG);
   }
+}
+
+/**
+ * Add in the dns-prefetch header for CSS & JS external files.
+ *
+ * @param string $url
+ *   (Optional) The url of the external host or empty to render it.
+ *
+ * @return string
+ *   HTML markup from drupal_render() or the url that was passed in or an empty
+ *   string.
+ *
+ * @see drupal_add_css()
+ */
+function advagg_add_dns_prefetch($url = '') {
+  $urls = &drupal_static(__FUNCTION__);
+  if (!empty($url)) {
+    // Save the host.
+    $parse = @parse_url($url);
+    if (isset($parse['host'])) {
+      $urls[$parse['host']] = '//' . $parse['host'];
+    }
+    return $url;
+  }
+  elseif (!empty($urls)) {
+    // Create the render array.
+    $elements = array();
+    foreach ($urls as $url) {
+      $elements[$url] = array(
+        '#type' => 'html_tag',
+        '#tag' => 'link',
+        '#attributes' => array(
+          'rel' => 'dns-prefetch',
+          'href' => $url,
+        ),
+      );
+    }
+    // Call hook_advagg_dns_prefetch_alter().
+    drupal_alter('advagg_dns_prefetch', $elements);
+    return drupal_render($elements);
+  }
+  return '';
 }
 
 /**
