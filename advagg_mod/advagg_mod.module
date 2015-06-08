@@ -719,7 +719,7 @@ function advagg_mod_process_move_js(&$variables) {
     return;
   }
 
-  $pattern = '/<script((?:(?!src=).)*?)>(.*?)<\/script>/smix';
+  $pattern = '/<script(?![^<>]*src=)(?:(?![^<>]*type=)|(?=[^<>]*type="?[^<>"]*javascript))(.*?)>(.*?)<\/script>/smix';
   $callback = 'advagg_mod_wrap_inline_js';
   // Wrap inline JS with a check so that it only runs once Drupal.settings &
   // jQuery are not undefined.
@@ -770,9 +770,11 @@ function advagg_mod_xpath_script_wrapper($html) {
   $dom->loadHTML('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body>' . $html . '</body></html>');
   $xpath = new DOMXPath($dom);
-  // Get all script tags that are not inside of a textarea and do not contain a
-  // src attribute and the type is not a template.
-  $nodes = $xpath->query("//script[not(@src)][not(ancestor::textarea)][not(contains(@type, 'template'))]");
+  // Get all script tags that
+  // are not inside of a textarea
+  // do not contain a src attribute
+  // and the type is empty or has the type of javascript.
+  $nodes = $xpath->query("//script[not(@src)][not(ancestor::textarea)][contains(translate(@type, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'javascript') or not(@type)]");
 
   foreach ($nodes as $node) {
     $matches[2] = $node->nodeValue;
