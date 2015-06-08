@@ -139,7 +139,7 @@ define('ADVAGG_MOD_JS_DEFER_INLINE_ALTER', FALSE);
 /**
  * Default value for inline scripts that should not be deferred.
  */
-define('ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST', '');
+define('ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST', "loadCSS(\n");
 
 /**
  * Default value to move async js to the header.
@@ -466,8 +466,13 @@ function advagg_mod_js_alter(&$js) {
         continue;
       }
 
-      // Defer the inline script by wrapping the code in a setTimeout callback.
-      $values['data'] = advagg_mod_defer_inline_js($values['data']);
+      // Do not wrap inline js if it contains a named function definition.
+      $pattern = '/\\s*function\\s+((?:[a-z][a-z0-9_]*))\\s*\\(.*\\)\\s*\\{/smix';
+      $match = preg_match($pattern, $values['data']);
+      if (!$match) {
+        // Defer the inline script by wrapping the code in setTimeout callback.
+        $values['data'] = advagg_mod_defer_inline_js($values['data']);
+      }
     }
   }
 
