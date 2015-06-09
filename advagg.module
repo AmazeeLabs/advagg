@@ -1473,7 +1473,6 @@ function _advagg_process_html(&$variables) {
   if (isset($variables['page']['#children'])) {
     $variables['page'] = $variables['page']['#children'];
   }
-  $variables['head'] = drupal_get_html_head();
 
   // Get default javascript.
   // @see http://drupal.org/node/1279226
@@ -1714,8 +1713,8 @@ function _advagg_process_html(&$variables) {
         }
       }
     }
-    $variables['head'] .= advagg_add_dns_prefetch();
   }
+  $variables['head'] = drupal_get_html_head();
 
   // Output debug info.
   if (variable_get('advagg_debug', ADVAGG_DEBUG)) {
@@ -1734,42 +1733,31 @@ function _advagg_process_html(&$variables) {
  * Add in the dns-prefetch header for CSS & JS external files.
  *
  * @param string $url
- *   (Optional) The url of the external host or empty to render it.
+ *   The url of the external host.
  *
- * @return string
- *   HTML markup from drupal_render() or the url that was passed in or an empty
- *   string.
- *
- * @see drupal_add_css()
+ * @return bool
+ *   TRUE if it was added to the head.
  */
-function advagg_add_dns_prefetch($url = '') {
-  $urls = &drupal_static(__FUNCTION__);
-  if (!empty($url)) {
-    // Save the host.
-    $parse = @parse_url($url);
-    if (isset($parse['host'])) {
-      $urls[$parse['host']] = '//' . $parse['host'];
-    }
-    return $url;
+function advagg_add_dns_prefetch($url) {
+  // Get the host.
+  $parse = @parse_url($url);
+  if (empty($parse['host'])) {
+    return FALSE;
   }
-  elseif (!empty($urls)) {
-    // Create the render array.
-    $elements = array();
-    foreach ($urls as $url) {
-      $elements[$url] = array(
-        '#type' => 'html_tag',
-        '#tag' => 'link',
-        '#attributes' => array(
-          'rel' => 'dns-prefetch',
-          'href' => $url,
-        ),
-      );
-    }
-    // Call hook_advagg_dns_prefetch_alter().
-    drupal_alter('advagg_dns_prefetch', $elements);
-    return drupal_render($elements);
-  }
-  return '';
+
+  // Build render array. Goes after charset tag.
+  $element = array(
+    '#type' => 'html_tag',
+    '#tag' => 'link',
+    '#attributes' => array(
+      'rel' => 'dns-prefetch',
+      'href' => '//' . $parse['host'],
+    ),
+    '#weight' => '-999.999',
+  );
+  // Add markup for dns-prefetch to html_head.
+  drupal_add_html_head($element, 'advagg_dns_prefetch:' . $parse['host']);
+  return TRUE;
 }
 
 /**

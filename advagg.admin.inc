@@ -46,6 +46,12 @@ function advagg_admin_settings_form($form, $form_state) {
     '#disabled' => module_exists('httprl') ? FALSE : TRUE,
     '#description' => t('If <a href="@link">HTTPRL</a> is installed, advagg will use it to generate aggregates on the fly in a background parallel process.', array('@link' => 'http://drupal.org/project/httprl')),
   );
+  $form['global']['advagg_browser_dns_prefetch'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use DNS Prefetch for external CSS/JS.'),
+    '#default_value' => variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH),
+    '#description' => t('Start the DNS lookup for external CSS and JavaScript files as soon as possible.'),
+  );
 
   $aggressive_cache_conflicts = advagg_aggressive_cache_conflicts();
   if (empty($aggressive_cache_conflicts)) {
