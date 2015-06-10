@@ -1516,12 +1516,6 @@ function advagg_install_url_mod(&$url, array &$options, $mod_url = FALSE) {
     'connect_timeout' => 8,
     'ttfb_timeout' => 8,
   );
-  if (!empty($_SERVER['HTTP_HOST'])) {
-    $options['headers']['Host'] = $_SERVER['HTTP_HOST'];
-  }
-  elseif (!empty($_SERVER['SERVER_NAME'])) {
-    $options['headers']['Host'] = $_SERVER['SERVER_NAME'];
-  }
   // Set connection to closed to prevent keep-alive from causing a timeout.
   $options['headers']['Connection'] = 'close';
   // Set referrer to current page.
