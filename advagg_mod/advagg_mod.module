@@ -248,32 +248,19 @@ function advagg_mod_get_lists() {
 
     // Openlayers.
     if (module_exists('openlayers')) {
-      $has_openlayers = FALSE;
-      foreach ($js as &$values) {
-        if ($values['type'] === 'inline' || !is_string($values['data'])) {
-          continue;
-        }
-        if (stripos($values['data'], 'openlayers')) {
-          $has_openlayers = TRUE;
-          break;
-        }
+      // Openlayers fix; external scripts can not be loaded out of order.
+      // Cloudmade.
+      $path = variable_get('openlayers_layers_cloudmade_js', '');
+      if (valid_url($path, TRUE)) {
+        $no_async_defer_list['openlayers_layers_cloudmade'] = $path;
       }
-      unset($values);
-      if ($has_openlayers) {
-        // Openlayers fix; external scripts can not be loaded out of order.
-        // Cloudmade.
-        $path = variable_get('openlayers_layers_cloudmade_js', '');
-        if (valid_url($path, TRUE)) {
-          $no_async_defer_list['openlayers_layers_cloudmade'] = $path;
-        }
-        // Google.
-        $mapdomain = variable_get('openlayers_layers_google_mapdomain', 'maps.google.com');
-        $no_async_defer_list['openlayers_layers_google'] = $mapdomain . '/maps';
-        // VirtualEarth.
-        $no_async_defer_list['openlayers_layers_virtualearth'] = 'dev.virtualearth.net/mapcontrol';
-        // Yahoo.
-        $no_async_defer_list['openlayers_layers_yahoo'] = 'api.maps.yahoo.com/ajaxymap';
-      }
+      // Google.
+      $mapdomain = variable_get('openlayers_layers_google_mapdomain', 'maps.google.com');
+      $no_async_defer_list['openlayers_layers_google'] = $mapdomain . '/maps';
+      // VirtualEarth.
+      $no_async_defer_list['openlayers_layers_virtualearth'] = 'dev.virtualearth.net/mapcontrol';
+      // Yahoo.
+      $no_async_defer_list['openlayers_layers_yahoo'] = 'api.maps.yahoo.com/ajaxymap';
     }
 
     // Google Admanager.
@@ -301,7 +288,14 @@ function advagg_mod_get_lists() {
 
     // Allow other modules to add/edit the above lists.
     // Call hook_advagg_mod_get_lists_alter().
-    $lists = array($header_file_list, $header_inline_list, $no_async_defer_list, $inline_wrapper_list, $inline_js_wrap_skip_list, $inline_js_defer_skip_list);
+    $lists = array(
+      $header_file_list,
+      $header_inline_list,
+      $no_async_defer_list,
+      $inline_wrapper_list,
+      $inline_js_wrap_skip_list,
+      $inline_js_defer_skip_list,
+    );
     drupal_alter('advagg_mod_get_lists', $lists);
   }
   return $lists;
@@ -349,7 +343,7 @@ function advagg_mod_js_alter(&$js) {
         continue;
       }
 
-      // Allow certian scripts to be kept in the header.
+      // Allow certain scripts to be kept in the header.
       if ($values['type'] !== 'inline' && $values['type'] !== 'setting') {
         foreach ($header_file_list as $search_string) {
           if (stripos($values['data'], $search_string) !== FALSE) {
@@ -358,7 +352,7 @@ function advagg_mod_js_alter(&$js) {
         }
       }
 
-      // Allow certian inline scripts to be kept in the header.
+      // Allow certain inline scripts to be kept in the header.
       if ($values['type'] === 'inline') {
         foreach ($header_inline_list as $search_string) {
           if (strpos($values['data'], $search_string) !== FALSE) {
