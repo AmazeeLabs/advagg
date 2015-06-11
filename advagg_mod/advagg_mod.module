@@ -139,7 +139,7 @@ define('ADVAGG_MOD_JS_DEFER_INLINE_ALTER', FALSE);
 /**
  * Default value for inline scripts that should not be deferred.
  */
-define('ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST', "loadCSS(\n");
+define('ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST', '');
 
 /**
  * Default value to move async js to the header.
@@ -245,6 +245,7 @@ function advagg_mod_get_lists() {
 
     // Get inline defer js skip list string and convert it to an array.
     $inline_js_defer_skip_list = array_filter(array_map('trim', explode("\n", variable_get('advagg_mod_defer_inline_js_skip_list', ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST))));
+    $inline_js_defer_skip_list[] = 'loadCSS(';
 
     // Openlayers.
     if (module_exists('openlayers')) {
