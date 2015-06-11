@@ -265,25 +265,31 @@ function advagg_mod_get_lists() {
 
     // Google Admanager.
     if (module_exists('google_admanager')) {
-      if (variable_get('advagg_mod_js_footer_inline_alter', ADVAGG_MOD_JS_FOOTER_INLINE_ALTER)) {
-        $inline_wrapper_list = array(
-          'GS_googleAddAdSenseService(' => 'window.GS_googleAddAdSenseService',
-          'GS_googleEnableAllServices(' => 'window.GS_googleEnableAllServices',
-          'GA_googleAddSlot(' => 'window.GA_googleAddSlot',
-          'GA_googleFetchAds(' => 'window.GA_googleFetchAds',
-          'GA_googleFillSlot(' => 'window.GA_googleFillSlot',
-        );
-      }
-      else {
-        $header_file_list[] = '/google_service.';
+      // Needs to be in the header.
+      $header_file_list[] = '/google_service.';
 
-        $header_inline_list[] = 'GS_googleAddAdSenseService(';
-        $header_inline_list[] = 'GS_googleEnableAllServices(';
-        $header_inline_list[] = 'GA_googleAddSlot(';
-        $header_inline_list[] = 'GA_googleFetchAds(';
+      // Needs to be in the header.
+      $header_inline_list[] = 'GS_googleAddAdSenseService(';
+      $header_inline_list[] = 'GS_googleEnableAllServices(';
+      $header_inline_list[] = 'GA_googleAddSlot(';
+      $header_inline_list[] = 'GA_googleFetchAds(';
 
-        $no_async_defer_list[] = '/google_service.';
-      }
+      // Can not be async/defered.
+      $no_async_defer_list[] = '/google_service.';
+
+      // Can not be wrapped in a callback function.
+      $inline_js_wrap_skip_list[] = 'GS_googleAddAdSenseService(';
+      $inline_js_wrap_skip_list[] = 'GS_googleEnableAllServices(';
+      $inline_js_wrap_skip_list[] = 'GA_googleAddSlot(';
+      $inline_js_wrap_skip_list[] = 'GA_googleFetchAds(';
+      $inline_js_wrap_skip_list[] = 'GA_googleFillSlot(';
+
+      // Can not be wrapped in a callback function.
+      $inline_js_defer_skip_list[] = 'GS_googleAddAdSenseService(';
+      $inline_js_defer_skip_list[] = 'GS_googleEnableAllServices(';
+      $inline_js_defer_skip_list[] = 'GA_googleAddSlot(';
+      $inline_js_defer_skip_list[] = 'GA_googleFetchAds(';
+      $inline_js_defer_skip_list[] = 'GA_googleFillSlot(';
     }
 
     // Allow other modules to add/edit the above lists.
