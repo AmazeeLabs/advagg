@@ -4016,6 +4016,9 @@ function advagg_aggressive_cache_conflicts() {
     // drupal_static('clientside_validation_settings') array.
     // 'clientside_validation',
     //
+    // version_compare(VERSION, '7.14', '<')
+    'conditional_fields',
+
     // _css_injector_load_rule() function.
     // Changes the weight of all files added in init so no special handling.
     // 'css_injector',
