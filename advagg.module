@@ -842,6 +842,7 @@ function advagg_js_alter(&$js) {
         $value['dns_prefetch'] = array($temp);
       }
       $value['dns_prefetch'][] = 'https://www.google-analytics.com';
+      $value['dns_prefetch'][] = 'https://stats.g.doubleclick.net';
     }
   }
   unset($value);
