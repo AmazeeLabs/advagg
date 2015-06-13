@@ -811,57 +811,91 @@ function advagg_ajax_render_alter(&$commands) {
  * Implements hook_js_alter().
  */
 function advagg_js_alter(&$js) {
-  if (!advagg_enabled() || !variable_get('advagg_js_fix_type', ADVAGG_JS_FIX_TYPE)) {
+  // Skip if advagg is disabled.
+  if (!advagg_enabled()) {
     return;
   }
 
-  // Get hostname and base path.
-  $mod_base_url = substr($GLOBALS['base_root'] . $GLOBALS['base_path'], strpos($GLOBALS['base_root'] . $GLOBALS['base_path'], '//') + 2);
-  $mod_base_url_len = strlen($mod_base_url);
-
-  // Fix type if it was incorrectly set.
+  // Add DNS information for some of the more popular modules.
   foreach ($js as &$value) {
-    if (empty($value['data']) || !is_string($value['data'])) {
+    if (!is_string($value['data'])) {
       continue;
     }
-
-    // If type is external but doesn't start with http, https, or // change it
-    // to file.
-    if ( $value['type'] === 'external'
-      && stripos($value['data'], 'http://') !== 0
-      && stripos($value['data'], 'https://') !== 0
-      && stripos($value['data'], '//') !== 0
-      ) {
-      $value['type'] = 'file';
+    // Google Ad Manager.
+    if (strpos($value['data'], '/google_service.') !== FALSE) {
+      if (!empty($value['dns_prefetch']) && is_string($value['dns_prefetch'])) {
+        $temp = $value['dns_prefetch'];
+        unset($value['dns_prefetch']);
+        $value['dns_prefetch'] = array($temp);
+      }
+      $value['dns_prefetch'][] = 'https://cm.g.doubleclick.net/';
+      $value['dns_prefetch'][] = 'https://pagead2.googlesyndication.com/';
+      $value['dns_prefetch'][] = 'https://partner.googleadservices.com/';
+      $value['dns_prefetch'][] = 'https://pubads.g.doubleclick.net/';
     }
 
-    // If type is file but it starts with http, https, or // change it to
-    // external.
-    if ( $value['type'] === 'file'
-      && (stripos($value['data'], 'http://') === 0
-      || stripos($value['data'], 'https://') === 0
-      || (stripos($value['data'], '//') === 0 && stripos($value['data'], '///') === FALSE))
-      ) {
-      $value['type'] = 'external';
-    }
-
-    // If type is external & starts with http, https, or // but points to this
-    // host change it to file, but move it to the top of the aggregation stack.
-    if ( $value['type'] === 'external'
-      && stripos($value['data'], $mod_base_url) !== FALSE
-      && ( stripos($value['data'], 'http://') === 0
-        || stripos($value['data'], 'https://') === 0
-        || stripos($value['data'], '//') === 0
-        )
-    ) {
-      $value['type'] = 'file';
-      $value['group'] = JS_LIBRARY;
-      $value['every_page'] = TRUE;
-      $value['weight'] = -40000;
-      $value['data'] = substr($value['data'], stripos($value['data'], $mod_base_url) + $mod_base_url_len);
+    // Google Analytics.
+    if (strpos($value['data'], 'GoogleAnalyticsObject') !== FALSE) {
+      if (!empty($value['dns_prefetch']) && is_string($value['dns_prefetch'])) {
+        $temp = $value['dns_prefetch'];
+        unset($value['dns_prefetch']);
+        $value['dns_prefetch'] = array($temp);
+      }
+      $value['dns_prefetch'][] = 'https://www.google-analytics.com';
     }
   }
   unset($value);
+
+  // Fix type if it was incorrectly set.
+  if (variable_get('advagg_js_fix_type', ADVAGG_JS_FIX_TYPE)) {
+    // Get hostname and base path.
+    $mod_base_url = substr($GLOBALS['base_root'] . $GLOBALS['base_path'], strpos($GLOBALS['base_root'] . $GLOBALS['base_path'], '//') + 2);
+    $mod_base_url_len = strlen($mod_base_url);
+
+    foreach ($js as &$value) {
+      // Skip if the data is empty or not a string.
+      if (empty($value['data']) || !is_string($value['data'])) {
+        continue;
+      }
+
+      // If type is external but doesn't start with http, https, or // change it
+      // to file.
+      if ( $value['type'] === 'external'
+        && stripos($value['data'], 'http://') !== 0
+        && stripos($value['data'], 'https://') !== 0
+        && stripos($value['data'], '//') !== 0
+        ) {
+        $value['type'] = 'file';
+      }
+
+      // If type is file but it starts with http, https, or // change it to
+      // external.
+      if ( $value['type'] === 'file'
+        && (stripos($value['data'], 'http://') === 0
+        || stripos($value['data'], 'https://') === 0
+        || (stripos($value['data'], '//') === 0 && stripos($value['data'], '///') === FALSE))
+        ) {
+        $value['type'] = 'external';
+      }
+
+      // If type is external & starts with http, https, or // but points to this
+      // host change it to file, but move it to the top of the aggregation stack.
+      if ( $value['type'] === 'external'
+        && stripos($value['data'], $mod_base_url) !== FALSE
+        && ( stripos($value['data'], 'http://') === 0
+          || stripos($value['data'], 'https://') === 0
+          || stripos($value['data'], '//') === 0
+          )
+      ) {
+        $value['type'] = 'file';
+        $value['group'] = JS_LIBRARY;
+        $value['every_page'] = TRUE;
+        $value['weight'] = -40000;
+        $value['data'] = substr($value['data'], stripos($value['data'], $mod_base_url) + $mod_base_url_len);
+      }
+    }
+    unset($value);
+  }
 }
 
 /**
@@ -1627,7 +1661,7 @@ function _advagg_process_html(&$variables) {
     $js_cache['scripts'] = '';
     if (!empty($js_scope_array)) {
       // Add JS to the header and footer of the page.
-      foreach ($js_scope_array as $scope => $scripts_array) {
+      foreach ($js_scope_array as $scope => &$scripts_array) {
         // Add js settings.
         if (!empty($js_scope_settings_array[$scope]['settings'])) {
           $scripts_array['#items']['settings'] = $js_scope_settings_array[$scope]['settings'];
@@ -1664,6 +1698,7 @@ function _advagg_process_html(&$variables) {
           }
         }
       }
+      unset($scripts_array);
 
       if (!empty($js_cache_id) && !empty($js_cache)) {
         cache_set($js_cache_id, array($js_cache, $js_scope_array), 'cache_advagg_aggregates', CACHE_TEMPORARY);
@@ -1676,39 +1711,28 @@ function _advagg_process_html(&$variables) {
 
   if (variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH)) {
     // Prefetch css domains.
-    foreach ($full_css['#items'] as $values) {
-      if ($values['type'] === 'external') {
-        // Get external domains.
-        advagg_add_dns_prefetch($values['data']);
-      }
-      if (!empty($values['dns_prefetch'])) {
-        // Grab domains that will be access when this file is loaded.
-        if (is_array($values['dns_prefetch'])) {
-          foreach ($values['dns_prefetch'] as $url) {
-            advagg_add_dns_prefetch($url);
-          }
-        }
-        else {
-          advagg_add_dns_prefetch($values['dns_prefetch']);
+    foreach ($full_css['#items'] as $file) {
+      advagg_add_dns_prefetch_array($file);
+    }
+    foreach ($full_css['#groups'] as $groups) {
+      if (isset($groups['items']['files'])) {
+        foreach ($groups['items']['files'] as $file) {
+          advagg_add_dns_prefetch_array($file);
         }
       }
     }
+
     // Prefetch js domains.
     foreach ($js_scope_array as $scope_js) {
-      foreach ($scope_js['#items'] as $values) {
-        if (!empty($values['type']) && $values['type'] === 'external') {
-          // Get external domains.
-          advagg_add_dns_prefetch($values['data']);
-        }
-        if (!empty($values['dns_prefetch'])) {
-          // Grab domains that will be access when this file is loaded.
-          if (is_array($values['dns_prefetch'])) {
-            foreach ($values['dns_prefetch'] as $url) {
-              advagg_add_dns_prefetch($url);
+      foreach ($scope_js['#items'] as $file) {
+        advagg_add_dns_prefetch_array($file);
+      }
+      if (isset($scope_js['#groups'])) {
+        foreach ($scope_js['#groups'] as $groups) {
+          if (isset($groups['items']['files'])) {
+            foreach ($groups['items']['files'] as $file) {
+              advagg_add_dns_prefetch_array($file);
             }
-          }
-          else {
-            advagg_add_dns_prefetch($values['dns_prefetch']);
           }
         }
       }
@@ -1726,6 +1750,30 @@ function _advagg_process_html(&$variables) {
       $output = '<pre>' . str_replace(array('<', '>'), array('&lt;', '&gt;'), print_r($debug, TRUE)) . '</pre>';
     }
     watchdog('advagg_debug', $output, array(), WATCHDOG_DEBUG);
+  }
+}
+
+/**
+ * Find dns_prefetch and call advagg_add_dns_prefetch().
+ *
+ * @param array $values
+ *   Attributes added via code for the file.
+ */
+function advagg_add_dns_prefetch_array(array $values) {
+  if ($values['type'] === 'external') {
+    // Get external domains.
+    advagg_add_dns_prefetch($values['data']);
+  }
+  if (!empty($values['dns_prefetch'])) {
+    // Grab domains that will be access when this file is loaded.
+    if (is_array($values['dns_prefetch'])) {
+      foreach ($values['dns_prefetch'] as $url) {
+        advagg_add_dns_prefetch($url);
+      }
+    }
+    else {
+      advagg_add_dns_prefetch($values['dns_prefetch']);
+    }
   }
 }
 

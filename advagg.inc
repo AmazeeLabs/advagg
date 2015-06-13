@@ -623,7 +623,9 @@ function advagg_generate_groups(array $files_to_aggregate) {
   // Get CSS limit value.
   $limit_value = variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE);
 
-  if (variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER)) {
+  if ( variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER)
+    || variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH)
+  ) {
     foreach ($files_to_aggregate as $data) {
       foreach ($data as $values) {
         foreach ($values['items'] as $file_info) {
@@ -749,6 +751,21 @@ function advagg_generate_groups(array $files_to_aggregate) {
               }
             }
           }
+        }
+
+        // Merge in dns_prefetch.
+        if ( variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH)
+          && isset($files_info[$file_info['data']]['dns_prefetch'])
+        ) {
+          if (!isset($file_info['dns_prefetch'])) {
+            $file_info['dns_prefetch'] = array();
+          }
+          if (!empty($file_info['dns_prefetch']) && is_string($file_info['dns_prefetch'])) {
+            $temp = $file_info['dns_prefetch'];
+            unset($file_info['dns_prefetch']);
+            $file_info['dns_prefetch'] = array($temp);
+          }
+          $file_info['dns_prefetch'] = array_filter(array_unique(array_merge($file_info['dns_prefetch'], $files_info[$file_info['data']]['dns_prefetch'])));
         }
 
         // If one of the above options changed, it needs to be in a different
