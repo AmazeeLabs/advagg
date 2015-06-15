@@ -913,7 +913,7 @@ function advagg_js_alter(&$js) {
       }
 
       // If type is external & starts with http, https, or // but points to this
-      // host change it to file, but move it to the top of the aggregation stack.
+      // host change to file, but move it to the top of the aggregation stack.
       if ( $value['type'] === 'external'
         && stripos($value['data'], $mod_base_url) !== FALSE
         && ( stripos($value['data'], 'http://') === 0
