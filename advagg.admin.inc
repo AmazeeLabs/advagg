@@ -367,6 +367,7 @@ function advagg_admin_operations_form($form, $form_state) {
     60 * 60 * 24 * 2,
     60 * 60 * 24 * 7,
     60 * 60 * 24 * 30,
+    60 * 60 * 24 * 365,
   ), 'format_interval');
   $form['bypass']['timespan'] = array(
     '#type' => 'select',
