@@ -382,6 +382,39 @@ function advagg_module_implements_alter(&$implementations, $hook) {
     unset($implementations['advagg']);
     $implementations['advagg'] = $item;
   }
+
+  if ($hook === 'requirements') {
+    // Move advagg to the bottom.
+    if (array_key_exists('advagg', $implementations)) {
+      $item = $implementations['advagg'];
+      unset($implementations['advagg']);
+      $implementations['advagg'] = $item;
+    }
+    // Move advagg_css_cdn to the bottom.
+    if (array_key_exists('advagg_css_cdn', $implementations)) {
+      $item = $implementations['advagg_css_cdn'];
+      unset($implementations['advagg_css_cdn']);
+      $implementations['advagg_css_cdn'] = $item;
+    }
+    // Move advagg_css_compress to the bottom.
+    if (array_key_exists('advagg_css_compress', $implementations)) {
+      $item = $implementations['advagg_css_compress'];
+      unset($implementations['advagg_css_compress']);
+      $implementations['advagg_css_compress'] = $item;
+    }
+    // Move advagg_js_cdn to the bottom.
+    if (array_key_exists('advagg_js_cdn', $implementations)) {
+      $item = $implementations['advagg_js_cdn'];
+      unset($implementations['advagg_js_cdn']);
+      $implementations['advagg_js_cdn'] = $item;
+    }
+    // Move advagg_js_compress to the bottom.
+    if (array_key_exists('advagg_js_compress', $implementations)) {
+      $item = $implementations['advagg_js_compress'];
+      unset($implementations['advagg_js_compress']);
+      $implementations['advagg_js_compress'] = $item;
+    }
+  }
 }
 
 /**
