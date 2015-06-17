@@ -1774,11 +1774,11 @@ function advagg_remove_js_if_not_used(array &$js) {
   // Look at each JavaScript entry & get the info on it.
   $files_info_filenames = array();
   foreach ($js as &$values) {
-    if ($values['type'] !== 'file') {
+    if ($values['type'] !== 'file' || !is_string($values['data'])) {
       continue;
     }
     foreach ($files_skiplist as $skip_name) {
-      if (substr_compare($values['data'], $skip_name, -strlen($skip_name), strlen($skip_name)) === 0) {
+      if (strlen($skip_name) < strlen($values['data']) && substr_compare($values['data'], $skip_name, -strlen($skip_name), strlen($skip_name)) === 0) {
         continue 2;
       }
     }
