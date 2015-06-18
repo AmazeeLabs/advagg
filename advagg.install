@@ -99,13 +99,10 @@ function advagg_disable() {
 function advagg_uninstall() {
   // Make sure the advagg_get_root_files_dir() function is available.
   drupal_load('module', 'advagg');
+  list($css_path, $js_path) = advagg_get_root_files_dir();
 
-  // Make sure the advagg_remove_all_aggregated_files() function is available.
-  module_load_include('inc', 'advagg', 'advagg');
+  // Make sure the advagg_flush_all_cache_bins() function is available.
   module_load_include('inc', 'advagg', 'advagg.cache');
-
-  // Remove files.
-  advagg_remove_all_aggregated_files(TRUE);
   // Flush caches.
   advagg_flush_all_cache_bins();
 
@@ -114,10 +111,9 @@ function advagg_uninstall() {
     ->condition('name', 'advagg%', 'LIKE')
     ->execute();
 
-  // Remove Directories.
-  list($css_path, $js_path) = advagg_get_root_files_dir();
-  drupal_rmdir($css_path[0]);
-  drupal_rmdir($js_path[0]);
+  // Remove all files and directories.
+  file_unmanaged_delete_recursive($css_path[0]);
+  file_unmanaged_delete_recursive($js_path[0]);
 }
 
 /**
