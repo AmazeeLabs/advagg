@@ -247,6 +247,19 @@ function advagg_mod_get_lists() {
     $inline_js_defer_skip_list = array_filter(array_map('trim', explode("\n", variable_get('advagg_mod_defer_inline_js_skip_list', ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST))));
     $inline_js_defer_skip_list[] = 'loadCSS(';
 
+    // If there is a fast clicker, ajax links might not work if ajax.js is
+    // loaded in the footer.
+    $all_in_footer_list = array(
+      'misc/ajax.js' => array(
+        'jquery.js',
+        'jquery.min.js',
+        'jquery.once.js',
+        'ajax.js',
+        'drupal.js',
+        'settings',
+      ),
+    );
+
     // Openlayers.
     if (module_exists('openlayers')) {
       // Openlayers fix; external scripts can not be loaded out of order.
@@ -302,6 +315,7 @@ function advagg_mod_get_lists() {
       $inline_wrapper_list,
       $inline_js_wrap_skip_list,
       $inline_js_defer_skip_list,
+      $all_in_footer_list,
     );
     drupal_alter('advagg_mod_get_lists', $lists);
   }
@@ -335,16 +349,34 @@ function advagg_mod_js_alter(&$js) {
     advagg_mod_sort_css_js($js, 'js');
   }
 
-  list($header_file_list, $header_inline_list, $no_async_defer_list, $inline_wrapper_list) = advagg_mod_get_lists();
+  list($header_file_list, $header_inline_list, $no_async_defer_list, $inline_wrapper_list, , , $all_in_footer_list) = advagg_mod_get_lists();
 
   // Move all JS to the footer.
   $move_js_to_footer = variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER);
   if (!empty($move_js_to_footer)) {
+
+    // Process all in footer list.
+    if ($move_js_to_footer == 3 && !empty($all_in_footer_list)) {
+      foreach ($all_in_footer_list as $key => $search_strings) {
+        if (isset($js[$key])) {
+          foreach ($js as $name => &$values) {
+            foreach ($search_strings as $string) {
+              if (strpos($name, $string) !== FALSE) {
+                $values['scope_lock'] = TRUE;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
     foreach ($js as $name => &$values) {
-      // Skip if a library and configured to do so.
-      if ($move_js_to_footer == 1 && $values['group'] <= JS_LIBRARY) {
+      // Skip if a library and configured to do so; or if this is the settings.
+      if ($move_js_to_footer == 1 && ($values['group'] <= JS_LIBRARY || $name === 'settings')) {
         continue;
       }
+
       // Skip if the scope has been locked.
       if (!empty($values['scope_lock'])) {
         continue;
@@ -801,7 +833,7 @@ function advagg_mod_process_move_js(&$variables) {
   // All JS not in the footer.
   // All JS not defer.
   // All JS not async.
-  if ( variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) != 2
+  if ( variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) < 2
     && !variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
     && !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)
   ) {

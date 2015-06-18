@@ -1248,7 +1248,7 @@ function _advagg_aggregate_js(array &$js_groups) {
   if ($preprocess_js) {
     // Set boolean to TRUE if all JS in footer.
     $all_in_footer = FALSE;
-    if (module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2) {
+    if (module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) >= 2) {
       $all_in_footer = TRUE;
     }
     foreach ($js_groups as $key => &$group) {
@@ -1794,7 +1794,7 @@ function _advagg_process_html(&$variables) {
  *   Attributes added via code for the file.
  */
 function advagg_add_dns_prefetch_array(array $values) {
-  if ($values['type'] === 'external') {
+  if (!empty($values['type']) && $values['type'] === 'external') {
     // Get external domains.
     advagg_add_dns_prefetch($values['data']);
   }
@@ -2032,7 +2032,7 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   // Set the js_in_footer variable.
   $js_in_footer = FALSE;
   if ( module_exists('advagg_mod')
-    && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2
+    && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) >= 2
   ) {
     $js_in_footer = TRUE;
   }
@@ -2040,7 +2040,7 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   // Filter out elements of the given scope.
   $items = array();
   foreach ($javascript as $key => $item) {
-    if ($item['scope'] == $scope) {
+    if (!empty($item['scope']) && $item['scope'] === $scope) {
       $items[$key] = $item;
     }
   }
@@ -2247,13 +2247,17 @@ function advagg_get_js_scopes(array $javascript) {
 
   // Filter out elements of the given scope.
   $scopes = array();
-  foreach ($javascript as $item) {
+  $js_settings_in_footer = FALSE;
+  foreach ($javascript as $name => $item) {
     // Skip if the scope is not set.
     if (!is_array($item) || empty($item['scope'])) {
       continue;
     }
     if (!isset($scopes[$item['scope']])) {
       $scopes[$item['scope']] = TRUE;
+    }
+    if ($name === 'settings' && $item['scope'] === 'footer') {
+      $js_settings_in_footer = TRUE;
     }
   }
 
@@ -2273,8 +2277,7 @@ function advagg_get_js_scopes(array $javascript) {
   // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
   if ( isset($scopes['footer'])
     && count($scopes) > 1
-    && module_exists('advagg_mod')
-    && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 2
+    && $js_settings_in_footer
   ) {
     $temp = $scopes['footer'];
     unset($scopes['footer']);
