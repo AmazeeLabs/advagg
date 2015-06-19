@@ -1363,6 +1363,25 @@ function _advagg_build_js_arrays_for_rendering($skip_alter = FALSE) {
     }
     $js_scope_array[$scope] = $scripts;
   }
+
+  // Fix settings; if more than 1 is set, use the largest one.
+  if (count($js_scope_settings_array) > 1) {
+    $max = -1;
+    $max_scope = '';
+    foreach ($js_scope_settings_array as $scope => $settings) {
+      $count = count($settings);
+      $max = max($max, $count);
+      if ($max == $count) {
+        $max_scope = $scope;
+      }
+    }
+
+    foreach ($js_scope_settings_array as $scope => $settings) {
+      if ($scope !== $max_scope) {
+        unset($js_scope_settings_array[$scope]);
+      }
+    }
+  }
   return array($javascript, $js_scope_settings_array, $js_scope_array);
 }
 
@@ -1612,10 +1631,11 @@ function _advagg_process_html(&$variables) {
     // Replace cached settings with current ones.
     $js_settings_used = array();
 
+    $js_scope_settings_array_copy = $js_scope_settings_array;
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 5) {
-      if (!empty($js_scope_settings_array['header']) && empty($js_scope_settings_array['footer'])) {
+      if (!empty($js_scope_settings_array_copy['header']) && empty($js_scope_settings_array_copy['footer'])) {
         // Copy header settings into the footer.
-        $js_scope_settings_array['footer'] = $js_scope_settings_array['header'];
+        $js_scope_settings_array_copy['footer'] = $js_scope_settings_array_copy['header'];
       }
     }
 
@@ -1634,14 +1654,14 @@ function _advagg_process_html(&$variables) {
       if ($start !== FALSE) {
         // If the cache and current settings scope's do not match; do not use
         // the cached version.
-        if (!isset($js_scope_settings_array[$scope_settings]['settings'])) {
+        if (!isset($js_scope_settings_array_copy[$scope_settings]['settings'])) {
           $use_cache = FALSE;
           break;
         }
 
         // Replace cached Drupal.settings with current Drupal.settings for this
         // page.
-        $merged = drupal_array_merge_deep_array($js_scope_settings_array[$scope_settings]['settings']['data']);
+        $merged = drupal_array_merge_deep_array($js_scope_settings_array_copy[$scope_settings]['settings']['data']);
         $json_data = advagg_json_encode($merged);
         if (!empty($json_data)) {
           // Record that this is being used.
@@ -1654,7 +1674,7 @@ function _advagg_process_html(&$variables) {
     }
 
     if ($use_cache) {
-      $all_used = array_diff(array_keys($js_scope_settings_array), array_keys($js_settings_used));
+      $all_used = array_diff(array_keys($js_scope_settings_array_copy), array_keys($js_settings_used));
       // Ignore this check if the cache level is less than 5.
       if (!empty($all_used) && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 5 && !empty($js_settings_used)) {
         // Some js settings did not make it into the output. Skip cache.
@@ -1981,6 +2001,9 @@ function advagg_get_full_js(array $javascript = array(), $skip_alter = FALSE) {
       }
     }
   }
+  elseif (module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 3) {
+    advagg_mod_js_alter($javascript);
+  }
   return $javascript;
 }
 
@@ -2017,8 +2040,6 @@ function advagg_get_full_js(array $javascript = array(), $skip_alter = FALSE) {
  * @see drupal_js_defaults()
  */
 function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = FALSE) {
-  $javascript_settings_data = &drupal_static(__FUNCTION__, array());
-
   // Add in javascript if none was passed in.
   if (empty($javascript) && !$ajax) {
     $javascript = advagg_get_full_js();
@@ -2027,14 +2048,6 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   // Return an empty array if no javascript is used,
   if (empty($javascript)) {
     return array();
-  }
-
-  // Set the js_in_footer variable.
-  $js_in_footer = FALSE;
-  if ( module_exists('advagg_mod')
-    && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) >= 2
-  ) {
-    $js_in_footer = TRUE;
   }
 
   // Filter out elements of the given scope.
@@ -2053,36 +2066,24 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   // without that group. We do not use the $key => $item type of iteration,
   // because PHP uses an internal array pointer for that, and we're modifying
   // the array order inside the loop.
-  if ($scope === 'footer' && $js_in_footer) {
-    // Get all settings from the items array.
-    $settings_js = array();
-    foreach (array_keys($items) as $key) {
-      if ($items[$key]['type'] === 'setting') {
-        if (isset($settings_js[$key])) {
-          $settings_js[$key] += $items[$key];
-        }
-        else {
-          $settings_js[$key] = $items[$key];
-        }
-        unset($items[$key]);
-      }
-    }
+  if ($scope === 'footer' && !empty($items['settings'])) {
+    // Remove settings array from items.
+    $settings_js['settings'] = $items['settings'];
+    unset($items['settings']);
 
-    // Add settings array back in right before the footer shift happened.
-    if (!empty($settings_js)) {
-      $counter = 0;
-      foreach ($items as $key => $item) {
-        // Move $settings_js to the bottom of the js that was added to the
-        // header, but has now been moved to the footer via advagg_mod.
-        if ($item['group'] > 9000) {
-          advagg_array_splice_assoc($items, $counter, 0, $settings_js);
-          unset($settings_js);
-          break;
-        }
-        ++$counter;
+    // Move $settings_js to the bottom of the js that was added to the
+    // header, but has now been moved to the footer via advagg_mod.
+    $counter = 0;
+    foreach ($items as $key => $item) {
+      if ($item['group'] > 9000) {
+        advagg_array_splice_assoc($items, $counter, 0, $settings_js);
+        unset($settings_js);
+        break;
       }
+      ++$counter;
     }
-    if (!empty($settings_js)) {
+    // Nothing in the footer, add settings to the bottom of the array.
+    if (isset($settings_js)) {
       $items = array_merge($items, $settings_js);
     }
   }
@@ -2101,18 +2102,6 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   // Also filter out empty items due to numeric array keys.
   $setting['ajaxPageState']['js'] = array_fill_keys(array_filter(array_keys($items), 'advagg_remove_short_keys'), 1);
   unset($setting['ajaxPageState']['js']['settings']);
-  drupal_add_js($setting, 'setting');
-
-  // Move 'settings' javascript to the header region.
-  if (!empty($javascript_settings_data) && (($scope === 'header' && !$js_in_footer) || ($scope === 'footer' && $js_in_footer))) {
-    foreach ($javascript_settings_data as $js_data) {
-      $items['settings']['data'][] = $js_data;
-    }
-    $javascript_settings_data = array();
-  }
-  else {
-    $javascript_settings_data[] = $setting;
-  }
 
   // If we're outputting the header scope, then this should be the final time
   // that drupal_get_js() is running, so add the setting to this output as well
@@ -2121,8 +2110,12 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   // stripped of settings, potentially in order to override how settings get
   // output, so in this case, do not add the setting to this output.
   // Also output the settings if we have pushed all javascript to the footer.
-  if (isset($items['settings']) && (($scope === 'header' && !$js_in_footer) || ($scope === 'footer' && $js_in_footer))) {
+  if (isset($items['settings'])) {
     $items['settings']['data'][] = $setting;
+  }
+  else {
+    // Add the js ajaxPageState to the drupal.settings.
+    drupal_add_js($setting, 'setting');
   }
 
   // Do not include jQuery.extend(Drupal.settings) if the output is ajax.

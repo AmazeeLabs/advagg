@@ -251,11 +251,11 @@ function advagg_mod_get_lists() {
     // loaded in the footer.
     $all_in_footer_list = array(
       'misc/ajax.js' => array(
-        'jquery.js',
-        'jquery.min.js',
-        'jquery.once.js',
-        'ajax.js',
-        'drupal.js',
+        '/jquery.js',
+        '/jquery.min.js',
+        '/jquery.once.js',
+        '/ajax.js',
+        '/drupal.js',
         'settings',
       ),
     );
@@ -365,6 +365,10 @@ function advagg_mod_js_alter(&$js) {
                 $values['scope_lock'] = TRUE;
                 break;
               }
+              if (is_string($values['data']) && strpos($values['data'], $string) !== FALSE) {
+                $values['scope_lock'] = TRUE;
+                break;
+              }
             }
           }
         }
@@ -372,8 +376,8 @@ function advagg_mod_js_alter(&$js) {
     }
 
     foreach ($js as $name => &$values) {
-      // Skip if a library and configured to do so; or if this is the settings.
-      if ($move_js_to_footer == 1 && ($values['group'] <= JS_LIBRARY || $name === 'settings')) {
+      // Skip if a library and configured to do so.
+      if ($move_js_to_footer == 1 && $values['group'] <= JS_LIBRARY) {
         continue;
       }
 
