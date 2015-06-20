@@ -1570,6 +1570,7 @@ function _advagg_process_html(&$variables) {
 
   // Try the render cache.
   if (!variable_get('advagg_debug', ADVAGG_DEBUG)) {
+    // No Alter.
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 5) {
       // Get all CSS & JS variables needed; running no alters.
       list($variables['css'], $full_css) = _advagg_build_css_arrays_for_rendering(TRUE);
@@ -1579,6 +1580,7 @@ function _advagg_process_html(&$variables) {
       list($css_cache, $js_cache, $css_cache_id_no_alter, $js_cache_id_no_alter) = advagg_get_render_cache($full_css, $js_scope_array);
     }
 
+    // With Alter.
     if ((empty($css_cache->data) || empty($js_cache->data)) && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 3) {
       // Get all CSS & JS variables needed; running alters.
       list($variables['css'], $full_css) = _advagg_build_css_arrays_for_rendering();
@@ -2002,7 +2004,7 @@ function advagg_get_full_js(array $javascript = array(), $skip_alter = FALSE) {
     }
   }
   elseif (module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 3) {
-    advagg_mod_js_alter($javascript);
+    advagg_mod_js_move_to_footer($javascript);
   }
   return $javascript;
 }
