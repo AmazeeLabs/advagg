@@ -32,6 +32,12 @@ function advagg_mod_admin_settings_form() {
     '#default_value' => variable_get('advagg_mod_js_remove_unused', ADVAGG_MOD_JS_REMOVE_UNUSED),
     '#description' => t('This will scan all included JS files for references to jquery and drupal. If none are found then the core JavaScript (jquery.js, drupal.js, & Drupal.settings) is removed and not loaded on that page. If you have a site that does not use a lot of Javascript this might be helpful as it could prevent unused JavaScript from being executed, thus speeding up your sites frontend performance. Enabling this usually has negative backend performance impact.'),
   );
+  $form['js']['advagg_mod_js_no_ajaxpagestate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove ajaxPageState CSS and JS data if ajax.js is not used on this page'),
+    '#default_value' => variable_get('advagg_mod_js_no_ajaxpagestate', ADVAGG_MOD_JS_NO_AJAXPAGESTATE),
+    '#description' => t('This assumes that the only thing that uses Drupal.settings.ajaxPageState.css and Drupal.settings.ajaxPageState.js is ajax.js.'),
+  );
   // Optimize JavaScript Ordering.
   $form['js']['adjust_sort'] = array(
     '#type' => 'fieldset',

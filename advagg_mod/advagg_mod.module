@@ -146,6 +146,12 @@ define('ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST', '');
  */
 define('ADVAGG_MOD_JS_ASYNC_IN_HEADER', FALSE);
 
+/**
+ * Default value to remove ajaxPageState if ajax.js is not used.
+ */
+define('ADVAGG_MOD_JS_NO_AJAXPAGESTATE', FALSE);
+
+
 // Core hook implementations.
 /**
  * Implements hook_init().
@@ -332,6 +338,40 @@ function advagg_mod_element_info_alter(&$type) {
   }
 }
 
+/**
+ * Remove ajaxPageState CSS/JS if misc/ajax.js is not used.
+ *
+ * @param array $scripts
+ *   Render array.
+ */
+function advagg_mod_js_no_ajaxpagestate(array &$scripts) {
+  if (!variable_get('advagg_mod_js_no_ajaxpagestate', ADVAGG_MOD_JS_NO_AJAXPAGESTATE)) {
+    return;
+  }
+
+  // No ajax.js but there is a settings array.
+  if (!isset($scripts['#items']['misc/ajax.js']) && isset($scripts['#items']['settings']['data'])) {
+    foreach ($scripts['#items']['settings']['data'] as $delta => $setting) {
+      if (array_key_exists('ajaxPageState', $setting)) {
+        // Remove js files.
+        if (isset($scripts['#items']['settings']['data'][$delta]['ajaxPageState']['js'])) {
+          unset($scripts['#items']['settings']['data'][$delta]['ajaxPageState']['js']);
+        }
+        // Remove css files.
+        if (isset($scripts['#items']['settings']['data'][$delta]['ajaxPageState']['css'])) {
+          unset($scripts['#items']['settings']['data'][$delta]['ajaxPageState']['css']);
+        }
+        // Cleanup.
+        if (empty($scripts['#items']['settings']['data'][$delta]['ajaxPageState'])) {
+          unset($scripts['#items']['settings']['data'][$delta]['ajaxPageState']);
+          if (empty($scripts['#items']['settings']['data'][$delta])) {
+            unset($scripts['#items']['settings']['data'][$delta]);
+          }
+        }
+      }
+    }
+  }
+}
 
 /**
  * Generate a list of rules & exceptions for js files and inline.

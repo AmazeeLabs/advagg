@@ -2003,8 +2003,10 @@ function advagg_get_full_js(array $javascript = array(), $skip_alter = FALSE) {
       }
     }
   }
-  elseif (module_exists('advagg_mod') && variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 3) {
-    advagg_mod_js_move_to_footer($javascript);
+  elseif (module_exists('advagg_mod')) {
+    if (variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER) == 3) {
+      advagg_mod_js_move_to_footer($javascript);
+    }
   }
   return $javascript;
 }
@@ -2164,6 +2166,12 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
     }
   }
 
+  // Remove ajaxPageState CSS/JS from Drupal.settings if ajax.js is not used.
+  if (function_exists('advagg_mod_js_no_ajaxpagestate')) {
+    if (variable_get('advagg_mod_js_no_ajaxpagestate', ADVAGG_MOD_JS_NO_AJAXPAGESTATE)) {
+      advagg_mod_js_no_ajaxpagestate($elements);
+    }
+  }
   return $elements;
 }
 
