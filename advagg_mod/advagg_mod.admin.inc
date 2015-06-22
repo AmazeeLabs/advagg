@@ -38,6 +38,12 @@ function advagg_mod_admin_settings_form() {
     '#default_value' => variable_get('advagg_mod_js_no_ajaxpagestate', ADVAGG_MOD_JS_NO_AJAXPAGESTATE),
     '#description' => t('This assumes that the only thing that uses Drupal.settings.ajaxPageState.css and Drupal.settings.ajaxPageState.js is ajax.js.'),
   );
+  $form['js']['advagg_mod_js_get_external_dns'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('DNS prefetch src attributes found in the HTML content'),
+    '#default_value' => variable_get('advagg_mod_js_get_external_dns', ADVAGG_MOD_JS_GET_EXTERNAL_DNS),
+    '#description' => t('Scan any JavaScript that was added to the content part of the page incorrectly for a src attribute; if found prefetch that DNS entry.'),
+  );
   // Optimize JavaScript Ordering.
   $form['js']['adjust_sort'] = array(
     '#type' => 'fieldset',
