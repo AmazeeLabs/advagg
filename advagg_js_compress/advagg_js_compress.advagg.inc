@@ -301,7 +301,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     && $semicolon_count > (substr_count($contents, "\n", strpos($contents, ';')) * 5)
   ) {
     if ($add_licensing && variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE)) {
-      $url = url($filename, array('absolute' => TRUE));
+      $url = file_create_url($filename);
       $contents = "/* Source and licensing information for the line(s) below can be found at $url. */\n" . $contents . ";\n/* Source and licensing information for the above line(s) can be found at $url. */\n";
     }
     return;
@@ -379,7 +379,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
       $contents = $contents_before;
     }
     elseif ($add_licensing && variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE)) {
-      $url = url($filename, array('absolute' => TRUE));
+      $url = file_create_url($filename);
       $contents = "/* Source and licensing information for the line(s) below can be found at $url. */\n" . $contents . ";\n/* Source and licensing information for the above line(s) can be found at $url. */\n";
     }
   }
