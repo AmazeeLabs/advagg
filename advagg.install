@@ -1111,6 +1111,7 @@ function advagg_install_check_via_http(array &$requirements) {
       'version' => '1.0',
     );
     // Test http 1.0
+    $old_requirements = $requirements;
     advagg_install_chk_urls($requirements, $urls, $options, $mod_url, $type, $url_path, $file_path, $filename);
 
     // Test http 1.1
@@ -1118,6 +1119,9 @@ function advagg_install_check_via_http(array &$requirements) {
     if (defined('VERSION') && floatval(VERSION) >= 7.22 && is_callable('httprl_override_core')) {
       $old = variable_get('drupal_http_request_function', FALSE);
       $GLOBALS['conf']['drupal_http_request_function'] = 'httprl_override_core';
+
+      // Only test 1.1; 1.0 is rarely used these days.
+      $requirements = $old_requirements;
 
       $options['version'] = '1.1';
       advagg_install_chk_urls($requirements, $urls, $options, $mod_url, $type, $url_path, $file_path, $filename);
