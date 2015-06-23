@@ -194,6 +194,9 @@ function advagg_bundler_analysis($filename = '', $force = FALSE) {
 
       // Create join query for the advagg_aggregates table.
       $subquery_aggregates = db_select('advagg_aggregates', 'aa');
+
+      // Counter column.
+      $fields = array('counter');
       if ($db_type === 'sqlsrv') {
         // MS SQL does not support LPAD.
         $subquery_aggregates->addExpression("RIGHT(REPLICATE('0',8) + CAST(COUNT(aav.aggregate_filenames_hash) AS char(8)),8)", 'counter');
@@ -206,16 +209,22 @@ function advagg_bundler_analysis($filename = '', $force = FALSE) {
         $subquery_aggregates->addExpression("LPAD(CAST(COUNT(aav.aggregate_filenames_hash) AS char(8)), 8, '0')", 'counter');
       }
 
-      $fields = array('counter');
-      if ($db_type === 'mysql' || $db_type === 'sqlite') {
-        $fields = array('counter', 'hashlist');
-        if ($db_type === 'mysql') {
-          db_query('SET SESSION group_concat_max_len = 65535');
-          $subquery_aggregates->addExpression('HEX(SHA1(GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash ORDER BY aa.aggregate_filenames_hash ASC)))', 'hashlist');
-        }
-        else {
-          $subquery_aggregates->addExpression('GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash)', 'hashlist');
-          $subquery_aggregates->orderBy("aa.aggregate_filenames_hash", "ASC");
+      // Hashlist column.
+      if ($db_type === 'mysql') {
+        $fields[] = 'hashlist';
+        db_query('SET SESSION group_concat_max_len = 65535');
+        $subquery_aggregates->addExpression('HEX(SHA1(GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash ORDER BY aa.aggregate_filenames_hash ASC)))', 'hashlist');
+      }
+      elseif ($db_type === 'sqlite') {
+        $fields[] = 'hashlist';
+        $subquery_aggregates->addExpression('GROUP_CONCAT(DISTINCT aa.aggregate_filenames_hash)', 'hashlist');
+        $subquery_aggregates->orderBy("aa.aggregate_filenames_hash", "ASC");
+      }
+      elseif ($db_type === 'pgsql') {
+        $database_connection = Database::getConnection();
+        if (version_compare($database_connection->version(), '9') >= 0) {
+          $fields[] = 'hashlist';
+          $subquery_aggregates->addExpression("MD5(STRING_AGG(DISTINCT(aa.aggregate_filenames_hash), ',', ORDER BY aa.aggregate_filenames_hash ASC))", 'hashlist');
         }
       }
 
