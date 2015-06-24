@@ -18,7 +18,7 @@
  * @param array $aggregate_settings
  *   Array of settings.
  * @param array $other_parameters
- *   Array of containing $files & $type.
+ *   Array of containing $files and $type.
  */
 function advagg_advagg_save_aggregate_alter(array &$files_to_save, array $aggregate_settings, array $other_parameters) {
   // Return if gzip is disabled.
@@ -77,7 +77,7 @@ function advagg_advagg_build_aggregate_plans_alter(array &$files, &$modified, $t
     $group = NULL;
     $every_page = NULL;
     foreach ($data['files'] as $fileinfo) {
-      // Grouped by group & every_page variables.
+      // Grouped by group and every_page variables.
       if (is_null($group)) {
         $group = $fileinfo['group'];
       }
@@ -303,7 +303,7 @@ function advagg_advagg_changed_files(array $files, array $types) {
     advagg_advagg_scan_for_changes($filename, TRUE);
   }
 
-  // Save error states & clear them.
+  // Save error states and clear them.
   $errors_before = drupal_static('form_set_error', array());
   form_clear_error();
 

@@ -135,7 +135,7 @@ function advagg_js_compress_advagg_get_js_file_contents_alter(&$contents, $filen
 /**
  * Implements hook_advagg_save_aggregate_alter().
  *
- * Used to add in a .gz file if none exits & use packer on non gzip file.
+ * Used to add in a .gz file if none exits and use packer on non gzip file.
  */
 function advagg_js_compress_advagg_save_aggregate_alter(&$files_to_save, $aggregate_settings, $other_parameters) {
   list($files, $type) = $other_parameters;
@@ -542,7 +542,7 @@ function advagg_js_compress_run_test($filename, array $info = array(), array $co
     }
   }
 
-  // Save & return results.
+  // Save and return results.
   // Save results, so if PHP bombs, this file is marked as bad.
   // CACHE_PERMANENT isn't good here. Use 2 weeks from now + 0-45 days.
   // The random 0 to 45 day addition is to prevent a cache stampeed.

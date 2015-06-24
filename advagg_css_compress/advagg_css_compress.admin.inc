@@ -63,7 +63,7 @@ function advagg_css_compress_admin_settings_form($form, $form_state) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  // Get filename & filename_hash.
+  // Get filename and filename_hash.
   $results = db_select('advagg_files', 'af')
     ->fields('af', array('filename'))
     ->condition('filetype', 'css')

@@ -292,7 +292,7 @@ function advagg_schema() {
     'primary key' => array('aggregate_filenames_hash', 'aggregate_contents_hash'),
   );
 
-  // Copy the variable table & change a couple of things.
+  // Copy the variable table and change a couple of things.
   $schema['advagg_aggregates_hashes'] = drupal_get_schema_unprocessed('system', 'variable');
   $schema['advagg_aggregates_hashes']['fields']['hash'] = $schema['advagg_aggregates_hashes']['fields']['name'];
   $schema['advagg_aggregates_hashes']['fields']['hash']['length'] = 255;
@@ -308,7 +308,7 @@ function advagg_schema() {
 }
 
 /**
- * Upgrade AdvAgg previous versions (6.x-1.x & 7.x-1.x) to 7.x-2.x.
+ * Upgrade AdvAgg previous versions (6.x-1.x and 7.x-1.x) to 7.x-2.x.
  *
  * Implements hook_update_N().
  */
@@ -541,7 +541,7 @@ function advagg_install_change_table_collation($table_name, array $fields, $coll
 }
 
 /**
- * Callback to delete files if size == 0 & modified more than 60 seconds ago.
+ * Callback to delete files if size == 0 and modified more than 60 seconds ago.
  *
  * @param string $uri
  *   Location of the file to check.
@@ -554,10 +554,11 @@ function advagg_install_delete_empty_file_if_stale($uri) {
 }
 
 /**
- * Callback to delete files if size == 0 & modified more than 60 seconds ago.
+ * Callback to delete files if size == 0 and modified more than 60 seconds ago.
  *
  * @param string $has_string
- *   If the .htaccess file contains this string it will be removed & recreated.
+ *   If the .htaccess file contains this string it will be removed and
+ *   recreated.
  * @param string $does_not_have_string
  *   If the .htaccess file does not contains this string it will be removed &
  *   recreated.
@@ -944,7 +945,7 @@ function advagg_install_check_via_http(array &$requirements) {
         if ($new_request->code < 0) {
           $description = '';
           if (!module_exists('httprl')) {
-            $description = t('Enabling the <a href="!httprl">HTTP Parallel Request & Threading Library</a> module might be able to fix this as AdvAgg will use HTTPRL to build the URL if it is enabled.', array('!httprl' => 'https://drupal.org/project/httprl'));
+            $description = t('Enabling the <a href="!httprl">HTTP Parallel Request and Threading Library</a> module might be able to fix this as AdvAgg will use HTTPRL to build the URL if it is enabled.', array('!httprl' => 'https://drupal.org/project/httprl'));
           }
           $requirements['advagg_self_request'] = array(
             'title' => $t('Adv CSS/JS Agg - Self Request Failure'),
@@ -1271,7 +1272,7 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
           'title' => $t('Adv CSS/JS Agg - Incorrect readings'),
           'severity' => REQUIREMENT_WARNING,
           'value' => $t('The request for a file was served by Drupal instead of the web server (like Apache).', array('%type' => $type)),
-          'description' => $t('It means that AdvAgg can not test for Far-Future headers internally and you will need to use an external tool in order to do so. Warnings given or not given about AdvAgg Expires, Cache-Control, & If-Modified-Since might be incorrect. In the <a href="@readme">readme</a>, under Troubleshooting try the Far-Future recommendations.', array('@readme' => url(drupal_get_path('module', 'advagg') . '/README.txt'))),
+          'description' => $t('It means that AdvAgg can not test for Far-Future headers internally and you will need to use an external tool in order to do so. Warnings given or not given about AdvAgg Expires, Cache-Control, and If-Modified-Since might be incorrect. In the <a href="@readme">readme</a>, under Troubleshooting try the Far-Future recommendations.', array('@readme' => url(drupal_get_path('module', 'advagg') . '/README.txt'))),
         );
       }
 

@@ -53,7 +53,7 @@ function advagg_js_compress_requirements($phase) {
 }
 
 /**
- * Upgrade AdvAgg JS Compress previous versions (6.x-1.x & 7.x-1.x) to 7.x-2.x.
+ * Upgrade AdvAgg JS Compress previous versions (6.x-1.x and 7.x-1.x) to 7.x-2.x.
  *
  * Implements hook_update_N().
  */

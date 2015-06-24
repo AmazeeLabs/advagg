@@ -121,7 +121,7 @@ function advagg_missing_generate($input = '') {
 }
 
 /**
- * Given the filename, type, & settings, create absolute URL for 307 redirect.
+ * Given the filename, type, and settings, create absolute URL for 307 redirect.
  *
  * Due to url inbound alter we can not trust that the redirect will work if
  * using $GLOBALS['base_path'] . $_GET['q']. Generate the uri as if it was

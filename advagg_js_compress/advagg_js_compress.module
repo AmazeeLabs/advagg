@@ -238,7 +238,7 @@ function advagg_js_compress_configuration() {
     }
     $description .= t('You can use the much faster C version of JSMin (~2ms) by installing the <a href="@php_jsmin">JSMin PHP Extension</a> on this server.', array('@php_jsmin' => $link));
   }
-  // Add in JShrink & JSqueeze if using php 5.3 or higher.
+  // Add in JShrink and JSqueeze if using php 5.3 or higher.
   if (defined('PHP_VERSION_ID') && constant('PHP_VERSION_ID') >= 50300) {
     $options += array(
       4 => t('JShrink ~1000ms'),
