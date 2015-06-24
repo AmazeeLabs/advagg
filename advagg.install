@@ -240,6 +240,7 @@ function advagg_schema() {
     ),
     'indexes' => array(
       'porder' => array('porder'),
+      'filename_hash' => array('filename_hash'),
     ),
     'primary key' => array('aggregate_filenames_hash', 'filename_hash'),
   );
@@ -492,6 +493,19 @@ function advagg_update_7207(&$sandbox) {
     }
     // Change utf8_bin to ascii_bin.
     advagg_install_change_table_collation($table, $fields, 'ascii_bin');
+  }
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Update schema adding an index to the filename_hash column inside the
+ * advagg_aggregates table.
+ */
+function advagg_update_7208(&$sandbox) {
+  if (!db_index_exists('advagg_aggregates', 'filename_hash')) {
+    db_add_index('advagg_aggregates', 'filename_hash', array('filename_hash'));
+    return t('Database index added to the filename_hash column of the advagg_aggregates table.');
   }
 }
 
