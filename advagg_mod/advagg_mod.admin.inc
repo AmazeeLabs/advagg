@@ -30,7 +30,7 @@ function advagg_mod_admin_settings_form() {
     '#type' => 'checkbox',
     '#title' => t('Remove unused JavaScript if possible'),
     '#default_value' => variable_get('advagg_mod_js_remove_unused', ADVAGG_MOD_JS_REMOVE_UNUSED),
-    '#description' => t('This will scan all included JS files for references to jquery and drupal. If none are found then the core JavaScript (jquery.js, drupal.js, & Drupal.settings) is removed and not loaded on that page. If you have a site that does not use a lot of Javascript this might be helpful as it could prevent unused JavaScript from being executed, thus speeding up your sites frontend performance. Enabling this usually has negative backend performance impact.'),
+    '#description' => t('This will scan all included JS files for references to jquery and drupal. If none are found then the core JavaScript (jquery.js, drupal.js, Drupal.settings) is removed and not loaded on that page. If you have a site that does not use a lot of Javascript this might be helpful as it could prevent unused JavaScript from being executed, thus speeding up your sites frontend performance. Enabling this usually has negative backend performance impact.'),
   );
   $form['js']['advagg_mod_js_no_ajaxpagestate'] = array(
     '#type' => 'checkbox',
@@ -102,14 +102,19 @@ function advagg_mod_admin_settings_form() {
       0 => t('Disabled'),
       1 => t('All but JavaScript Libraries'),
       3 => t('All but what is in the $all_in_footer_list'),
-      2 => t('All'),
+      2 => t('All (might break things)'),
     ),
     '#description' => t("If you have JavaScript inline in the body of your document, such as if you are displaying ads, you may need to keep Drupal JS Libraries in the head instead of moving them to the footer. This will keep all JS added with the JS_LIBRARY group in the head while still moving all other JavaScript to the footer."),
   );
   $form['js']['placement']['advagg_mod_js_defer'] = array(
-    '#type' => 'checkbox',
+    '#type' => 'radios',
     '#title' => t('Deferred JavaScript Execution: Add The defer Tag To All Script Tags'),
     '#default_value' => variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER),
+    '#options' => array(
+      0 => t('Disabled'),
+      2 => t('All but external scripts'),
+      1 => t('All (might break things)'),
+    ),
     '#description' => t('This will delay the script execution until the HTML parser has finished. This will have a similar effect to moving all JavaScript to the footer. This might break javascript (especially inline); only use after extensive testing! <a href="@link">More Info</a>', array(
       '@link' => 'http://peter.sh/experiments/asynchronous-and-deferred-javascript-execution-explained/',
     )),
@@ -367,7 +372,7 @@ function advagg_mod_admin_settings_form() {
   else {
     $form['landing_page']['path']['advagg_mod_inline_visibility'] = array(
       '#type' => 'radios',
-      '#title' => t('Inline CSS & JS on specific pages'),
+      '#title' => t('Inline CSS and JS on specific pages'),
       '#options' => $options,
       '#default_value' => $visibility_all,
     );

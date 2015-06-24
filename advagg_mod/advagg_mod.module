@@ -791,7 +791,7 @@ function advagg_mod_js_no_ajaxpagestate(array &$scripts) {
 }
 
 /**
- * Generate a list of rules & exceptions for js files and inline.
+ * Generate a list of rules and exceptions for js files and inline.
  *
  * Controls inline wrapping and defer. Controls no async/defer file list.
  * Controls files that say in the header.
@@ -818,6 +818,10 @@ function advagg_mod_get_lists() {
     $no_async_defer_list = array(
       // Wistia js.
       '//fast.wistia.',
+      // Maps.
+      '//maps.googleapis.com',
+      '//dev.virtualearth.net',
+      '//api.maps.yahoo.com',
     );
 
     // Wrap inline js so it does not run until the condition is TRUE.
@@ -855,10 +859,6 @@ function advagg_mod_get_lists() {
       // Google.
       $mapdomain = variable_get('openlayers_layers_google_mapdomain', 'maps.google.com');
       $no_async_defer_list['openlayers_layers_google'] = $mapdomain . '/maps';
-      // VirtualEarth.
-      $no_async_defer_list['openlayers_layers_virtualearth'] = 'dev.virtualearth.net/mapcontrol';
-      // Yahoo.
-      $no_async_defer_list['openlayers_layers_yahoo'] = 'api.maps.yahoo.com/ajaxymap';
     }
 
     // Google Admanager.
@@ -990,8 +990,10 @@ function advagg_mod_js_move_to_footer(&$js) {
  *   JS array.
  */
 function advagg_mod_js_async_defer(&$js) {
-  // Add the defer or the async tag to JS.
-  if (!variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER) & variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
+  // Return eairly if this is disabled.
+  $defer_setting = variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER);
+  $async_setting = variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC);
+  if (!$defer_setting || !$async_setting) {
     return;
   }
 
@@ -1119,6 +1121,11 @@ function advagg_mod_js_async_defer(&$js) {
           $values['async'] = FALSE;
         }
       }
+    }
+
+    // Do not defer external scripts setting.
+    if ($defer_setting == 2 && $values['type'] === 'external') {
+      $values['defer'] = FALSE;
     }
 
   }
@@ -1922,7 +1929,7 @@ function advagg_remove_js_if_not_used(array &$js) {
   $include_drupal = FALSE;
   module_load_include('inc', 'advagg', 'advagg');
 
-  // Look at each JavaScript entry & get the info on it.
+  // Look at each JavaScript entry and get the info on it.
   $files_info_filenames = array();
   foreach ($js as &$values) {
     if ($values['type'] !== 'file' || !is_string($values['data'])) {
@@ -1938,7 +1945,7 @@ function advagg_remove_js_if_not_used(array &$js) {
   unset($values);
   $files_info = advagg_get_info_on_files($files_info_filenames);
 
-  // Look at each JavaScript entry & see if it uses jquery or drupal.
+  // Look at each JavaScript entry and see if it uses jquery or drupal.
   foreach ($js as $name => &$values) {
     if ($values['type'] === 'file' || $values['type'] === 'external') {
       foreach ($files_skiplist as $skip_name) {
