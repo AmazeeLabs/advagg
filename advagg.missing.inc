@@ -226,6 +226,8 @@ function advagg_missing_send_saved_file(array $files_to_save, $uri, $created, $f
     // @ignore druplart_andor_assignment
     if (file_exists($uri) && $filemtime = @filemtime($uri)) {
       header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T', $filemtime));
+      // Etags generation in php is broken due to millisecond precision for the
+      // files mtime; apache has it, php does not.
     }
 
     if ($type === 'css') {
