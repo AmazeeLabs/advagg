@@ -861,10 +861,18 @@ function advagg_js_alter(&$js) {
         unset($value['dns_prefetch']);
         $value['dns_prefetch'] = array($temp);
       }
-      $value['dns_prefetch'][] = 'https://cm.g.doubleclick.net/';
-      $value['dns_prefetch'][] = 'https://pagead2.googlesyndication.com/';
-      $value['dns_prefetch'][] = 'https://partner.googleadservices.com/';
-      $value['dns_prefetch'][] = 'https://pubads.g.doubleclick.net/';
+      // Domains in the google_service.js file.
+      $value['dns_prefetch'][] = 'https://csi.gstatic.com';
+      $value['dns_prefetch'][] = 'https://pubads.g.doubleclick.net';
+      $value['dns_prefetch'][] = 'https://partner.googleadservices.com';
+      $value['dns_prefetch'][] = 'https://securepubads.g.doubleclick.net';
+
+      // Domains in the google_ads.js file.
+      $value['dns_prefetch'][] = 'https://pagead2.googlesyndication.com';
+
+      // Other domains that usually get hit.
+      $value['dns_prefetch'][] = 'https://cm.g.doubleclick.net';
+      $value['dns_prefetch'][] = 'https://tpc.googlesyndication.com';
     }
 
     // Google Analytics.
