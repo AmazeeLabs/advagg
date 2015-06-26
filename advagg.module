@@ -892,6 +892,20 @@ function advagg_js_alter(&$js) {
         continue;
       }
 
+      // Default to file if not file, inline, external, setting.
+      if ( $value['type'] !== 'file'
+        && $value['type'] !== 'inline'
+        && $value['type'] !== 'external'
+        && $value['type'] !== 'setting'
+      ) {
+        if ($value['type'] === 'settings') {
+          $value['type'] = 'setting';
+        }
+        else {
+          $value['type'] = 'file';
+        }
+      }
+
       // If type is external but doesn't start with http, https, or // change it
       // to file.
       if ( $value['type'] === 'external'
@@ -945,6 +959,14 @@ function advagg_css_alter(&$css) {
   foreach ($css as &$value) {
     if (empty($value['data']) || !is_string($value['data'])) {
       continue;
+    }
+
+    // Default to file if not file, inline, or external.
+    if ( $value['type'] !== 'file'
+      && $value['type'] !== 'inline'
+      && $value['type'] !== 'external'
+    ) {
+      $value['type'] = 'file';
     }
 
     // If type is external but doesn't start with http, https, or // change it
