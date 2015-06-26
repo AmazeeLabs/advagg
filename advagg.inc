@@ -1119,22 +1119,24 @@ function advagg_build_aggregate_plans(array $files_to_aggregate, $type) {
       }
     }
 
-    // Get onload.
     $onload = array();
+    $onerror = array();
+    $attributes = array();
     foreach ($values['files'] as $items) {
+      // Get onload.
       if (!empty($items['onload'])) {
         $onload[] = $items['onload'];
       }
-    }
-    $onload = implode(';', array_unique(array_filter($onload)));
-
-    // Get onerror.
-    $onerror = array();
-    foreach ($values['files'] as $items) {
+      // Get onerror.
       if (!empty($items['onerror'])) {
         $onload[] = $items['onerror'];
       }
+      // Get attributes.
+      if (!empty($items['attributes'])) {
+        $attributes += $items['attributes'];
+      }
     }
+    $onload = implode(';', array_unique(array_filter($onload)));
     $onerror = implode(';', array_unique(array_filter($onerror)));
 
     $first = reset($values['files']);
@@ -1156,6 +1158,7 @@ function advagg_build_aggregate_plans(array $files_to_aggregate, $type) {
       'items' => $values,
       'filepath' => $path . '/' . $agg_filename,
       'filename' => $agg_filename,
+      'attributes' => $attributes,
     );
   }
 

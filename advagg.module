@@ -3095,6 +3095,9 @@ function advagg_pre_render_scripts(array $elements) {
         }
         $element['#attributes']['onerror'] .= $group['onerror'];
       }
+      if (!empty($group['attributes'])) {
+        $element['#attributes'] += $group['attributes'];
+      }
       $elements[] = $element;
     }
     // For non-file types, and non-aggregated files, add a script element per
