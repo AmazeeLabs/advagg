@@ -248,7 +248,7 @@ function advagg_mod_js_alter(&$js) {
 
   // Force all JS to be preprocessed.
   if (variable_get('advagg_mod_js_preprocess', ADVAGG_MOD_JS_PREPROCESS)) {
-    foreach ($js as $name => &$values) {
+    foreach ($js as &$values) {
       $values['preprocess'] = TRUE;
       $values['cache'] = TRUE;
     }
