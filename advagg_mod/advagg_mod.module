@@ -260,7 +260,7 @@ function advagg_mod_js_alter(&$js) {
 
   // Wrap all inline scripts in a setTimeout callback.
   if (variable_get('advagg_mod_js_defer_inline_alter', ADVAGG_MOD_JS_DEFER_INLINE_ALTER)) {
-    foreach ($js as $name => &$values) {
+    foreach ($js as &$values) {
       // Skip if not inline.
       if ($values['type'] !== 'inline') {
         continue;
@@ -278,11 +278,12 @@ function advagg_mod_js_alter(&$js) {
         $values['data'] = advagg_mod_defer_inline_js($values['data']);
       }
     }
+    unset($values);
   }
 
   // Move all async JS to the header.
   if (variable_get('advagg_mod_js_async_in_header', ADVAGG_MOD_JS_ASYNC_IN_HEADER)) {
-    foreach ($js as $name => &$values) {
+    foreach ($js as &$values) {
       // Skip if not file or external.
       if ($values['type'] !== 'file' && $values['type'] !== 'external') {
         continue;
@@ -296,6 +297,7 @@ function advagg_mod_js_alter(&$js) {
       $values['scope'] = 'header';
       $values['group'] = 1000;
     }
+    unset($values);
   }
 }
 
@@ -941,7 +943,7 @@ function advagg_mod_js_move_to_footer(&$js) {
     }
   }
 
-  foreach ($js as $name => &$values) {
+  foreach ($js as &$values) {
     // Skip if a library and configured to do so.
     if ($move_js_to_footer == 1 && $values['group'] <= JS_LIBRARY) {
       continue;
@@ -1136,7 +1138,7 @@ function advagg_mod_js_async_defer(&$js) {
   unset($values);
 
   // Inline script special handling.
-  foreach ($js as $name => &$values) {
+  foreach ($js as &$values) {
     if ($values['type'] !== 'inline') {
       continue;
     }
