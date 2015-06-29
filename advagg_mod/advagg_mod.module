@@ -914,7 +914,7 @@ function advagg_mod_get_lists() {
  * @param array $js
  *   JS array.
  */
-function advagg_mod_js_move_to_footer(&$js) {
+function advagg_mod_js_move_to_footer(array &$js) {
   // Move all JS to the footer.
   $move_js_to_footer = variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER);
   if (empty($move_js_to_footer)) {
@@ -991,7 +991,7 @@ function advagg_mod_js_move_to_footer(&$js) {
  * @param array $js
  *   JS array.
  */
-function advagg_mod_js_async_defer(&$js) {
+function advagg_mod_js_async_defer(array &$js) {
   // Return eairly if this is disabled.
   $defer_setting = variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER);
   $async_setting = variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC);
@@ -1257,13 +1257,10 @@ function advagg_mod_xpath_script_wrapper($html) {
 /**
  * Use DOMDocument's loadHTML along with DOMXPath's query to find script tags.
  *
- * Once found, it will also wrap them in a javascript loader function.
+ * Once found, it will add the src to the dns prefetch list.
  *
  * @param string $html
  *   HTML fragments.
- *
- * @return string
- *   The HTML fragment with less markup errors and script tags wrapped.
  */
 function advagg_mod_xpath_script_external_dns($html) {
   // Do not throw errors when parsing the html.
