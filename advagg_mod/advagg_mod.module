@@ -762,7 +762,7 @@ function advagg_mod_advagg_current_hooks_hash_array_alter(&$aggregate_settings) 
  *   Render array.
  */
 function advagg_mod_js_no_ajaxpagestate(array &$scripts) {
-  if (!variable_get('advagg_mod_js_no_ajaxpagestate', ADVAGG_MOD_JS_NO_AJAXPAGESTATE)) {
+  if (!variable_get('advagg_mod_js_no_ajaxpagestate', ADVAGG_MOD_JS_NO_AJAXPAGESTATE) || variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
     return;
   }
 
