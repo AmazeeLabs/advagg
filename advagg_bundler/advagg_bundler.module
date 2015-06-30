@@ -223,7 +223,7 @@ function advagg_bundler_analysis($filename = '', $force = FALSE) {
         $database_connection = Database::getConnection();
         if (version_compare($database_connection->version(), '9') >= 0) {
           $fields[] = 'hashlist';
-          $subquery_aggregates->addExpression("MD5(STRING_AGG(DISTINCT(aa.aggregate_filenames_hash), ',', ORDER BY aa.aggregate_filenames_hash ASC))", 'hashlist');
+          $subquery_aggregates->addExpression("MD5(STRING_AGG(DISTINCT(aa.aggregate_filenames_hash), ',' ORDER BY aa.aggregate_filenames_hash ASC))", 'hashlist');
         }
       }
       elseif ($db_type === 'sqlite') {
