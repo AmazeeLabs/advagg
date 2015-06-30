@@ -128,7 +128,7 @@ function advagg_mod_admin_settings_form() {
     '#states' => array(
       'disabled' => array(
         ':input[name="advagg_mod_js_footer"]' => array('value' => '0'),
-        ':input[name="advagg_mod_js_defer"]' => array('checked' => FALSE),
+        ':input[name="advagg_mod_js_defer"]' => array('value' => '0'),
         ':input[name="advagg_mod_js_async"]' => array('checked' => FALSE),
       ),
     ),
