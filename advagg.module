@@ -198,7 +198,6 @@ define('ADVAGG_SKIP_ENABLED_PREPROCESS_CHECK', FALSE);
  */
 define('ADVAGG_BROWSER_DNS_PREFETCH', FALSE);
 
-
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
@@ -2153,6 +2152,11 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   // output, so in this case, do not add the setting to this output.
   // Also output the settings if we have pushed all javascript to the footer.
   if (isset($items['settings'])) {
+    // Get settings from the static.
+    $javascript = &drupal_static('drupal_add_js', array());
+    $items['settings']['data'] = $javascript['settings']['data'];
+
+    // Add in this round of settings.
     $items['settings']['data'][] = $setting;
   }
   else {
