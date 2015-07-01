@@ -853,7 +853,10 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   //
   // Get a temporary filename in the destination directory.
   $dir = drupal_dirname($uri) . '/';
-  $temporary_file = drupal_tempnam($dir, 'file_advagg_');
+  $temporary_file = @drupal_tempnam($dir, 'file_advagg_');
+  if ($temporary_file === FALSE) {
+    $temporary_file = $dir . 'file_advagg_' . md5(getmypid() . microtime(TRUE) . mt_rand());
+  }
   $temporary_file_copy = $temporary_file;
 
   // Get the extension of the original filename and append it to the temp file
