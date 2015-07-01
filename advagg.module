@@ -198,6 +198,11 @@ define('ADVAGG_SKIP_ENABLED_PREPROCESS_CHECK', FALSE);
  */
 define('ADVAGG_BROWSER_DNS_PREFETCH', FALSE);
 
+/**
+ * Function to use when converting a non scalar to a string.
+ */
+define('ADVAGG_SERIALIZE', 'json_encode');
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
@@ -1220,7 +1225,8 @@ function _advagg_aggregate_css(array &$css_groups) {
 
   if (!empty($files_to_aggregate)) {
     $hooks_hash = advagg_get_current_hooks_hash();
-    $css_hash = drupal_hash_base64(serialize($files_to_aggregate));
+    $serialize_function = variable_get('advagg_serialize', ADVAGG_SERIALIZE);
+    $css_hash = drupal_hash_base64($serialize_function($files_to_aggregate));
     $cache_id = 'advagg:css:' . $hooks_hash . ':' . $css_hash;
     // @ignore druplart_andor_assignment
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1 && $cache = cache_get($cache_id, 'cache_advagg_aggregates')) {
@@ -1322,7 +1328,8 @@ function _advagg_aggregate_js(array &$js_groups) {
 
   if (!empty($files_to_aggregate)) {
     $hooks_hash = advagg_get_current_hooks_hash();
-    $js_hash = drupal_hash_base64(serialize($files_to_aggregate));
+    $serialize_function = variable_get('advagg_serialize', ADVAGG_SERIALIZE);
+    $js_hash = drupal_hash_base64($serialize_function($files_to_aggregate));
     $cache_id = 'advagg:js:' . $hooks_hash . ':' . $js_hash;
     // @ignore druplart_andor_assignment
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1 && $cache = cache_get($cache_id, 'cache_advagg_aggregates')) {
@@ -1461,13 +1468,14 @@ function advagg_get_render_cache(array $full_css, array $js_scope_array) {
 
   // Get advagg hash.
   $hooks_hash = advagg_get_current_hooks_hash();
+  $serialize_function = variable_get('advagg_serialize', ADVAGG_SERIALIZE);
   if (advagg_file_aggregation_enabled('css')) {
     // Generate css cache id.
-    $cids[] = $css_cache_id = 'advagg:css:full:1.1:' . $hooks_hash . ':' . drupal_hash_base64(serialize($full_css));
+    $cids[] = $css_cache_id = 'advagg:css:full:1.1:' . $hooks_hash . ':' . drupal_hash_base64($serialize_function($full_css));
   }
   if (advagg_file_aggregation_enabled('js')) {
     // Generate js cache id.
-    $cids[] = $js_cache_id = 'advagg:js:full:1.1:' . $hooks_hash . ':' . drupal_hash_base64(serialize($js_scope_array));
+    $cids[] = $js_cache_id = 'advagg:js:full:1.1:' . $hooks_hash . ':' . drupal_hash_base64($serialize_function($js_scope_array));
   }
 
   if (!empty($cids)) {
@@ -2625,7 +2633,8 @@ function advagg_get_current_hooks_hash() {
     $aggregate_settings = advagg_current_hooks_hash_array();
 
     // Generate the hash.
-    $current_hash = drupal_hash_base64(serialize($aggregate_settings));
+    $serialize_function = variable_get('advagg_serialize', ADVAGG_SERIALIZE);
+    $current_hash = drupal_hash_base64($serialize_function($aggregate_settings));
 
     // Save into variables for verification purposes later on if not found.
     $settings = advagg_get_hash_settings($current_hash);
@@ -2698,7 +2707,8 @@ function advagg_hooks_implemented($all = TRUE) {
   drupal_alter('advagg_hooks_implemented', $hooks, $all);
 
   // Cache module_implements as this will load up .inc files.
-  $cid = 'advagg_hooks_implemented:' . (int) $all . ':' . drupal_hash_base64(serialize($hooks));
+  $serialize_function = variable_get('advagg_serialize', ADVAGG_SERIALIZE);
+  $cid = 'advagg_hooks_implemented:' . (int) $all . ':' . drupal_hash_base64($serialize_function($hooks));
   $cache = cache_get($cid, 'cache_bootstrap');
   if (!empty($cache->data)) {
     $hooks = $cache->data;
