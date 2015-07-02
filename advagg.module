@@ -1658,6 +1658,30 @@ function _advagg_process_html(&$variables) {
     }
   }
 
+  if (module_exists('advagg_font') && variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER)) {
+    $fonts = array();
+    foreach ($full_css['#groups'] as $groups) {
+      if (isset($groups['items']['files'])) {
+        foreach ($groups['items']['files'] as $file) {
+          if (isset($file['advagg_font'])) {
+            foreach ($file['advagg_font'] as $class => $name) {
+              $fonts[$class] = $name;
+            }
+          }
+        }
+      }
+    }
+    if (!empty($fonts)) {
+      if (isset($js_scope_settings_array)) {
+        $key = key($js_scope_settings_array);
+        $js_scope_settings_array[$key]['settings']['data'][] = array('advagg_font' => $fonts);
+      }
+      else {
+        drupal_add_js(array('advagg_font' => $fonts), array('type' => 'setting'));
+      }
+    }
+  }
+
   // JS needs hacks.
   // Clear out all old scripts.
   if (variable_get('advagg_clear_scripts', ADVAGG_CLEAR_SCRIPTS)) {
