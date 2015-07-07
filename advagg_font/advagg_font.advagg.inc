@@ -26,7 +26,7 @@ function advagg_font_advagg_get_css_aggregate_contents_alter(&$contents, $file, 
  * Used to add external font info for css file.
  */
 function advagg_font_advagg_get_info_on_files_alter(&$return, $cached_data, $bypass_cache) {
-  $advagg_font_ffo = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER)
+  $advagg_font_ffo = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER);
   if (!empty($advagg_font_ffo)) {
     foreach ($return as &$info) {
       // Skip if not a css file.
