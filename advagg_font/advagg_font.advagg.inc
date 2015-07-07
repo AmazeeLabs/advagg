@@ -26,7 +26,8 @@ function advagg_font_advagg_get_css_aggregate_contents_alter(&$contents, $file, 
  * Used to add external font info for css file.
  */
 function advagg_font_advagg_get_info_on_files_alter(&$return, $cached_data, $bypass_cache) {
-  if (!empty(variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER))) {
+  $advagg_font_ffo = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER)
+  if (!empty($advagg_font_ffo)) {
     foreach ($return as &$info) {
       // Skip if not a css file.
       if (empty($info['fileext']) || $info['fileext'] !== 'css') {
@@ -36,7 +37,12 @@ function advagg_font_advagg_get_info_on_files_alter(&$return, $cached_data, $byp
       $file_contents = file_get_contents($info['data']);
       // Get font names.
       $replacements = advagg_font_get_replacements_array($file_contents);
-      unset($info['advagg_font']);
+
+      // Remove old values.
+      if (isset($info['advagg_font'])) {
+        unset($info['advagg_font']);
+      }
+      // Add in new values.
       foreach ($replacements as $replace) {
         $info['advagg_font'][$replace[4]] = $replace[3];
       }
