@@ -14,17 +14,29 @@
  *   The font name.
  */
 function advagg_run_check(key, value) {
-  new window.FontFaceObserver(value).check().then(function () {
-    // Set Class.
-    window.document.documentElement.className += ' ' + key;
+  // Only run if window.FontFaceObserver is defined.
+  if (window.FontFaceObserver) {
+    new window.FontFaceObserver(value).check().then(function () {
+      // Only alpha numeric value.
+      key = key.replace(/[^a-zA-Z0-9\-]/g, '');
 
-    // Set Cookie for a day.
-    expire_date = new Date(new Date().getTime() + 86400 * 1000);
-    document.cookie = 'advaggfont_' + key + '=' + value + ';'
-      + ' expires=' + expire_date.toGMTString() + ';'
-      + ' path=/;'
-      + ' domain=.' + document.location.hostname + ';';
-  }, function() {});
+      // Set Class.
+      window.document.documentElement.className += ' ' + key;
+
+      // Set Cookie for a day.
+      expire_date = new Date(new Date().getTime() + 86400 * 1000);
+      document.cookie = 'advaggfont_' + key + '=' + value + ';'
+        + ' expires=' + expire_date.toGMTString() + ';'
+        + ' path=/;'
+        + ' domain=.' + document.location.hostname + ';';
+    }, function() {});
+  }
+  else {
+    // Try again in 100 ms.
+    window.setTimeout(function() {
+      advagg_run_check(key, value);
+    }, 100);
+  }
 }
 
 /**
@@ -32,35 +44,27 @@ function advagg_run_check(key, value) {
  */
 function advagg_font_add_font_classes_on_load() {
   for (var key in Drupal.settings.advagg_font) {
-    var cookie_pos = document.cookie.indexOf('advaggfont_' + key + '=' + Drupal.settings.advagg_font[key]);
-    if (cookie_pos === -1) {
-      // Wait till the font is downloaded, then set cookie.
+    var html_class = (' ' + window.document.documentElement.className + ' ').indexOf(' ' + key + ' ');
+    // If the class already exists in the html element do nothing.
+    if (html_class === -1) {
+      // Wait till the font is downloaded, then set cookie & class.
       advagg_run_check(key, Drupal.settings.advagg_font[key]);
     }
   }
 }
 
 /**
- * Make sure FontFaceObserver and Drupal.settings are defined  before running.
+ * Make sure jQuery and Drupal.settings are defined before running.
  */
 function advagg_font_check() {
-  if (window.FontFaceObserver && window.jQuery && window.Drupal && window.Drupal.settings) {
+  if (window.jQuery && window.Drupal && window.Drupal.settings) {
     advagg_font_add_font_classes_on_load();
   }
   else {
+    // Try again in 20 ms.
     window.setTimeout(advagg_font_check, 20);
   }
 }
 
 // Start the process.
 advagg_font_check();
-
-// Check cookies ASAP and set class.
-var fonts = document.cookie.split('advagg');
-for (var key in fonts) {
-  var font = fonts[key].split('=');
-  var pos = font[0].indexOf('font_');
-  if (pos !== -1) {
-    window.document.documentElement.className += ' ' + font[0].substr(5);
-  }
-}

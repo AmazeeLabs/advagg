@@ -16,10 +16,41 @@ define('ADVAGG_FONT_FONTFACEOBSERVER', 0);
  * Implements hook_init().
  */
 function advagg_font_init() {
-  if (variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER) == 6) {
+  $advagg_font_ffo = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER);
+  if (empty($advagg_font_ffo)) {
+    return;
+  }
+
+  // Add inline script for reading the cookies and adding the fonts already
+  // loaded to the html class.
+  $inline_script_min = 'var fonts=document.cookie.split("advagg");for(var key in fonts){var font=fonts[key].split("="),pos=font[0].indexOf("font_");-1!==pos&&(window.document.documentElement.className+=" "+font[0].substr(5).replace(/[^a-zA-Z0-9\-]/g,""))}';
+  /* Uncompressed JS.
+  // Check cookies ASAP and set class.
+  var fonts = document.cookie.split('advagg');
+  for (var key in fonts) {
+    var font = fonts[key].split('=');
+    var pos = font[0].indexOf('font_');
+    if (pos !== -1) {
+      // Only allow alpha numeric class names.
+      window.document.documentElement.className += ' ' + font[0].substr(5).replace(/[^a-zA-Z0-9\-]/g, '');
+    }
+  }*/
+  drupal_add_js($inline_script_min, array(
+    'type' => 'inline',
+    'group' => JS_LIBRARY - 1,
+    'weight' => -50000,
+    'scope_lock' => TRUE,
+    'movable' => FALSE,
+    'no_defer' => TRUE,
+  ));
+
+  // Add advagg_font.js; sets cookie once a font has been downloaded.
+  $file_path = drupal_get_path('module', 'advagg_font');
+  drupal_add_js($file_path . '/advagg_font.js', array('async' => TRUE));
+
+  // Add fontfaceobserver.js async.
+  if ($advagg_font_ffo == 6) {
     drupal_add_js('https://cdn.rawgit.com/bramstein/fontfaceobserver/master/fontfaceobserver.js', array('type' => 'external', 'async' => TRUE));
-    $file_path = drupal_get_path('module', 'advagg_font');
-    drupal_add_js($file_path . '/advagg_font.js', array('async' => TRUE));
   }
 }
 
