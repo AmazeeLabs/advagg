@@ -269,6 +269,9 @@ function advagg_mod_js_alter(&$js) {
       if (strpos($values['data'], 'advagg_mod_') !== FALSE) {
         continue;
       }
+      if (!empty($values['no_defer'])) {
+        continue;
+      }
 
       // Do not wrap inline js if it contains a named function definition.
       $pattern = '/\\s*function\\s+((?:[a-z][a-z0-9_]*))\\s*\\(.*\\)\\s*\\{/smix';
@@ -617,6 +620,9 @@ function loadCSS(a,b,c,d){"use strict";var e=window.document.createElement("link
   );
   if ($type !== 'inline') {
     $options['async'] = TRUE;
+  }
+  else {
+    $options['no_defer'] = TRUE;
   }
   drupal_add_js($data, $options);
 
