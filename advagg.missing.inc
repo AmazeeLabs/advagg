@@ -554,16 +554,45 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
         $last_media = $settings['media'];
         continue;
       }
-      if ($settings['media'] != $last_media) {
+      if ($settings['media'] !== $last_media) {
         $media_changes = TRUE;
         break;
       }
     }
-    $last_media = NULL;
+    if ($media_changes) {
+      $global_file_media = 'all';
+    }
+    else {
+      $global_file_media = $last_media;
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Media_queries
+    $media_types = array(
+      'all',
+      'aural',
+      'braille',
+      'handheld',
+      'print',
+      'projection',
+      'screen',
+      'tty',
+      'tv',
+      'embossed',
+    );
+
     $import_statements = array();
     module_load_include('inc', 'advagg', 'advagg');
     $original_settings = array($optimize, $aggregate_settings);
     foreach ($files as $file => $settings) {
+      $media_changes = FALSE;
+      if (!isset($settings['media'])) {
+        $settings['media'] = '';
+      }
+
+      if ($settings['media'] !== $global_file_media) {
+        $media_changes = TRUE;
+      }
+
       list($optimize, $aggregate_settings) = $original_settings;
       // Allow other modules to modify aggregate_settings optimize.
       // Call hook_advagg_get_css_file_contents_pre_alter().
@@ -581,6 +610,16 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
       if ($media_changes) {
         $media_blocks = advagg_parse_media_blocks($contents);
         $contents = '';
+
+        $file_has_type = FALSE;
+        if (!empty($settings['media'])) {
+          foreach ($media_types as $media_type) {
+            if (stripos($settings['media'], $media_type) !== FALSE) {
+              $file_has_type = TRUE;
+              break;
+            }
+          }
+        }
 
         foreach ($media_blocks as $css_rules) {
           if (strpos($css_rules, '@media') !== FALSE) {
@@ -600,8 +639,22 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
             $css_selectors_rules = substr($css_rules, $start + 1, $end - ($start + 1));
 
             // Add in main media rule if needed.
-            if (strpos($media_rules, $settings['media']) === FALSE) {
-              $media_rules = $settings['media'] . ' ' . $media_rules;
+            if ( !empty($settings['media'])
+              && strpos($media_rules, $settings['media']) === FALSE
+              && $settings['media'] !== $global_file_media
+            ) {
+              $rule_has_type = FALSE;
+              if ($file_has_type) {
+                foreach ($media_types as $media_type) {
+                  if (stripos($media_rules, $media_type) !== FALSE) {
+                    $rule_has_type = TRUE;
+                    break;
+                  }
+                }
+              }
+              if (!$rule_has_type) {
+                $media_rules = $settings['media'] . ' and ' . $media_rules;
+              }
             }
           }
           else {
@@ -611,33 +664,13 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
           $media_rules = trim($media_rules);
           $css_selectors_rules = trim($css_selectors_rules);
 
-          // Start of stylesheet.
-          if (is_null($last_media)) {
-            if (!empty($media_rules)) {
-              $output = '@media ' . $media_rules . ' {' . $css_selectors_rules;
-            }
-            else {
-              $output = $css_selectors_rules;
-            }
-          }
-          elseif ($media_rules != $last_media) {
-            if (!empty($media_rules)) {
-              if (!empty($last_media)) {
-                $output = "} \n@media " . $media_rules . ' {' . $css_selectors_rules;
-              }
-              else {
-                $output = "\n@media " . $media_rules . ' {' . $css_selectors_rules;
-              }
-            }
-            else {
-              $output = "} \n " . $css_selectors_rules;
-            }
+          if ($media_rules !== $global_file_media) {
+            $output = "\n@media " . $media_rules . " {\n  " . str_replace("\n", "\n  ", $css_selectors_rules) . "\n}";
           }
           else {
-            $output = ' ' . $css_selectors_rules;
+            $output = "\n" . $css_selectors_rules;
           }
 
-          $last_media = $media_rules;
           $contents .= $output;
         }
 
@@ -660,11 +693,6 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
       }
 
       $data .= $contents;
-    }
-
-    // Close the final media bracket.
-    if ($media_changes && !empty($last_media)) {
-      $data .= '}';
     }
 
     // Add import statements to the top of the stylesheet.
@@ -1007,10 +1035,10 @@ function advagg_parse_media_blocks($css) {
     while (!empty($s)) {
       // If the character is an opening bracket, push it onto the stack,
       // otherwise pop the stack.
-      if ($css[$i] == "{") {
+      if ($css[$i] === "{") {
         array_push($s, "{");
       }
-      elseif ($css[$i] == "}") {
+      elseif ($css[$i] === "}") {
         array_pop($s);
       }
       ++$i;
