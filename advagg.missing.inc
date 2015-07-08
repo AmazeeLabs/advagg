@@ -1031,8 +1031,9 @@ function advagg_parse_media_blocks($css) {
     // Move past first bracket.
     ++$i;
 
-    // Find the closing bracket for the @media statement.
-    while (!empty($s)) {
+    // Find the closing bracket for the @media statement. But ensure we don't
+    // overflow if there's an error.
+    while (!empty($s) && isset($css[$i])) {
       // If the character is an opening bracket, push it onto the stack,
       // otherwise pop the stack.
       if ($css[$i] === "{") {
