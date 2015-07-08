@@ -76,6 +76,7 @@ function advagg_font_menu() {
   return $items;
 }
 
+// Contrib hook implementations.
 /**
  * Implements hook_advagg_current_hooks_hash_array_alter().
  */
@@ -83,6 +84,7 @@ function advagg_font_advagg_current_hooks_hash_array_alter(&$aggregate_settings)
   $aggregate_settings['variables']['advagg_font_fontfaceobserver'] = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER);
 }
 
+// Helper functions.
 /**
  * Get the replacements array for the css.
  *
@@ -132,6 +134,7 @@ function advagg_font_get_replacements_array($css_string) {
     if (count($values_array) > 1 && (strpos($values_array[0], '"') !== FALSE || strpos($values_array[0], "'") !== FALSE)) {
       // Remove first value and render css rule.
       $removed_value_original = trim($values_array[0]);
+      $next_value_original = trim($values_array[1]);
       $removed_value = strtolower(trim(str_replace(array('"', "'"), '', $removed_value_original)));
       $removed_value = str_replace(' ', '-', $removed_value);
       unset($values_array[0]);
@@ -171,7 +174,7 @@ function advagg_font_get_replacements_array($css_string) {
       $new_selectors_full_rule_set = $new_selectors . '{' . $property . ': ' . $values_string . ';}';
 
       // Record info.
-      $replacements[] = array($full_rule_set, $new_values_full_rule_set, $new_selectors_full_rule_set, $removed_value_original, $removed_value);
+      $replacements[] = array($full_rule_set, $new_values_full_rule_set, $new_selectors_full_rule_set, $removed_value_original, $removed_value, $next_value_original);
     }
 
     // Advance position.

@@ -32,6 +32,54 @@ function advagg_font_admin_settings_form() {
     )),
   );
 
+  // Get all css files and scan for quoted fonts.
+  $form['fonts'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('CSS files with external fonts'),
+  );
+  // Get filename, filename_hash, and changes.
+  $results = db_select('advagg_files', 'af')
+    ->fields('af', array('filename', 'filename_hash', 'changes'))
+    ->condition('filetype', 'css')
+    ->execute();
+  while ($row = $results->fetchAssoc()) {
+    if (!file_exists($row['filename'])) {
+      continue;
+    }
+    // Get the file contents.
+    $file_contents = file_get_contents($row['filename']);
+    // Get font names.
+    $replacements = advagg_font_get_replacements_array($file_contents);
+    if (!empty($replacements)) {
+      $fonts = array();
+      foreach ($replacements as $replacement) {
+        $fonts[$replacement[3]] = $replacement[5];
+      }
+      $form['fonts'][$row['filename_hash']] = array(
+        '#markup' => '<div>' . t('%file - <code>@replacements</code><br />', array(
+          '@replacements' => str_ireplace('array', '', print_r($fonts, TRUE)),
+          '%file' => $row['filename'],
+        )) . '</div>',
+      );
+    }
+  }
+  $children = element_children($form['fonts']);
+
+  // If no fonts are found; disable this module.
+  if (count($children) == 0) {
+    $form['advagg_font_fontfaceobserver']['#default_value'] = 0;
+    $form['advagg_font_fontfaceobserver']['#disabled'] = TRUE;
+
+    $form['fonts'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('No CSS files with external fonts found.'),
+      '#description' => t('Currently this module is not doing anything. Recommend uninstalling it as advagg is not processing any css files that use an external font file.'),
+    );
+
+  }
+
   // Clear the cache bins on submit.
   $form['#submit'][] = 'advagg_font_admin_settings_form_submit';
 

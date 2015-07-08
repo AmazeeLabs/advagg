@@ -624,7 +624,11 @@ function loadCSS(a,b,c,d){"use strict";var e=window.document.createElement("link
   else {
     $options['no_defer'] = TRUE;
   }
-  drupal_add_js($data, $options);
+  static $added;
+  if (!isset($added['inline'])) {
+    drupal_add_js($data, $options);
+    $added['inline'] = TRUE;
+  }
 
   // Wrap CSS in noscript tags.
   $options = array(
@@ -656,7 +660,10 @@ function loadCSS(a,b,c,d){"use strict";var e=window.document.createElement("link
         $inline = advagg_mod_wrap_inline_js($matches, "window.loadCSS", 40);
       }
       // Add in script tags to load css via js.
-      drupal_add_js($inline, $options);
+      if (!isset($added[$values['#attributes']['href']])) {
+        drupal_add_js($inline, $options);
+        $added[$values['#attributes']['href']] = TRUE;
+      }
       // Reset for next item in loop.
       if (isset($options['browsers'])) {
         unset($options['browsers']);
