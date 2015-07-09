@@ -22,7 +22,7 @@ function advagg_missing_aggregate($input = '') {
     $filename = array_pop($arg);
     $filename = explode('?', $filename);
     $filename = array_shift($filename);
-    if ($filename === 'jquery.min.map') {
+    if (strpos($filename, 'min.map') !== FALSE && strpos($filename, 'jquery') !== FALSE) {
       // Get filename from request.
       $wrong_pattern = t('Wrong pattern.');
       if ($msg === $wrong_pattern) {
