@@ -8,7 +8,7 @@
 /**
  * Implements hook_advagg_get_css_file_contents_alter.
  */
-function advagg_font_advagg_get_css_aggregate_contents_alter(&$contents, $file, $aggregate_settings) {
+function advagg_font_advagg_get_css_file_contents_alter(&$contents, $file, $aggregate_settings) {
   // Do nothing if this is disabled.
   if (empty($aggregate_settings['variables']['advagg_font_fontfaceobserver'])) {
     return;
