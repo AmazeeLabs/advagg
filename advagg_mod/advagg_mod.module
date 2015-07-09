@@ -158,6 +158,33 @@ define('ADVAGG_MOD_JS_GET_EXTERNAL_DNS', FALSE);
 
 // Core hook implementations.
 /**
+ * Implements hook_module_implements_alter().
+ */
+function advagg_mod_module_implements_alter(&$implementations, $hook) {
+  // Move advagg_mod to the top.
+  if ($hook === 'library_alter' && array_key_exists('advagg_mod', $implementations)) {
+    $item = array('advagg_mod' => $implementations['advagg_mod']);
+    unset($implementations['advagg_mod']);
+    $implementations = array_merge($item, $implementations);
+  }
+}
+
+/**
+ * Implements hook_library_alter().
+ */
+function advagg_mod_library_alter(&$javascript, $module) {
+  if (!module_exists('jquery_update')) {
+    return;
+  }
+  if (!advagg_mod_inline_page_js()) {
+    return;
+  }
+  // Set the CDN to none for this page as everything is going to inlined.
+  $GLOBALS['conf']['jquery_update_jquery_cdn'] = 'none';
+  $GLOBALS['conf']['jquery_update_jquery_migrate_cdn'] = 'none';
+}
+
+/**
  * Implements hook_init().
  */
 function advagg_mod_init() {
