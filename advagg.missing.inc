@@ -17,6 +17,40 @@ function advagg_missing_aggregate($input = '') {
   // Generate missing file.
   $msg = advagg_missing_generate($input);
 
+  if (module_exists('jquery_update')) {
+    $arg = arg();
+    $filename = array_pop($arg);
+    $filename = explode('?', $filename);
+    $filename = array_shift($filename);
+    if ($filename === 'jquery.min.map') {
+      // Get filename from request.
+      $wrong_pattern = t('Wrong pattern.');
+      if ($msg === $wrong_pattern) {
+        $version = variable_get('jquery_update_jquery_version', '1.10');
+        $trueversion = '1.9.1';
+        switch ($version) {
+          case '1.9':
+            $trueversion = '1.9.1';
+            break;
+
+          case '1.10':
+            $trueversion = '1.10.2';
+            break;
+
+          case '1.11':
+            $trueversion = '1.11.2';
+            break;
+
+          case '2.1':
+            $trueversion = '2.1.4';
+            break;
+        }
+        $url = "https://cdn.rawgit.com/jquery/jquery/$trueversion/jquery.min.map";
+        drupal_goto($url, array('external' => TRUE), 301);
+      }
+    }
+  }
+
   // If here send out fast 404.
   advagg_missing_fast404($msg);
 }
