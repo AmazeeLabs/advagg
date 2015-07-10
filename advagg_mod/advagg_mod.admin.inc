@@ -119,6 +119,12 @@ function advagg_mod_admin_settings_form() {
       '@link' => 'http://peter.sh/experiments/asynchronous-and-deferred-javascript-execution-explained/',
     )),
   );
+  $form['js']['placement']['advagg_mod_js_async_in_header'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Asynchronous JavaScript Execution: Group together in the header'),
+    '#default_value' => variable_get('advagg_mod_js_async_in_header', ADVAGG_MOD_JS_ASYNC_IN_HEADER),
+    '#description' => t('This will move all async JavaScript code to the header in the same group.'),
+  );
   $form['js']['placement']['advagg_mod_js_footer_inline_alter'] = array(
     '#type' => 'checkbox',
     '#title' => t('Put a wrapper around inline JS if it was added in the content section incorrectly'),
@@ -190,7 +196,7 @@ function advagg_mod_admin_settings_form() {
     '#type' => 'fieldset',
     '#title' => t('Experimental Settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC) && !variable_get('advagg_mod_js_async_in_header', ADVAGG_MOD_JS_ASYNC_IN_HEADER),
+    '#collapsed' => !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC),
   );
   $form['js']['placement']['expert']['advagg_mod_js_async'] = array(
     '#type' => 'checkbox',
@@ -199,12 +205,6 @@ function advagg_mod_admin_settings_form() {
     '#description' => t('This will cause the script to be downloaded in the background and executed out of order. This will break most javascript as most code is not async safe; only use after extensive testing! <a href="@link">More Info</a>', array(
       '@link' => 'http://peter.sh/experiments/asynchronous-and-deferred-javascript-execution-explained/',
     )),
-  );
-  $form['js']['placement']['expert']['advagg_mod_js_async_in_header'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Asynchronous JavaScript Execution: Group together in the header'),
-    '#default_value' => variable_get('advagg_mod_js_async_in_header', ADVAGG_MOD_JS_ASYNC_IN_HEADER),
-    '#description' => t('This will move all async JavaScript code to the header in the same group.'),
   );
   // Outdated settings.
   $form['js']['old'] = array(
