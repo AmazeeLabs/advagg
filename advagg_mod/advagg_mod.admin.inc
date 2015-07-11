@@ -196,7 +196,7 @@ function advagg_mod_admin_settings_form() {
     '#type' => 'fieldset',
     '#title' => t('Experimental Settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC),
+    '#collapsed' => !variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC) && !variable_get('advagg_mod_js_defer_jquery', ADVAGG_MOD_JS_DEFER_JQUERY),
   );
   $form['js']['placement']['expert']['advagg_mod_js_async'] = array(
     '#type' => 'checkbox',
@@ -205,6 +205,17 @@ function advagg_mod_admin_settings_form() {
     '#description' => t('This will cause the script to be downloaded in the background and executed out of order. This will break most javascript as most code is not async safe; only use after extensive testing! <a href="@link">More Info</a>', array(
       '@link' => 'http://peter.sh/experiments/asynchronous-and-deferred-javascript-execution-explained/',
     )),
+  );
+  $form['js']['placement']['expert']['advagg_mod_js_defer_jquery'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Defer jquery.js'),
+    '#default_value' => variable_get('advagg_mod_js_defer_jquery', ADVAGG_MOD_JS_DEFER_JQUERY),
+    '#description' => t('By default jquery is not defered; this allows for jquery to be defered. Requires the "Deferred inline JavaScript Execution: Put a wrapper around inline JS so it runs from a setTimeout call" setting to be enalbed in order to be used.'),
+    '#states' => array(
+      'disabled' => array(
+        ':input[name="advagg_mod_js_defer_inline_alter"]' => array('checked' => FALSE),
+      ),
+    ),
   );
   // Outdated settings.
   $form['js']['old'] = array(
@@ -509,6 +520,10 @@ function advagg_mod_admin_settings_form_submit($form, &$form_state) {
   if ($multisite_dir != $dir) {
     register_shutdown_function('advagg_get_root_files_dir', TRUE);
     register_shutdown_function('menu_rebuild');
+  }
+
+  if (empty($form_state['values']['advagg_mod_js_defer_inline_alter']) && !empty($form_state['values']['advagg_mod_js_defer_jquery'])) {
+    $form_state['values']['advagg_mod_js_defer_jquery'] = FALSE;
   }
 }
 
