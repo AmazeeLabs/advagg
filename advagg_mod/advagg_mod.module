@@ -288,10 +288,39 @@ function advagg_mod_js_alter(&$js) {
   }
 
   // Add the defer or the async tag to JS.
-  advagg_mod_js_async_defer($js);
+  $jquery_defered = advagg_mod_js_async_defer($js);
 
-  // Wrap all inline scripts in a setTimeout callback.
-  if (variable_get('advagg_mod_js_defer_inline_alter', ADVAGG_MOD_JS_DEFER_INLINE_ALTER)) {
+  if ($jquery_defered) {
+    foreach ($js as &$values) {
+      // Skip if not inline.
+      if ($values['type'] !== 'inline') {
+        continue;
+      }
+      // Skip if advagg has already wrapped this inline code.
+      if (strpos($values['data'], 'advagg_mod_') !== FALSE) {
+        continue;
+      }
+      if (!empty($values['no_defer'])) {
+        continue;
+      }
+
+      // Do not wrap inline js if it contains a named function definition.
+      $pattern = '/\\s*function\\s+((?:[a-z][a-z0-9_]*))\\s*\\(.*\\)\\s*\\{/smix';
+      $match = preg_match($pattern, $values['data']);
+      if (!$match) {
+        // Defer the inline script by wrapping the code in setTimeout callback.
+        $matches[2] = $matches[0] = $values['data'];
+        $values['data'] = advagg_mod_wrap_inline_js($matches);
+      }
+      elseif (strpos($values['data'], 'jQuery.') !== FALSE) {
+        // Inline js has a named function that uses jQuery;
+        // do not defer jQuery.js
+        $no_jquery_defer = TRUE;
+      }
+    }
+    unset($values);
+  }
+  elseif (variable_get('advagg_mod_js_defer_inline_alter', ADVAGG_MOD_JS_DEFER_INLINE_ALTER)) {
     foreach ($js as &$values) {
       // Skip if not inline.
       if ($values['type'] !== 'inline') {
@@ -314,6 +343,18 @@ function advagg_mod_js_alter(&$js) {
       }
     }
     unset($values);
+  }
+  if (!empty($no_jquery_defer)) {
+    foreach ($js as $name => &$values) {
+      // Skip if not a file or external.
+      if ($values['type'] !== 'file' && $values['type'] !== 'external') {
+        continue;
+      }
+      // Special handling for jQuery.
+      if (strpos($name, 'jquery.js') !== FALSE || strpos($name, 'jquery.min.js') !== FALSE) {
+        $values['defer'] = FALSE;
+      }
+    }
   }
 
   // Move all async JS to the header.
@@ -1012,13 +1053,18 @@ function advagg_mod_js_move_to_footer(array &$js) {
  *
  * @param array $js
  *   JS array.
+ *
+ * @param bool
+ *   True if jQuery is defered.
  */
 function advagg_mod_js_async_defer(array &$js) {
+  $jquery_defered = FALSE;
+
   // Return eairly if this is disabled.
   $defer_setting = variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER);
   $async_setting = variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC);
   if (!$defer_setting && !$async_setting) {
-    return;
+    return $jquery_defered;
   }
 
   list(, , $no_async_defer_list, $inline_wrapper_list) = advagg_mod_get_lists();
@@ -1093,6 +1139,7 @@ function advagg_mod_js_async_defer(array &$js) {
 
     // Special handling for jQuery.
     if (strpos($name, 'jquery.js') !== FALSE || strpos($name, 'jquery.min.js') !== FALSE) {
+      $jquery_defered = TRUE;
       // jquery_update fallback.
       if (module_exists('jquery_update') && variable_get('jquery_update_jquery_cdn', 'none') !== 'none') {
         if ($use_on_error) {
@@ -1105,6 +1152,7 @@ function advagg_mod_js_async_defer(array &$js) {
         if (!variable_get('advagg_mod_js_defer_jquery', ADVAGG_MOD_JS_DEFER_JQUERY)) {
           if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
             $values['defer'] = FALSE;
+            $jquery_defered = FALSE;
           }
         }
         if (variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)) {
@@ -1183,6 +1231,8 @@ function advagg_mod_js_async_defer(array &$js) {
     }
   }
   unset($values);
+
+  return $jquery_defered;
 }
 
 /**
