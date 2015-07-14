@@ -970,48 +970,50 @@ function advagg_js_alter(&$js) {
  * Implements hook_css_alter().
  */
 function advagg_css_alter(&$css) {
-  if (!advagg_enabled() || !variable_get('advagg_css_fix_type', ADVAGG_CSS_FIX_TYPE)) {
+  if (!advagg_enabled()) {
     return;
   }
 
-  // Fix type if it was incorrectly set.
-  foreach ($css as &$value) {
-    if (empty($value['data']) || !is_string($value['data'])) {
-      continue;
-    }
+  if (variable_get('advagg_css_fix_type', ADVAGG_CSS_FIX_TYPE)) {
+    // Fix type if it was incorrectly set.
+    foreach ($css as &$value) {
+      if (empty($value['data']) || !is_string($value['data'])) {
+        continue;
+      }
 
-    // Default to file if not file, inline, or external.
-    if ( $value['type'] !== 'file'
-      && $value['type'] !== 'inline'
-      && $value['type'] !== 'external'
-    ) {
-      $value['type'] = 'file';
-    }
-
-    // If type is external but doesn't start with http, https, or // change it
-    // to file.
-    if ( $value['type'] === 'external'
-      && stripos($value['data'], 'http://') !== 0
-      && stripos($value['data'], 'https://') !== 0
-      && stripos($value['data'], '//') !== 0
+      // Default to file if not file, inline, or external.
+      if ( $value['type'] !== 'file'
+        && $value['type'] !== 'inline'
+        && $value['type'] !== 'external'
       ) {
-      $value['type'] = 'file';
-    }
+        $value['type'] = 'file';
+      }
 
-    // If type is file but it starts with http, https, or // change it to
-    // external.
-    if ( $value['type'] === 'file'
-      && ( stripos($value['data'], 'http://') === 0
-        || stripos($value['data'], 'https://') === 0
-        || ( stripos($value['data'], '//') === 0
-          && stripos($value['data'], '///') === FALSE
+      // If type is external but doesn't start with http, https, or // change it
+      // to file.
+      if ( $value['type'] === 'external'
+        && stripos($value['data'], 'http://') !== 0
+        && stripos($value['data'], 'https://') !== 0
+        && stripos($value['data'], '//') !== 0
+        ) {
+        $value['type'] = 'file';
+      }
+
+      // If type is file but it starts with http, https, or // change it to
+      // external.
+      if ( $value['type'] === 'file'
+        && ( stripos($value['data'], 'http://') === 0
+          || stripos($value['data'], 'https://') === 0
+          || ( stripos($value['data'], '//') === 0
+            && stripos($value['data'], '///') === FALSE
+            )
           )
-        )
-    ) {
-      $value['type'] = 'external';
+      ) {
+        $value['type'] = 'external';
+      }
     }
+    unset($value);
   }
-  unset($value);
 }
 
 /**
@@ -1914,6 +1916,12 @@ function advagg_add_dns_prefetch($url) {
   $parse = @parse_url($url);
   if (empty($parse['host'])) {
     return FALSE;
+  }
+
+  // Add DNS information for more domains.
+  if (strpos($parse['host'], 'fonts.googleapis.com') !== FALSE) {
+    // Add fonts.gstatic.com when fonts.googleapis.com is added.
+    advagg_add_dns_prefetch('https://fonts.gstatic.com');
   }
 
   // Build render array. Goes after charset tag.
