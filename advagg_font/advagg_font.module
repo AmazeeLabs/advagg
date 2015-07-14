@@ -13,9 +13,9 @@ define('ADVAGG_FONT_FONTFACEOBSERVER', 0);
 
 // Core hook implementations.
 /**
- * Implements hook_init().
+ * Implements hook_page_build().
  */
-function advagg_font_init() {
+function advagg_font_page_build() {
   $advagg_font_ffo = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER);
   if (empty($advagg_font_ffo)) {
     return;
