@@ -14,22 +14,45 @@
  */
 function advagg_font_admin_settings_form() {
   drupal_set_title(t('AdvAgg: Async Font Loader'));
-
   $form = array();
 
+  $package = drupal_http_request('https://cdn.rawgit.com/bramstein/fontfaceobserver/master/package.json');
+  $package = json_decode($package->data);
+
+  $options = array(
+    0 => t('Disabled'),
+    6 => t('Externally load the latest from github (version: @version)', array('@version' => $package->version)),
+  );
+  $description = t('This will use the fallback font until the font has been downloaded. See <a href="@link">fontfaceobserver</a> for more info.', array(
+      '@link' => 'https://github.com/bramstein/fontfaceobserver',
+    ));
+  if (function_exists('libraries_info')) {
+    $lib_info = libraries_detect('fontfaceobserver');
+    if ($lib_info['installed']) {
+      $options += array(
+        2 => t('Inline javascript (version: @version)', array('@version' => $lib_info['version'])),
+        4 => t('Local file included in aggregate (version: @version)', array('@version' => $lib_info['version'])),
+      );
+    }
+    else {
+      $description .= ' ' . t('To use fontfaceobserver locally fontfaceobserver needs to be placed inside the sites/all/libraries directory so sites/all/libraries/fontfaceobserver/fontfaceobserver.js can be found at that location.', array(
+        '@url' => 'https://www.drupal.org/project/libraries',
+      ));
+    }
+  }
+  else {
+    $description .= ' ' . t('To use fontfaceobserver locally the <a href="@url">libraries api module</a> needs to be installed and then fontfaceobserver needs to be placed inside the sites/all/libraries directory so sites/all/libraries/fontfaceobserver/fontfaceobserver.js can be found at that location..', array(
+      '@url' => 'https://www.drupal.org/project/libraries',
+    ));
+  }
+
+  ksort($options);
   $form['advagg_font_fontfaceobserver'] = array(
     '#type' => 'radios',
     '#title' => t('Use font face observer to load fonts asynchronously.'),
     '#default_value' => variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER),
-    '#options' => array(
-      0 => t('Disabled'),
-//       2 => t('Inline javascript'),
-//       4 => t('Local file included in aggregate'),
-      6 => t('Externally load the latest from github'),
-    ),
-    '#description' => t('This will use the fallback font until the font has been downloaded. See <a href="@link">fontfaceobserver</a> for more info.', array(
-      '@link' => 'https://github.com/bramstein/fontfaceobserver',
-    )),
+    '#options' => $options,
+    '#description' =>$description,
   );
 
   // Get all css files and scan for quoted fonts.

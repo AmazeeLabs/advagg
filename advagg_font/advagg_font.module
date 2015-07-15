@@ -15,7 +15,7 @@ define('ADVAGG_FONT_FONTFACEOBSERVER', 0);
 /**
  * Implements hook_page_build().
  */
-function advagg_font_page_build() {
+function advagg_font_page_build(&$page) {
   $advagg_font_ffo = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER);
   if (empty($advagg_font_ffo)) {
     return;
@@ -24,33 +24,63 @@ function advagg_font_page_build() {
   // Add inline script for reading the cookies and adding the fonts already
   // loaded to the html class.
   $inline_script_min = 'var fonts=document.cookie.split("advagg");for(var key in fonts){var font=fonts[key].split("="),pos=font[0].indexOf("font_");-1!==pos&&(window.document.documentElement.className+=" "+font[0].substr(5).replace(/[^a-zA-Z0-9\-]/g,""))}';
-  /* Uncompressed JS.
-  // Check cookies ASAP and set class.
-  var fonts = document.cookie.split('advagg');
-  for (var key in fonts) {
-    var font = fonts[key].split('=');
-    var pos = font[0].indexOf('font_');
-    if (pos !== -1) {
-      // Only allow alpha numeric class names.
-      window.document.documentElement.className += ' ' + font[0].substr(5).replace(/[^a-zA-Z0-9\-]/g, '');
-    }
-  }*/
-  drupal_add_js($inline_script_min, array(
+  $page['content']['#attached']['js']['advagg_font.inline.js'] = array(
     'type' => 'inline',
     'group' => JS_LIBRARY - 1,
     'weight' => -50000,
     'scope_lock' => TRUE,
     'movable' => FALSE,
     'no_defer' => TRUE,
-  ));
+    'data' => $inline_script_min,
+  );
 
   // Add advagg_font.js; sets cookie once a font has been downloaded.
-  $file_path = drupal_get_path('module', 'advagg_font');
-  drupal_add_js($file_path . '/advagg_font.js', array('async' => TRUE));
+  $file_path = drupal_get_path('module', 'advagg_font') . '/advagg_font.js';
+  $page['content']['#attached']['js'][$file_path] = array(
+    'async' => TRUE,
+    'defer' => TRUE,
+  );
 
   // Add fontfaceobserver.js async.
+  if ($advagg_font_ffo != 6) {
+    // Libraries module is not installed.
+    if (!function_exists('libraries_info')) {
+      $advagg_font_ffo = 6;
+    }
+    if ($advagg_font_ffo != 6) {
+      // fontfaceobserver library is not installed.
+      $lib_info = libraries_detect('fontfaceobserver');
+      if (empty($lib_info['installed'])) {
+        $advagg_font_ffo = 6;
+      }
+    }
+  }
   if ($advagg_font_ffo == 6) {
-    drupal_add_js('https://cdn.rawgit.com/bramstein/fontfaceobserver/master/fontfaceobserver.js', array('type' => 'external', 'async' => TRUE));
+  $page['content']['#attached']['js']['https://cdn.rawgit.com/bramstein/fontfaceobserver/master/fontfaceobserver.js'] = array(
+    'type' => 'external',
+    'async' => TRUE,
+    'defer' => TRUE,
+  );
+  }
+  else {
+    // Load the fontfaceobserver library.
+    libraries_load('fontfaceobserver');
+  }
+}
+
+/**
+ * Implements hook_js_alter().
+ */
+function advagg_font_js_alter(&$js) {
+  // Convert to the inline version.
+  $advagg_font_ffo = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER);
+  if ($advagg_font_ffo == 2) {
+    foreach ($js as $name => &$values) {
+      if ($values['type'] === 'file' && strpos($name, '/fontfaceobserver.js') !== FALSE) {
+        $values['type'] = 'inline';
+        $values['data'] = file_get_contents($values['data']);
+      }
+    }
   }
 }
 
@@ -77,6 +107,40 @@ function advagg_font_menu() {
 }
 
 // Contrib hook implementations.
+/**
+ * Implements hook_libraries_info().
+ */
+function advagg_font_libraries_info() {
+  // Add inline script for reading the cookies and adding the fonts already
+  // loaded to the html class.
+  $inline_script_min = 'var fonts=document.cookie.split("advagg");for(var key in fonts){var font=fonts[key].split("="),pos=font[0].indexOf("font_");-1!==pos&&(window.document.documentElement.className+=" "+font[0].substr(5).replace(/[^a-zA-Z0-9\-]/g,""))}';
+
+  $libraries['fontfaceobserver'] = array(
+    // Only used in administrative UI of Libraries API.
+    'name' => 'fontfaceobserver',
+    'vendor url' => 'https://github.com/bramstein/fontfaceobserver',
+    'download url' => 'https://github.com/bramstein/fontfaceobserver/archive/master.zip',
+    // 1.50. : "version": "1.5.0",
+    'version arguments' => array(
+      'file' => 'package.json',
+      'pattern' => '/"version":\\s+"([0-9\.]+)"/',
+      'lines' => 10,
+    ),
+    'files' => array(
+      'js' => array(
+        'fontfaceobserver.js' => array(
+          'type' => 'file',
+          'group' => JS_LIBRARY,
+          'async' => TRUE,
+          'defer' => TRUE,
+        ),
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
 /**
  * Implements hook_advagg_current_hooks_hash_array_alter().
  */
