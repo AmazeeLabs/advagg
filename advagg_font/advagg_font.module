@@ -89,7 +89,7 @@ function advagg_font_advagg_current_hooks_hash_array_alter(&$aggregate_settings)
  * Get the replacements array for the css.
  *
  * @param string $css_string
- *   String of CSS,
+ *   String of CSS.
  *
  * @return array
  *   An array containing the replacemnts and the font class name.
@@ -109,7 +109,7 @@ function advagg_font_get_replacements_array($css_string) {
     }
 
     // Get position of the last closing bracket (start of this section).
-    $start = strrpos($css_string, '}', - ($length - $last_position));
+    $start = strrpos($css_string, '}', -($length - $last_position));
     if ($start === FALSE) {
       $start = 0;
     }
@@ -174,7 +174,14 @@ function advagg_font_get_replacements_array($css_string) {
       $new_selectors_full_rule_set = $new_selectors . '{' . $property . ': ' . $values_string . ';}';
 
       // Record info.
-      $replacements[] = array($full_rule_set, $new_values_full_rule_set, $new_selectors_full_rule_set, $removed_value_original, $removed_value, $next_value_original);
+      $replacements[] = array(
+        $full_rule_set,
+        $new_values_full_rule_set,
+        $new_selectors_full_rule_set,
+        $removed_value_original,
+        $removed_value,
+        $next_value_original,
+      );
     }
 
     // Advance position.

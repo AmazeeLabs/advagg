@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_advagg_get_css_file_contents_alter.
+ * Implements hook_advagg_get_css_file_contents_alter().
  */
 function advagg_font_advagg_get_css_file_contents_alter(&$contents, $file, $aggregate_settings) {
   // Do nothing if this is disabled.

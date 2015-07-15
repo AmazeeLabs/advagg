@@ -567,11 +567,11 @@ function advagg_mod_process_move_js(array &$variables) {
         && is_string($variables[$child]['#markup'])
         && stripos($variables[$child]['#markup'], '<script') !== FALSE
       ) {
+        // advagg_mod_js_inline_processor($variables[$child]['#markup']);
         // Uncomment to also process #markup.
-        //advagg_mod_js_inline_processor($variables[$child]['#markup']);
       }
+      // advagg_mod_process_move_js($variables[$child]);
       // Uncomment to make this recursive.
-      //advagg_mod_process_move_js($variables[$child]);
     }
   }
 }
@@ -1054,8 +1054,8 @@ function advagg_mod_js_move_to_footer(array &$js) {
  * @param array $js
  *   JS array.
  *
- * @param bool
- *   True if jQuery is defered.
+ * @return bool
+ *   TRUE if jQuery is defered.
  */
 function advagg_mod_js_async_defer(array &$js) {
   $jquery_defered = FALSE;
