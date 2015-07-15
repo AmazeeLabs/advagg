@@ -27,7 +27,7 @@ function advagg_install() {
   $schema = advagg_schema();
   foreach ($tables as $table => $fields) {
     // Change utf8_bin to ascii_bin.
-    advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields'][$field]);
+    advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields']);
   }
 }
 
@@ -499,7 +499,7 @@ function advagg_update_7207(&$sandbox) {
       db_change_field($table, $field, $field, $schema[$table]['fields'][$field]);
     }
     // Change utf8_bin to ascii_bin.
-    advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields'][$field]);
+    advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields']);
   }
 }
 
@@ -545,7 +545,7 @@ function advagg_update_7209(&$sandbox) {
       db_change_field($table, $field, $field, $schema[$table]['fields'][$field]);
     }
     // Change utf8_bin to ascii_bin.
-    advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields'][$field]);
+    advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields']);
   }
 }
 
@@ -558,11 +558,13 @@ function advagg_update_7209(&$sandbox) {
  *   An array of field names.
  * @param string $collation
  *   The db collation to change to table columns to.
+ * @param array $schema_fields
+ *   An array of field definitions.
  *
  * @return array
  *   Returns an array of tables and column names.
  */
-function advagg_install_change_table_collation($table_name, array $fields, $collation, $schema_field) {
+function advagg_install_change_table_collation($table_name, array $fields, $collation, array $schema_fields) {
   $db_type = Database::getConnection()->databaseType();
   // Skip if not MySQL.
   if ($db_type !== 'mysql') {
@@ -580,8 +582,8 @@ function advagg_install_change_table_collation($table_name, array $fields, $coll
     $query = "ALTER TABLE $table_name CHANGE `{$row->Field}` `{$row->Field}` {$row->Type}";
     $query .= " CHARACTER SET $charset COLLATE $collation";
 
-    if (isset($schema_field['not null'])) {
-      if ($schema_field['not null']) {
+    if (isset($schema_fields[$row->Field]['not null'])) {
+      if ($schema_fields[$row->Field]['not null']) {
         $query .= ' NOT NULL';
       }
       else {
@@ -589,9 +591,9 @@ function advagg_install_change_table_collation($table_name, array $fields, $coll
       }
     }
 
-    // $schema_field['default'] can be NULL, so we explicitly check for the key here.
-    if (array_key_exists('default', $schema_field)) {
-      $default = $schema_field['default'];
+    // $schema_fields[$row->Field]['default'] can be NULL, so we explicitly check for the key here.
+    if (array_key_exists('default', $schema_fields[$row->Field])) {
+      $default = $schema_fields[$row->Field]['default'];
       if (is_string($default)) {
         $default = "'" . $default . "'";
       }
@@ -601,13 +603,13 @@ function advagg_install_change_table_collation($table_name, array $fields, $coll
       $query .= ' DEFAULT ' . $default;
     }
 
-    if (empty($schema_field['not null']) && !isset($schema_field['default'])) {
+    if (empty($schema_fields[$row->Field]['not null']) && !isset($schema_fields[$row->Field]['default'])) {
       $query .= ' DEFAULT NULL';
     }
 
     // Add column comment.
-    if (!empty($schema_field['description'])) {
-      $query .= ' COMMENT ' . $db_schema->prepareComment($schema_field['description'], $db_schema::COMMENT_MAX_COLUMN);
+    if (!empty($schema_fields[$row->Field]['description'])) {
+      $query .= ' COMMENT ' . $db_schema->prepareComment($schema_fields[$row->Field]['description'], $db_schema::COMMENT_MAX_COLUMN);
     }
 
     db_query($query);
