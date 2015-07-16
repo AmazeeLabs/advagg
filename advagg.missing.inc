@@ -698,7 +698,9 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
           $media_rules = trim($media_rules);
           $css_selectors_rules = trim($css_selectors_rules);
 
-          if ($media_rules !== $global_file_media) {
+          // Wrap css in dedicated media query if it differs from the global
+          // media query and there actually are media rules.
+          if (!empty($media_rules) && $media_rules !== $global_file_media) {
             $output = "\n@media " . $media_rules . " {\n  " . str_replace("\n", "\n  ", $css_selectors_rules) . "\n}";
           }
           else {
