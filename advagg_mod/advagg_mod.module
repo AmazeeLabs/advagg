@@ -616,7 +616,7 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
           }
         }
         if ($found) {
-          $values['#value'] = 'function init_drupal_core_settings() {' . $values['#value'] . '}';
+          $values['#value'] = "function init_drupal_core_settings() {" . $values['#value'] . "\nif(jQuery.isFunction(jQuery.holdReady)){jQuery.holdReady(false);}}";
         }
       }
     }
@@ -1140,6 +1140,7 @@ function advagg_mod_js_async_defer(array &$js) {
     // Special handling for jQuery.
     if (strpos($name, 'jquery.js') !== FALSE || strpos($name, 'jquery.min.js') !== FALSE) {
       $jquery_defered = TRUE;
+      $values['onload'] = "if(jQuery.isFunction(jQuery.holdReady)){jQuery.holdReady(true);}";
       // jquery_update fallback.
       if (module_exists('jquery_update') && variable_get('jquery_update_jquery_cdn', 'none') !== 'none') {
         if ($use_on_error) {
@@ -1194,7 +1195,7 @@ function advagg_mod_js_async_defer(array &$js) {
         $values['onload'] = '';
       }
       $matches[0] = $matches[2] = 'init_drupal_core_settings();';
-      $values['onload'] .= advagg_mod_wrap_inline_js($matches, "window.init_drupal_core_settings && window.init_drupal_core_settings && window.jQuery && window.Drupal", 20);
+      $values['onload'] .= advagg_mod_wrap_inline_js($matches, "window.init_drupal_core_settings && window.init_drupal_core_settings && window.jQuery && window.Drupal", 1);
     }
 
     // No async defer list.

@@ -3130,10 +3130,10 @@ function theme_html_script_tag($variables) {
     }
     $attributes = !empty($element['#attributes']) ? drupal_attributes($element['#attributes']) : '';
     if (!empty($onload)) {
-      $attributes .= ' onload="' . $onload . '"';
+      $attributes .= ' onload="' . advagg_jsspecialchars($onload) . '"';
     }
     if (!empty($onerror)) {
-      $attributes .= ' onerror="' . $onerror . '"';
+      $attributes .= ' onerror="' . advagg_jsspecialchars($onerror) . '"';
     }
   }
 
@@ -3152,6 +3152,21 @@ function theme_html_script_tag($variables) {
     $output .= '</' . $element['#tag'] . ">\n";
     return $output;
   }
+}
+/**
+ * Replace quotes with the html version of it.
+ *
+ * @param string $string
+ *   Input string. Convert quotes to html chars.
+ *
+ * @return string
+ *   Transformed string.
+ */
+function advagg_jsspecialchars($string = '') {
+  $string = str_replace('"', '&quot;', $string);
+  $string = str_replace("'", '&#039;', $string);
+
+  return $string;
 }
 
 // Exact Copies of core functions from patches.
