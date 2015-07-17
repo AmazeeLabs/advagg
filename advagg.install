@@ -501,6 +501,7 @@ function advagg_update_7207(&$sandbox) {
     // Change utf8_bin to ascii_bin.
     advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields']);
   }
+  return t('AdvAgg Tables converted from varcahr to char and utf8_bin to ascii_bin.');
 }
 
 /**
@@ -514,6 +515,7 @@ function advagg_update_7208(&$sandbox) {
     db_add_index('advagg_aggregates', 'filename_hash', array('filename_hash'));
     return t('Database index added to the filename_hash column of the advagg_aggregates table.');
   }
+  return t('Nothing needed to be done.');
 }
 
 
@@ -547,6 +549,7 @@ function advagg_update_7209(&$sandbox) {
     // Change utf8_bin to ascii_bin.
     advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields']);
   }
+  return t('Database schema was adjusted to match what is listed in advagg_schema.');
 }
 
 /**
