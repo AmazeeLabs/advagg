@@ -52,7 +52,7 @@ function advagg_font_admin_settings_form() {
     '#title' => t('Use font face observer to load fonts asynchronously.'),
     '#default_value' => variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER),
     '#options' => $options,
-    '#description' =>$description,
+    '#description' => $description,
   );
 
   // Get all css files and scan for quoted fonts.

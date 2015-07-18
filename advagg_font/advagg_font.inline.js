@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Used to add a class to the top level element based off of cookies.
+ */
+
 // Check cookies ASAP and set class.
 var fonts = document.cookie.split('advagg');
 for (var key in fonts) {

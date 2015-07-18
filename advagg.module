@@ -3096,7 +3096,7 @@ function advagg_admin_flush_cache() {
 /**
  * Returns HTML for a generic HTML tag with attributes.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array describing the tag:
  *     - #tag: The tag name to output. Typical tags added to the HTML HEAD:
@@ -3112,7 +3112,7 @@ function advagg_admin_flush_cache() {
  *     - #value_suffix: (optional) A string to append to #value, e.g. a CDATA
  *       wrapper suffix.
  */
-function theme_html_script_tag($variables) {
+function theme_html_script_tag(array $variables) {
   $element = $variables['element'];
   $attributes = '';
   $onload = '';

@@ -48,7 +48,7 @@ function advagg_font_page_build(&$page) {
       $advagg_font_ffo = 6;
     }
     if ($advagg_font_ffo != 6) {
-      // fontfaceobserver library is not installed.
+      // The fontfaceobserver library is not installed.
       $lib_info = libraries_detect('fontfaceobserver');
       if (empty($lib_info['installed'])) {
         $advagg_font_ffo = 6;
@@ -56,11 +56,11 @@ function advagg_font_page_build(&$page) {
     }
   }
   if ($advagg_font_ffo == 6) {
-  $page['content']['#attached']['js']['https://cdn.rawgit.com/bramstein/fontfaceobserver/master/fontfaceobserver.js'] = array(
-    'type' => 'external',
-    'async' => TRUE,
-    'defer' => TRUE,
-  );
+    $page['content']['#attached']['js']['https://cdn.rawgit.com/bramstein/fontfaceobserver/master/fontfaceobserver.js'] = array(
+      'type' => 'external',
+      'async' => TRUE,
+      'defer' => TRUE,
+    );
   }
   else {
     // Load the fontfaceobserver library.
@@ -111,10 +111,6 @@ function advagg_font_menu() {
  * Implements hook_libraries_info().
  */
 function advagg_font_libraries_info() {
-  // Add inline script for reading the cookies and adding the fonts already
-  // loaded to the html class.
-  $inline_script_min = 'var fonts=document.cookie.split("advagg");for(var key in fonts){var font=fonts[key].split("="),pos=font[0].indexOf("font_");-1!==pos&&(window.document.documentElement.className+=" "+font[0].substr(5).replace(/[^a-zA-Z0-9\-]/g,""))}';
-
   $libraries['fontfaceobserver'] = array(
     // Only used in administrative UI of Libraries API.
     'name' => 'fontfaceobserver',
