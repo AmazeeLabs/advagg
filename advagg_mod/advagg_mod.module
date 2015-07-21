@@ -295,9 +295,10 @@ function advagg_mod_js_alter(&$js) {
     $bootstrap_min_rev = strrev('/bootstrap.min.js');
     foreach ($js as &$values) {
       // Defer bootstrap if jquery is defered.
-      if ( stripos(strrev($values['data']), $bootstrap_rev) === 0
+      if (is_string($values['data'])
+      && ( stripos(strrev($values['data']), $bootstrap_rev) === 0
         || stripos(strrev($values['data']), $bootstrap_min_rev) === 0
-      ) {
+      )) {
         $values['defer'] = TRUE;
         continue;
       }
