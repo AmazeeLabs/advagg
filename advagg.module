@@ -849,7 +849,7 @@ function advagg_ajax_render_alter(&$commands) {
     $commands = array_merge($extra_commands, $commands);
   }
   if (!empty($settings)) {
-    array_unshift($commands, ajax_command_settings(drupal_array_merge_deep_array($settings['data']), TRUE));
+    array_unshift($commands, ajax_command_settings(advagg_cleanup_settings_array(drupal_array_merge_deep_array($settings['data'])), TRUE));
   }
 }
 
@@ -1741,7 +1741,7 @@ function _advagg_process_html(&$variables) {
 
         // Replace cached Drupal.settings with current Drupal.settings for this
         // page.
-        $merged = drupal_array_merge_deep_array($js_scope_settings_array_copy[$scope_settings]['settings']['data']);
+        $merged = advagg_cleanup_settings_array(drupal_array_merge_deep_array($js_scope_settings_array_copy[$scope_settings]['settings']['data']));
         $json_data = advagg_json_encode($merged);
         if (!empty($json_data)) {
           // Record that this is being used.
@@ -1885,6 +1885,36 @@ function _advagg_process_html(&$variables) {
     }
     watchdog('advagg_debug', $output, array(), WATCHDOG_DEBUG);
   }
+}
+
+/**
+ * Shrink the ajaxPageState data.
+ *
+ * @param array $data
+ *   Settings for javascript.
+ */
+function advagg_cleanup_settings_array(array $data) {
+  // Remove inline js from the ajaxPageState data.
+  if (isset($data['ajaxPageState']['js'])) {
+    foreach ($data['ajaxPageState']['js'] as $key => $value) {
+      if (!advagg_remove_short_keys($key)) {
+        unset($data['ajaxPageState']['js'][$key]);
+      }
+    }
+  }
+  // Remove inline css from the ajaxPageState data.
+  if (isset($data['ajaxPageState']['js'])) {
+    foreach ($data['ajaxPageState']['css'] as $key => $value) {
+      if (!advagg_remove_short_keys($key)) {
+        unset($data['ajaxPageState']['css'][$key]);
+      }
+    }
+  }
+  // Remove settings from the js ajaxPageState data.
+  if (isset($data['ajaxPageState']['js']['settings'])) {
+    unset($data['ajaxPageState']['js']['settings']);
+  }
+  return $data;
 }
 
 /**
@@ -2187,9 +2217,7 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
 
   // Provide the page with information about the individual JavaScript files
   // used, information not otherwise available when aggregation is enabled.
-  // Also filter out empty items due to numeric array keys.
-  $setting['ajaxPageState']['js'] = array_fill_keys(array_filter(array_keys($items), 'advagg_remove_short_keys'), 1);
-  unset($setting['ajaxPageState']['js']['settings']);
+  $setting['ajaxPageState']['js'] = array_fill_keys(array_keys($items), 1);
 
   // If we're outputting the header scope, then this should be the final time
   // that drupal_get_js() is running, so add the setting to this output as well
@@ -2200,7 +2228,14 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   // Also output the settings if we have pushed all javascript to the footer.
   if (isset($items['settings'])) {
     // Get settings from the static.
-    $javascript = &drupal_static('drupal_add_js', array());
+    $javascript_static = &drupal_static('drupal_add_js', array());
+    // Merge in any missing settings into the current data.
+    foreach ($javascript_static['settings']['data'] as $key => $values) {
+      $diff = array_diff_key($values, $javascript['settings']['data'][$key]);
+      if (!empty($diff)) {
+        $javascript['settings']['data'][] = $values;
+      }
+    }
     $items['settings']['data'] = $javascript['settings']['data'];
 
     // Add in this round of settings.
@@ -3318,7 +3353,7 @@ function advagg_pre_render_scripts(array $elements) {
         // Element properties that depend on item type.
         switch ($item['type']) {
           case 'setting':
-            $data = drupal_array_merge_deep_array($item['data']);
+            $data = advagg_cleanup_settings_array(drupal_array_merge_deep_array($item['data']));
             $json_data = advagg_json_encode($data);
             $element['#value_prefix'] = $embed_prefix;
             $element['#value'] = 'jQuery.extend(Drupal.settings, ' . $json_data . ");";
