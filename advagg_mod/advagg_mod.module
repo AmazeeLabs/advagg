@@ -291,31 +291,40 @@ function advagg_mod_js_alter(&$js) {
   $jquery_defered = advagg_mod_js_async_defer($js);
 
   if ($jquery_defered) {
+    $bootstrap_rev = strrev('/bootstrap.js');
+    $bootstrap_min_rev = strrev('/bootstrap.min.js');
     foreach ($js as &$values) {
-      // Skip if not inline.
-      if ($values['type'] !== 'inline') {
-        continue;
-      }
-      // Skip if advagg has already wrapped this inline code.
-      if (strpos($values['data'], 'advagg_mod_') !== FALSE) {
-        continue;
-      }
-      if (!empty($values['no_defer'])) {
+      // Defer bootstrap if jquery is defered.
+      if ( stripos(strrev($values['data']), $bootstrap_rev) === 0
+        || stripos(strrev($values['data']), $bootstrap_min_rev) === 0
+      ) {
+        $values['defer'] = TRUE;
         continue;
       }
 
-      // Do not wrap inline js if it contains a named function definition.
-      $pattern = '/\\s*function\\s+((?:[a-z][a-z0-9_]*))\\s*\\(.*\\)\\s*\\{/smix';
-      $match = preg_match($pattern, $values['data']);
-      if (!$match) {
-        // Defer the inline script by wrapping the code in setTimeout callback.
-        $matches[2] = $matches[0] = $values['data'];
-        $values['data'] = advagg_mod_wrap_inline_js($matches);
-      }
-      elseif (strpos($values['data'], 'jQuery.') !== FALSE) {
-        // Inline js has a named function that uses jQuery;
-        // do not defer jQuery.js
-        $no_jquery_defer = TRUE;
+      // Only do inline.
+      if ($values['type'] === 'inline') {
+        // Skip if advagg has already wrapped this inline code.
+        if (strpos($values['data'], 'advagg_mod_') !== FALSE) {
+          continue;
+        }
+        if (!empty($values['no_defer'])) {
+          continue;
+        }
+
+        // Do not wrap inline js if it contains a named function definition.
+        $pattern = '/\\s*function\\s+((?:[a-z][a-z0-9_]*))\\s*\\(.*\\)\\s*\\{/smix';
+        $match = preg_match($pattern, $values['data']);
+        if (!$match) {
+          // Defer the inline script by wrapping the code in setTimeout callback.
+          $matches[2] = $matches[0] = $values['data'];
+          $values['data'] = advagg_mod_wrap_inline_js($matches);
+        }
+        elseif (strpos($values['data'], 'jQuery.') !== FALSE) {
+          // Inline js has a named function that uses jQuery;
+          // do not defer jQuery.js
+          $no_jquery_defer = TRUE;
+        }
       }
     }
     unset($values);
