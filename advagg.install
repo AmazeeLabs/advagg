@@ -596,7 +596,10 @@ function advagg_install_change_table_collation($table_name, array $fields, $coll
 
     // $schema_fields[$row->Field]['default'] can be NULL, so we explicitly
     // check for the key here.
-    if (array_key_exists('default', $schema_fields[$row->Field])) {
+    if ( isset($schema_fields[$row->Field])
+      && is_array($schema_fields[$row->Field])
+      && array_key_exists('default', $schema_fields[$row->Field])
+    ) {
       $default = $schema_fields[$row->Field]['default'];
       if (is_string($default)) {
         $default = "'" . $default . "'";
