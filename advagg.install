@@ -613,7 +613,7 @@ function advagg_install_change_table_collation($table_name, array $fields, $coll
 
     // Add column comment.
     if (!empty($schema_fields[$row->Field]['description'])) {
-      $query .= ' COMMENT ' . $db_schema->prepareComment($schema_fields[$row->Field]['description'], $db_schema::COMMENT_MAX_COLUMN);
+      $query .= ' COMMENT ' . $db_schema->prepareComment($schema_fields[$row->Field]['description'], 255);
     }
 
     db_query($query);
