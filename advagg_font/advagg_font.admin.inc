@@ -35,13 +35,13 @@ function advagg_font_admin_settings_form() {
       );
     }
     else {
-      $description .= ' ' . t('To use fontfaceobserver locally fontfaceobserver needs to be placed inside the sites/all/libraries directory so sites/all/libraries/fontfaceobserver/fontfaceobserver.js can be found at that location.', array(
+      $description .= ' ' . t('To use fontfaceobserver locally fontfaceobserver.js and package.json needs to be placed inside the sites/all/libraries directory so sites/all/libraries/fontfaceobserver/fontfaceobserver.js can be found at that location.', array(
         '@url' => 'https://www.drupal.org/project/libraries',
       ));
     }
   }
   else {
-    $description .= ' ' . t('To use fontfaceobserver locally the <a href="@url">libraries api module</a> needs to be installed and then fontfaceobserver needs to be placed inside the sites/all/libraries directory so sites/all/libraries/fontfaceobserver/fontfaceobserver.js can be found at that location..', array(
+    $description .= ' ' . t('To use fontfaceobserver locally the <a href="@url">libraries api module</a> needs to be installed and then fontfaceobserver and package.json needs to be placed inside the sites/all/libraries directory so sites/all/libraries/fontfaceobserver/fontfaceobserver.js can be found at that location..', array(
       '@url' => 'https://www.drupal.org/project/libraries',
     ));
   }
