@@ -317,7 +317,7 @@ function advagg_mod_js_alter(&$js) {
         $pattern = '/\\s*function\\s+((?:[a-z][a-z0-9_]*))\\s*\\(.*\\)\\s*\\{/smix';
         $match = preg_match($pattern, $values['data']);
         if (!$match) {
-          // Defer the inline script by wrapping the code in setTimeout callback.
+          // Defer inline scripts by wrapping the code in setTimeout callback.
           $matches[2] = $matches[0] = $values['data'];
           $values['data'] = advagg_mod_wrap_inline_js($matches);
         }
