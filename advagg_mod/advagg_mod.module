@@ -321,7 +321,7 @@ function advagg_mod_js_alter(&$js) {
           $matches[2] = $matches[0] = $values['data'];
           $values['data'] = advagg_mod_wrap_inline_js($matches);
         }
-        elseif (strpos($values['data'], 'jQuery.') !== FALSE) {
+        elseif (stripos($values['data'], 'jQuery.') !== FALSE || stripos($values['data'], '(jQuery)') !== FALSE) {
           // Inline js has a named function that uses jQuery;
           // do not defer jQuery.js
           $no_jquery_defer = TRUE;
@@ -355,13 +355,17 @@ function advagg_mod_js_alter(&$js) {
     unset($values);
   }
   if (!empty($no_jquery_defer)) {
+    $jquery_rev = strrev('/jquery.js');
+    $jquery_min_rev = strrev('/jquery.min.js');
     foreach ($js as $name => &$values) {
       // Skip if not a file or external.
       if ($values['type'] !== 'file' && $values['type'] !== 'external') {
         continue;
       }
       // Special handling for jQuery.
-      if (strpos($name, 'jquery.js') !== FALSE || strpos($name, 'jquery.min.js') !== FALSE) {
+      if ( stripos(strrev($name), $jquery_rev) === 0
+        || stripos(strrev($name), $jquery_min_rev) === 0
+      ) {
         $values['defer'] = FALSE;
       }
     }
