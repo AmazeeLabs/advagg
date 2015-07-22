@@ -1903,10 +1903,10 @@ function advagg_cleanup_settings_array(array $data) {
     }
   }
   // Remove inline css from the ajaxPageState data.
-  if (isset($data['ajaxPageState']['js'])) {
-    foreach ($data['ajaxPageState']['css'] as $key => $value) {
+  if (isset($data['ajaxPageState']['css'])) {
+    foreach ((array) $data['ajaxPageState']['css'] as $key => $value) {
       if (!advagg_remove_short_keys($key)) {
-        unset($data['ajaxPageState']['css'][$key]);
+        unset($data['ajaxPageState']['css']->{$key});
       }
     }
   }
