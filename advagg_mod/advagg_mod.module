@@ -1218,7 +1218,7 @@ function advagg_mod_js_async_defer(array &$js) {
         $values['onload'] = '';
       }
       $matches[0] = $matches[2] = 'init_drupal_core_settings();';
-      $values['onload'] .= advagg_mod_wrap_inline_js($matches, "window.init_drupal_core_settings && window.init_drupal_core_settings && window.jQuery && window.Drupal", 1);
+      $values['onload'] .= advagg_mod_wrap_inline_js($matches, "window.init_drupal_core_settings && window.jQuery && window.Drupal", 1);
     }
 
     // No async defer list.
