@@ -2229,11 +2229,13 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
   if (isset($items['settings'])) {
     // Get settings from the static.
     $javascript_static = &drupal_static('drupal_add_js', array());
-    // Merge in any missing settings into the current data.
-    foreach ($javascript_static['settings']['data'] as $key => $values) {
-      $diff = array_diff_key($values, $javascript['settings']['data'][$key]);
-      if (!empty($diff)) {
+
+    // Merge in last js ajaxPageState into the current data.
+    $reverse_settings = array_reverse($javascript_static['settings']['data']);
+    foreach ($reverse_settings as $key => $values) {
+      if (isset($values['ajaxPageState']['js'])) {
         $javascript['settings']['data'][] = $values;
+        break;
       }
     }
     $items['settings']['data'] = $javascript['settings']['data'];
