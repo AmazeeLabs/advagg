@@ -74,7 +74,7 @@ function advagg_mod_admin_settings_form() {
     '#default_value' => variable_get('advagg_mod_js_adjust_sort_browsers', ADVAGG_MOD_JS_ADJUST_SORT_BROWSERS),
     '#description' => t('This will group all browser conditional JavaScript to be in the lowest group of that conditional rule.'),
   );
-  if (module_exists('googleanalytics') && variable_get('googleanalytics_cache', 0)) {
+  if (module_exists('googleanalytics')) {
     $form['js']['adjust_sort']['expert'] = array(
       '#type' => 'fieldset',
       '#title' => t('Experimental Settings'),
