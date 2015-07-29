@@ -330,6 +330,7 @@ function advagg_mod_prefetch_link(&$js) {
     foreach ($js as $key => &$values) {
       if (isset($values['dns_prefetch'])) {
         foreach ($values['dns_prefetch'] as &$url) {
+          // Prefetch stats.g.doubleclick.net domain.
           if (strpos($url, '//stats.g.doubleclick.net') !== FALSE) {
             $url .= '#prefetch';
           }
