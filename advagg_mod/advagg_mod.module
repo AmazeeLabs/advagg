@@ -161,6 +161,11 @@ define('ADVAGG_MOD_JS_GET_EXTERNAL_DNS', FALSE);
  */
 define('ADVAGG_MOD_JS_DEFER_JQUERY', FALSE);
 
+/**
+ * Default value to use the prefetch tag for certian domains.
+ */
+define('ADVAGG_MOD_PREFETCH', FALSE);
+
 // Core hook implementations.
 /**
  * Implements hook_module_implements_alter().
@@ -309,6 +314,28 @@ function advagg_mod_js_alter(&$js) {
       $values['group'] = 1000;
     }
     unset($values);
+  }
+
+  advagg_mod_prefetch_link($js);
+}
+
+/**
+ * Have the browser prefech this domain to open the connection.
+ *
+ * @param array $js
+ *   JS array.
+ */
+function advagg_mod_prefetch_link(&$js) {
+  if (variable_get('advagg_mod_prefetch', ADVAGG_MOD_PREFETCH)) {
+    foreach ($js as $key => &$values) {
+      if (isset($values['dns_prefetch'])) {
+        foreach ($values['dns_prefetch'] as &$url) {
+          if (strpos($url, '//stats.g.doubleclick.net') !== FALSE) {
+            $url .= '#prefetch';
+          }
+        }
+      }
+    }
   }
 }
 

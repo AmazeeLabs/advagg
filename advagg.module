@@ -1975,6 +1975,24 @@ function advagg_add_dns_prefetch($url) {
   );
   // Add markup for dns-prefetch to html_head.
   drupal_add_html_head($element, 'advagg_dns_prefetch:' . $parse['host']);
+
+  // Build render array. Goes after charset tag.
+  if (!empty($parse['fragment']) && $parse['fragment'] === 'prefetch') {
+    $scheme = 'http';
+    if ($GLOBALS['is_https']) {
+      $scheme = 'https';
+    }
+    $element = array(
+      '#type' => 'html_tag',
+      '#tag' => 'link',
+      '#attributes' => array(
+        'rel' => 'prefetch',
+        'href' => $scheme . '://' . $parse['host'] . '/robots.txt',
+      ),
+      '#weight' => -999.9,
+    );
+    drupal_add_html_head($element, 'advagg_prefetch:' . $parse['host']);
+  }
   return TRUE;
 }
 
