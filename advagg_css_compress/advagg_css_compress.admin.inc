@@ -106,10 +106,8 @@ function advagg_css_compress_admin_settings_form($form, $form_state) {
  * Also remove default settings inside of the per_file_settings fieldgroup.
  */
 function advagg_css_compress_admin_settings_form_submit($form, &$form_state) {
-  $cache_bins = advagg_flush_caches();
-  foreach ($cache_bins as $bin) {
-    cache_clear_all('*', $bin, TRUE);
-  }
+  // Clear caches.
+  advagg_cache_clear_admin_submit();
 
   // Get current defaults.
   $file_settings = variable_get('advagg_css_compressor_file_settings', array());

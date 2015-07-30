@@ -86,14 +86,12 @@ function advagg_mod_admin_settings_form() {
       '#title' => t('Move Google Analytics analytics.js code from inline to be a file'),
       '#default_value' => variable_get('advagg_mod_ga_inline_to_file', ADVAGG_MOD_GA_INLINE_TO_FILE),
     );
-    if (module_exists('googleanalytics')) {
-      $form['js']['adjust_sort']['expert']['advagg_mod_prefetch'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Prefetch stats.g.doubleclick.net/robots.txt'),
-        '#default_value' => variable_get('advagg_mod_prefetch', ADVAGG_MOD_PREFETCH),
-      '#description' => t('Opens a connection to stats.g.doubleclick.net in order to speed up the round trip time.'),
-      );
-    }
+    $form['js']['adjust_sort']['expert']['advagg_mod_prefetch'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Prefetch stats.g.doubleclick.net/robots.txt'),
+      '#default_value' => variable_get('advagg_mod_prefetch', ADVAGG_MOD_PREFETCH),
+    '#description' => t('Opens a connection to stats.g.doubleclick.net in order to speed up the round trip time.'),
+    );
   }
 
   // Adjust javascript location and execution.
@@ -523,10 +521,8 @@ function advagg_mod_admin_settings_form_validate($form, &$form_state) {
  * Clear out the advagg cache bin when the save configuration button is pressed.
  */
 function advagg_mod_admin_settings_form_submit($form, &$form_state) {
-  $cache_bins = advagg_flush_caches();
-  foreach ($cache_bins as $bin) {
-    cache_clear_all('*', $bin, TRUE);
-  }
+  // Clear caches.
+  advagg_cache_clear_admin_submit();
 
   // If unified_multisite_dir has changed, flush menu router at the end of the
   // request.

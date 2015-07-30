@@ -4424,3 +4424,15 @@ function advagg_glue_url(array $parsed, $strip_query_and_fragment = FALSE) {
   }
   return $uri;
 }
+
+/**
+ * Clear certain caches on form submit.
+ */
+function advagg_cache_clear_admin_submit() {
+  $cache_bins = advagg_flush_caches();
+  foreach ($cache_bins as $bin) {
+    cache_clear_all('*', $bin, TRUE);
+  }
+  cache_clear_all('hook_info', 'cache_bootstrap');
+  cache_clear_all('advagg_hooks_implemented:', 'cache_bootstrap', TRUE);
+}

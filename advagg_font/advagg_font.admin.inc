@@ -114,8 +114,6 @@ function advagg_font_admin_settings_form() {
  * Clear out the advagg cache bin when the save configuration button is pressed.
  */
 function advagg_font_admin_settings_form_submit($form, &$form_state) {
-  $cache_bins = advagg_flush_caches();
-  foreach ($cache_bins as $bin) {
-    cache_clear_all('*', $bin, TRUE);
-  }
+  // Clear caches.
+  advagg_cache_clear_admin_submit();
 }
