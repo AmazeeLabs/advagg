@@ -1978,16 +1978,12 @@ function advagg_add_dns_prefetch($url) {
 
   // Build render array. Goes after charset tag.
   if (!empty($parse['fragment']) && $parse['fragment'] === 'prefetch') {
-    $scheme = 'http';
-    if ($GLOBALS['is_https']) {
-      $scheme = 'https';
-    }
     $element = array(
       '#type' => 'html_tag',
       '#tag' => 'link',
       '#attributes' => array(
         'rel' => 'prefetch',
-        'href' => $scheme . '://' . $parse['host'] . '/robots.txt',
+        'href' => '//' . $parse['host'] . '/robots.txt',
       ),
       '#weight' => -999.9,
     );
