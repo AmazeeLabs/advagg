@@ -93,6 +93,11 @@ function advagg_css_compress_admin_settings_form($form, $form_state) {
     }
   }
 
+  // No css files are found.
+  if (empty($results)) {
+    $form['per_file_settings']['#description'] = t('No CSS files have been aggregated. You need to enable aggregation. No css files where found in the advagg_files table.');
+  }
+
   // Clear the cache bins on submit.
   $form['#submit'][] = 'advagg_css_compress_admin_settings_form_submit';
 

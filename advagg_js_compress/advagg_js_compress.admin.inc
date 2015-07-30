@@ -111,6 +111,11 @@ function advagg_js_compress_admin_settings_form($form, $form_state) {
     }
   }
 
+  // No js files are found.
+  if (empty($results)) {
+    $form['per_file_settings']['#description'] = t('No JS files have been aggregated. You need to enable aggregation. No js files where found in the advagg_files table.');
+  }
+
   // Clear the cache bins on submit.
   $form['#submit'][] = 'advagg_js_compress_admin_settings_form_submit';
 

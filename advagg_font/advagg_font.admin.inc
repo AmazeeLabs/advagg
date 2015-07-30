@@ -95,12 +95,20 @@ function advagg_font_admin_settings_form() {
     $form['advagg_font_fontfaceobserver']['#default_value'] = 0;
     $form['advagg_font_fontfaceobserver']['#disabled'] = TRUE;
 
-    $form['fonts'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('No CSS files with external fonts found.'),
-      '#description' => t('Currently this module is not doing anything. Recommend uninstalling it as advagg is not processing any css files that use an external font file.'),
-    );
-
+    if (empty($results)) {
+      $form['fonts'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('No CSS files have been aggregated.'),
+        '#description' => t('You need to enable aggregation. No css files where found in the advagg_files table.'),
+      );
+    }
+    else {
+      $form['fonts'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('No CSS files with external fonts found.'),
+        '#description' => t('Currently this module is not doing anything. Recommend uninstalling it as advagg is not processing any css files that use an external font file.'),
+      );
+    }
   }
 
   // Clear the cache bins on submit.
