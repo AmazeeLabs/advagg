@@ -16,7 +16,12 @@ define('ADVAGG_FONT_FONTFACEOBSERVER', 0);
  * Implements hook_page_build().
  */
 function advagg_font_page_build(&$page) {
+  // The $page variable is not an array; or the content key does not exist.
+  if (!is_array($page) || !isset($page['content'])) {
+    return;
+  }
   $advagg_font_ffo = variable_get('advagg_font_fontfaceobserver', ADVAGG_FONT_FONTFACEOBSERVER);
+  // Fontface Observer is disabled.
   if (empty($advagg_font_ffo)) {
     return;
   }
