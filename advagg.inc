@@ -452,7 +452,7 @@ function advagg_get_info_on_files(array $files, $bypass_cache = FALSE, $run_alte
     }
 
     // Get the file contents.
-    $file_contents = file_get_contents($file);
+    $file_contents = (string) @file_get_contents($file);
 
     $ext = pathinfo($file, PATHINFO_EXTENSION);
     if ($ext !== 'css' && $ext !== 'js') {
@@ -481,7 +481,7 @@ function advagg_get_info_on_files(array $files, $bypass_cache = FALSE, $run_alte
 
     // Build meta data array and set cache.
     $return[$file] = array(
-      'filesize' => filesize($file),
+      'filesize' => (int) @filesize($file),
       'mtime' => @filemtime($file),
       'filename_hash' => $filename_hash,
       'content_hash' => drupal_hash_base64($file_contents),

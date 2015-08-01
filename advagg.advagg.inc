@@ -246,7 +246,7 @@ function advagg_advagg_get_info_on_files_alter(&$return, $cached_data, $bypass_c
         continue;
       }
       // Get the file contents.
-      $file_contents = file_get_contents($info['data']);
+      $file_contents = (string) @file_get_contents($info['data']);
 
       // Get domain names in this css file.
       $matches = array();
