@@ -253,7 +253,7 @@ function advagg_url_inbound_alter(&$path, $original_path, $path_language) {
       $language_list = language_list();
       $prefixes = array();
       foreach ($language_list as $lang) {
-        if ($lang->enabled && strpos($request_path, $lang->prefix) !== FALSE) {
+        if ($lang->enabled && !empty($lang->prefix) && strpos($request_path, $lang->prefix) !== FALSE) {
           $prefixes[$lang->prefix] = $lang->prefix;
         }
       }
