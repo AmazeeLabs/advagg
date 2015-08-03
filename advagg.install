@@ -1443,7 +1443,7 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
               'value' => $t("The cache-control's max-age header being sent by your web server is not at least 1 month in the future.", array('%type' => $type)),
               'description' => $t('The web servers configuration should be adjusted only for AdvAgg files. Was looking that the max-age second counter is over 2,628,000 (1 month), actually got <code>@received</code>. You can turn this warning off if you can not adjust this value (Pantheon) by adding this to your settings.php file: <code>@skipcode</code>', array(
                 '@received' => isset($request->headers['cache-control']) ? $request->headers['cache-control'] : 'NULL',
-                '@skipcode' => '$conf[\'advagg_skip_far_future_check\'] = FALSE;',
+                '@skipcode' => '$conf[\'advagg_skip_far_future_check\'] = TRUE;',
               )),
             );
           }
