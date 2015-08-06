@@ -1669,9 +1669,25 @@ function advagg_install_url_mod(&$url, array &$options, $mod_url = FALSE) {
     $parts['user'] = variable_get('shield_user', '');
     $parts['pass'] = variable_get('shield_pass', '');
   }
-  elseif (isset($_SERVER['AUTH_TYPE']) && $_SERVER['AUTH_TYPE'] == 'Basic') {
+  elseif ( isset($_SERVER['AUTH_TYPE'])
+        && $_SERVER['AUTH_TYPE'] == 'Basic'
+  ) {
     $parts['user'] = $_SERVER['PHP_AUTH_USER'];
     $parts['pass'] = $_SERVER['PHP_AUTH_PW'];
+  }
+  elseif ( isset($_SERVER['HTTP_AUTHORIZATION'])
+        && strpos($_SERVER['HTTP_AUTHORIZATION'], 'Basic ') === 0
+  ) {
+    $user_pass = explode(':', base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 5)));
+    $parts['user'] = $user_pass[0];
+    $parts['pass'] = $user_pass[1];
+  }
+  elseif ( isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])
+        && strpos($_SERVER['REDIRECT_HTTP_AUTHORIZATION'], 'Basic ') === 0
+  ) {
+    $user_pass = explode(':', base64_decode(substr($_SERVER['REDIRECT_HTTP_AUTHORIZATION'], 5)));
+    $parts['user'] = $user_pass[0];
+    $parts['pass'] = $user_pass[1];
   }
   elseif (!empty($advagg_auth_basic_user)) {
     $parts['user'] = $advagg_auth_basic_user;
