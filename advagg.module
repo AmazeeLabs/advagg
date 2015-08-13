@@ -1600,20 +1600,20 @@ function _advagg_process_html(&$variables) {
   }
 
   // Render page_top and page_bottom into top level variables.
-  if (isset($variables['page']['page_top'])) {
+  if (is_array($variables['page']) && isset($variables['page']['page_top'])) {
     $variables['page_top'] = drupal_render($variables['page']['page_top']);
   }
   elseif (!isset($variables['page_top'])) {
     $variables['page_top'] = '';
   }
-  if (isset($variables['page']['page_bottom'])) {
+  if (is_array($variables['page']) && isset($variables['page']['page_bottom'])) {
     $variables['page_bottom'] = drupal_render($variables['page']['page_bottom']);
   }
   elseif (!isset($variables['page_bottom'])) {
     $variables['page_bottom'] = '';
   }
   // Place the rendered HTML for the page body into a top level variable.
-  if (isset($variables['page']['#children'])) {
+  if (is_array($variables['page']) && isset($variables['page']['#children'])) {
     $variables['page'] = $variables['page']['#children'];
   }
 
