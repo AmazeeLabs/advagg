@@ -1461,6 +1461,7 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
       }
 
       // Test 304.
+      $etag_works = FALSE;
       if (isset($request->headers['etag'])) {
         // Send an Etag header and see if the web server returns a 304.
         $url = file_create_url($url_path . '/' . $filename);
@@ -1483,6 +1484,9 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
               '@code' => $request_304->code,
             )),
           );
+        }
+        else {
+          $etag_works = TRUE;
         }
       }
       if (isset($request->headers['last-modified'])) {
@@ -1514,6 +1518,11 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
           // user.
           unset($requirements['advagg_' . $type . '_304' . $key . '_etag']);
         }
+      }
+      if ($etag_works && isset($requirements['advagg_' . $type . '_304' . $key . '_last_modified'])) {
+        // Etag works, Last-Modified is broken. 304s are working. Don't warn
+        // user.
+        unset($requirements['advagg_' . $type . '_304' . $key . '_last_modified']);
       }
 
       // Both the Last-Modified and Etag header are missing.
