@@ -77,9 +77,10 @@ function advagg_font_admin_settings_form() {
     $replacements = advagg_font_get_replacements_array($file_contents);
     if (!empty($replacements)) {
       $fonts = array();
-      foreach ($replacements as $replacement) {
-        $fonts[$replacement[3]] = $replacement[5];
+      foreach ($replacements as $key => $replacement) {
+        $fonts[$key . ' ' . $replacement[3]] = $replacement[5];
       }
+
       $form['fonts'][$row['filename_hash']] = array(
         '#markup' => '<div>' . t('%file - <code>@replacements</code><br />', array(
           '@replacements' => str_ireplace('array', '', print_r($fonts, TRUE)),
