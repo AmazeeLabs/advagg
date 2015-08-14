@@ -564,8 +564,69 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
         $onload_code[$values['#attributes']['src']] = $values['#attributes']['onload'];
       }
     }
+    $jquery_rev = strrev('/jquery.js');
+    $jquery_min_rev = strrev('/jquery.min.js');
 
-    foreach ($children as &$values) {
+
+    $ie_fixes = array();
+    foreach ($elements['#groups'] as $group) {
+      if ( $group['type'] !== 'file'
+        || empty($group['defer'])
+        || empty($group['items']['files'])
+      ) {
+        continue;
+      }
+
+      $found = FALSE;
+      foreach ($group['items']['files'] as $name => &$values) {
+        // Special handling for jQuery.
+        if ( stripos(strrev($name), $jquery_rev) === 0
+          || stripos(strrev($name), $jquery_min_rev) === 0
+        ) {
+          $found = TRUE;
+        }
+      }
+      if ($found) {
+        $ie_fixes[] = basename($group['data']);
+      }
+    }
+
+    foreach ($children as $key => &$values) {
+      if (!empty($values['#attributes']['src'])) {
+        $ie_key = array_search(basename($values['#attributes']['src']), $ie_fixes);
+        if ($ie_key !== FALSE) {
+          unset($ie_fixes[$ie_key]);
+          // Not IE supports defer.
+          $values['#browsers'] = array(
+            'IE' => FALSE,
+            '!IE' => TRUE,
+          );
+
+          // IE10+ supports defer.
+          $copy = $values;
+          $copy['#browsers'] = array(
+            'IE' => 'gt IE 9',
+            '!IE' => FALSE,
+          );
+          $copy['#attributes']['src'] .= '#ie10+';
+          array_splice($children, $key, 0, array($copy));
+
+          // IE9- does not support defer.
+          $copy = $values;
+          $copy['#browsers'] = array(
+            'IE' => 'lte IE 9',
+            '!IE' => FALSE,
+          );
+          unset($copy['defer']);
+          unset($copy['#attributes']['defer']);
+          $copy['#attributes']['src'] .= '#ie9-';
+
+          array_splice($children, $key, 0, array($copy));
+        }
+      }
+    }
+
+    foreach ($children as $key => &$values) {
       // Core's Drupal.settings. Put inside wrapper if there is an onload call
       // for init_drupal_core_settings. Have to do this here because the
       // settings needed to be rendered.
@@ -579,7 +640,7 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
           }
         }
         if ($found) {
-          $values['#value'] = "function init_drupal_core_settings() {" . $values['#value'] . "\nif(jQuery.isFunction(jQuery.holdReady)){jQuery.holdReady(false);}}";
+          $values['#value'] = "function init_drupal_core_settings() {" . $values['#value'] . "\nif(jQuery.isFunction(jQuery.holdReady)){jQuery.holdReady(false);}} if(window.jQuery && window.Drupal){init_drupal_core_settings();}";
         }
       }
     }

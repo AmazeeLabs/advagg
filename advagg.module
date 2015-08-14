@@ -1116,20 +1116,22 @@ function advagg_preprocess_html() {
  *   A render array that will render to a string of JavaScript tags.
  */
 function advagg_modify_js_pre_render(array $elements) {
-  // Put children elements into a reference array.
-  $children = array();
-  foreach ($elements as $key => &$value) {
-    if ($key !== '' && $key[0] === '#') {
-      continue;
-    }
-    $children[$key] = &$value;
-  }
-  unset($value);
+  // Get the children elements.
+  $children = array_intersect_key($elements, array_flip(element_children($elements)));
 
   // Allow other modules to modify $children and $elements before they are
   // rendered.
   // Call hook_advagg_modify_js_pre_render_alter()
   drupal_alter('advagg_modify_js_pre_render', $children, $elements);
+
+  // Remove old children elements.
+  foreach ($children as $key => $value) {
+    if (isset($elements[$key])) {
+      unset($elements[$key]);
+    }
+  }
+  // Add in new children elements.
+  $elements += $children;
   return $elements;
 }
 
