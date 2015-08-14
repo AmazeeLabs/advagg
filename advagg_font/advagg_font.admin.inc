@@ -55,6 +55,32 @@ function advagg_font_admin_settings_form() {
     '#description' => $description,
   );
 
+  $form['container'] = array(
+    '#type' => 'container',
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="advagg_font_fontfaceobserver"]' => array('value' => '0'),
+      ),
+    ),
+  );
+  $form['container']['advagg_font_cookie'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Set a cookie so the flash of unstyled text (FOUT) only happens once.'),
+    '#default_value' => variable_get('advagg_font_cookie', ADVAGG_FONT_COOKIE),
+    '#description' => t('Cookies are name like <code>@cookie</code>. If this is a problem you can disable cookies from being set; if doing so the FOUT will happen on every page load.', array('@cookie' => 'advaggfont_pt-sans=PT Sans')),
+  );
+  $form['container']['advagg_font_no_fout'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Prevent the Flash of Unstyled Text.'),
+    '#default_value' => variable_get('advagg_font_no_fout', ADVAGG_FONT_NO_FOUT),
+    '#description' => t('The font will not be changed unless the browser already has the font downloaded. Font gets downloaded on the first page view.', array('@cookie' => 'advaggfont_pt-sans=PT Sans')),
+    '#states' => array(
+      'disabled' => array(
+        '#edit-advagg-font-cookie' => array('checked' => FALSE),
+      ),
+    ),
+  );
+
   // Get all css files and scan for quoted fonts.
   $form['fonts'] = array(
     '#type' => 'fieldset',
@@ -125,4 +151,13 @@ function advagg_font_admin_settings_form() {
 function advagg_font_admin_settings_form_submit($form, &$form_state) {
   // Clear caches.
   advagg_cache_clear_admin_submit();
+
+  // Disable cookie if ffo is disabled.
+  if (empty($form_state['values']['advagg_font_fontfaceobserver'])) {
+    $form_state['values']['advagg_font_cookie'] = 0;
+  }
+  // Disable no fout if cookies are disabled.
+  if (empty($form_state['values']['advagg_font_cookie'])) {
+    $form_state['values']['advagg_font_no_fout'] = 0;
+  }
 }

@@ -11,6 +11,16 @@
  */
 define('ADVAGG_FONT_FONTFACEOBSERVER', 0);
 
+/**
+ * Default value to use a cookie in order to prevent the FOUT.
+ */
+define('ADVAGG_FONT_COOKIE', 1);
+
+/**
+ * Default value to only replace the font if it's been downloaded.
+ */
+define('ADVAGG_FONT_NO_FOUT', 0);
+
 // Core hook implementations.
 /**
  * Implements hook_page_build().
@@ -26,20 +36,31 @@ function advagg_font_page_build(&$page) {
     return;
   }
 
-  // Add inline script for reading the cookies and adding the fonts already
-  // loaded to the html class.
-  $inline_script_min = 'var fonts=document.cookie.split("advagg");for(var key in fonts){var font=fonts[key].split("="),pos=font[0].indexOf("font_");-1!==pos&&(window.document.documentElement.className+=" "+font[0].substr(5).replace(/[^a-zA-Z0-9\-]/g,""))}';
-  $page['content']['#attached']['js']['advagg_font.inline.js'] = array(
-    'type' => 'inline',
-    'group' => JS_LIBRARY - 1,
-    'weight' => -50000,
-    'scope_lock' => TRUE,
-    'movable' => FALSE,
-    'no_defer' => TRUE,
-    'data' => $inline_script_min,
+  $page['content']['#attached']['js'][] = array(
+    'type' => 'setting',
+    'data' => array(
+      'advagg_font_cookie' => variable_get('advagg_font_cookie', ADVAGG_FONT_COOKIE),
+      'advagg_font_no_fout' => variable_get('advagg_font_no_fout', ADVAGG_FONT_NO_FOUT),
+    ),
   );
 
-  // Add advagg_font.js; sets cookie once a font has been downloaded.
+  // Add inline script for reading the cookies and adding the fonts already
+  // loaded to the html class.
+  if (variable_get('advagg_font_cookie', ADVAGG_FONT_COOKIE)) {
+    $inline_script_min = 'var fonts=document.cookie.split("advagg");for(var key in fonts){var font=fonts[key].split("="),pos=font[0].indexOf("font_");-1!==pos&&(window.document.documentElement.className+=" "+font[0].substr(5).replace(/[^a-zA-Z0-9\-]/g,""))}';
+    $page['content']['#attached']['js']['advagg_font.inline.js'] = array(
+      'type' => 'inline',
+      'group' => JS_LIBRARY - 1,
+      'weight' => -50000,
+      'scope_lock' => TRUE,
+      'movable' => FALSE,
+      'no_defer' => TRUE,
+      'data' => $inline_script_min,
+    );
+  }
+
+  // Add advagg_font.js; sets cookie and changes the class of the top level
+  // element once a font has been downloaded.
   $file_path = drupal_get_path('module', 'advagg_font') . '/advagg_font.js';
   $page['content']['#attached']['js'][$file_path] = array(
     'async' => TRUE,
