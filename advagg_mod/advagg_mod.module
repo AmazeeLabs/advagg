@@ -592,7 +592,10 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
     }
 
     foreach ($children as $key => &$values) {
-      if (!empty($values['#attributes']['src'])) {
+      if ( !empty($values['#attributes']['src'])
+        && isset($values['#attributes']['defer'])
+        && empty($values['#browsers'])
+      ) {
         $ie_key = array_search(basename($values['#attributes']['src']), $ie_fixes);
         if ($ie_key !== FALSE) {
           unset($ie_fixes[$ie_key]);
@@ -620,7 +623,6 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
           unset($copy['defer']);
           unset($copy['#attributes']['defer']);
           $copy['#attributes']['src'] .= '#ie9-';
-
           array_splice($children, $key, 0, array($copy));
         }
       }
