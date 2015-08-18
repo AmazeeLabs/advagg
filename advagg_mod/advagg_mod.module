@@ -162,7 +162,7 @@ define('ADVAGG_MOD_JS_GET_EXTERNAL_DNS', FALSE);
 define('ADVAGG_MOD_JS_DEFER_JQUERY', FALSE);
 
 /**
- * Default value to use the prefetch tag for certian domains.
+ * Default value to use the prefetch tag for certain domains.
  */
 define('ADVAGG_MOD_PREFETCH', FALSE);
 
@@ -327,7 +327,7 @@ function advagg_mod_js_alter(&$js) {
  */
 function advagg_mod_prefetch_link(&$js) {
   if (variable_get('advagg_mod_prefetch', ADVAGG_MOD_PREFETCH)) {
-    foreach ($js as $key => &$values) {
+    foreach ($js as &$values) {
       if (isset($values['dns_prefetch'])) {
         foreach ($values['dns_prefetch'] as &$url) {
           // Prefetch stats.g.doubleclick.net domain.
