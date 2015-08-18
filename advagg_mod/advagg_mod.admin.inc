@@ -90,7 +90,7 @@ function advagg_mod_admin_settings_form() {
       '#type' => 'checkbox',
       '#title' => t('Prefetch stats.g.doubleclick.net/robots.txt'),
       '#default_value' => variable_get('advagg_mod_prefetch', ADVAGG_MOD_PREFETCH),
-    '#description' => t('Opens a connection to stats.g.doubleclick.net in order to speed up the round trip time.'),
+      '#description' => t('Opens a connection to stats.g.doubleclick.net in order to speed up the round trip time.'),
     );
   }
 

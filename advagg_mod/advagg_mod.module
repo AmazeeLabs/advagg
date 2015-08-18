@@ -325,7 +325,7 @@ function advagg_mod_js_alter(&$js) {
  * @param array $js
  *   JS array.
  */
-function advagg_mod_prefetch_link(&$js) {
+function advagg_mod_prefetch_link(array &$js) {
   if (variable_get('advagg_mod_prefetch', ADVAGG_MOD_PREFETCH)) {
     foreach ($js as &$values) {
       if (isset($values['dns_prefetch'])) {
@@ -566,7 +566,6 @@ function advagg_mod_advagg_modify_js_pre_render_alter(&$children, &$elements) {
     }
     $jquery_rev = strrev('/jquery.js');
     $jquery_min_rev = strrev('/jquery.min.js');
-
 
     $ie_fixes = array();
     foreach ($elements['#groups'] as $group) {
