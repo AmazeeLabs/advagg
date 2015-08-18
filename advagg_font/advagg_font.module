@@ -252,6 +252,14 @@ function advagg_font_get_replacements_array($css_string) {
       // Get all selectors.
       $end_of_selectors = strpos($css_string, '{', $start);
       $selectors = substr($css_string, $start, $end_of_selectors - $start);
+      // Ensure selectors is not a media query
+      if (strpos($selectors,"@media") !== FALSE) {
+        // Move the start to the end of the media query.
+        $start = $end_of_selectors + 1;
+        // Get the selectors again.
+        $end_of_selectors = strpos($css_string, '{', $start);
+        $selectors = substr($css_string, $start, $end_of_selectors - $start);
+      }
 
       // From advagg_load_stylesheet_content().
       // Perform some safe CSS optimizations.
