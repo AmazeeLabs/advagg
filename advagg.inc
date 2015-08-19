@@ -1263,13 +1263,18 @@ function advagg_load_css_stylesheet($file, $optimize, array $aggregate_settings 
 
   // Get the parent directory of this file, relative to the Drupal root.
   $css_base_url = substr($file, 0, strrpos($file, '/'));
-  $url_parts = explode('advagg_css/parts/', $css_base_url);
+
+  // Handle split css files.
+  list($css_path) = advagg_get_root_files_dir();
+  $parts_path = $css_path[1] . '/parts/';
+  $url_parts = strpos($css_base_url, $parts_path);
   // If this CSS file is actually a part of a previously split larger CSS file,
   // don't use it to construct relative paths within the CSS file for
   // 'url( ... )' bits.
-  if (count($url_parts) === 2) {
-    $css_base_url = $url_parts[1];
+  if ($url_parts !== FALSE) {
+    $css_base_url = substr($css_base_url, $url_parts + strlen($parts_path));
   }
+
   // Replace the old base path with the one that was passed in.
   $pos = strpos($css_base_url, $old_base_path);
   if ($pos !== FALSE) {
