@@ -433,7 +433,7 @@ function advagg_get_info_on_files(array $files, $bypass_cache = FALSE, $run_alte
     advagg_clearstatcache($file);
 
     // Remove file in the cache if it does not exist.
-    if (!file_exists($file)) {
+    if (!file_exists($file) || is_dir($file)) {
       if (isset($cached_data[$cache_id])) {
         cache_clear_all($cache_id, 'cache_advagg_info', FALSE);
       }
@@ -863,7 +863,13 @@ function advagg_split_css_file(array $file_info) {
       if ($last_chunk) {
         $file_info['split_last_part'] = TRUE;
       }
-      $parts[] = advagg_create_subfile($chunks, $overall_split, $file_info);
+      $subfile = advagg_create_subfile($chunks, $overall_split, $file_info);
+      if (empty($subfile)) {
+        // Somthing broke; do not create a subfile.
+        watchdog('advagg', 'Spliting up a CSS file failed. File info: <code>@info</code>', array('@info' => var_export($file_info, TRUE)));
+        return array();
+      }
+      $parts[] = $subfile;
       continue;
     }
 
@@ -978,7 +984,13 @@ function advagg_split_css_file(array $file_info) {
         $file_info['split_last_part'] = TRUE;
       }
       // Write the data.
-      $parts[] = advagg_create_subfile($string_to_write, $overall_split, $file_info);
+      $subfile = advagg_create_subfile($string_to_write, $overall_split, $file_info);
+      if (empty($subfile)) {
+        // Somthing broke; do not create a subfile.
+        watchdog('advagg', 'Spliting up a CSS file failed. File info: <code>@info</code>', array('@info' => var_export($file_info, TRUE)));
+        return array();
+      }
+      $parts[] = $subfile;
       $first = FALSE;
     }
   }
@@ -996,7 +1008,7 @@ function advagg_split_css_file(array $file_info) {
  *   File info array from advagg_get_info_on_file().
  *
  * @return array
- *   Array with advagg_get_info_on_file data and split data.
+ *   Array with advagg_get_info_on_file data and split data; FALSE on failure.
  */
 function advagg_create_subfile($css, $overall_split, array $file_info) {
   static $parts_uri;
@@ -1015,6 +1027,9 @@ function advagg_create_subfile($css, $overall_split, array $file_info) {
 
   // Get the path from $file_info['data'].
   $uri_path = advagg_get_relative_path($file_info['data']);
+  if (!file_exists($uri_path) || is_dir($uri_path)) {
+    return FALSE;
+  }
 
   // Write the current chunk of the CSS into a file.
   $new_filename = str_ireplace('.css', '.' . $overall_split . '.css', $uri_path);
