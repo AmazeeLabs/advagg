@@ -2138,6 +2138,25 @@ function advagg_get_full_js(array $javascript = array(), $skip_alter = FALSE) {
       advagg_mod_js_move_to_footer($javascript);
     }
   }
+
+  // If in development mode make sure the ajaxPageState css is there.
+  if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
+    $have_css = FALSE;
+    foreach ($javascript['settings']['data'] as $setting) {
+      if (!empty($setting['ajaxPageState']['css'])) {
+        $have_css = TRUE;
+        break;
+      }
+    }
+    if (!$have_css) {
+      $css = drupal_add_css();
+      if (!empty($css)) {
+        // Cast the array to an object to be on the safe side even if not empty.
+        $javascript['settings']['data'][]['ajaxPageState']['css'] = (object) array_fill_keys(array_keys($css), 1);
+      }
+    }
+  }
+
   return $javascript;
 }
 
