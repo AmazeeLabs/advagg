@@ -1898,23 +1898,36 @@ function _advagg_process_html(&$variables) {
 function advagg_cleanup_settings_array(array $data) {
   // Remove inline js from the ajaxPageState data.
   if (isset($data['ajaxPageState']['js'])) {
-    foreach ($data['ajaxPageState']['js'] as $key => $value) {
-      if (!advagg_remove_short_keys($key)) {
-        unset($data['ajaxPageState']['js'][$key]);
+    foreach ((array) $data['ajaxPageState']['js'] as $key => $value) {
+      if (advagg_remove_short_keys($key)) {
+        if (is_array($data['ajaxPageState']['js'])) {
+          unset($data['ajaxPageState']['js'][$key]);
+        }
+        else {
+          unset($data['ajaxPageState']['js']->{$key});
+        }
       }
     }
   }
   // Remove inline css from the ajaxPageState data.
   if (isset($data['ajaxPageState']['css'])) {
     foreach ((array) $data['ajaxPageState']['css'] as $key => $value) {
-      if (!advagg_remove_short_keys($key)) {
-        unset($data['ajaxPageState']['css']->{$key});
+      if (advagg_remove_short_keys($key, 6)) {
+        if (is_object($data['ajaxPageState']['css'])) {
+          unset($data['ajaxPageState']['css']->{$key});
+        }
+        else {
+          unset($data['ajaxPageState']['css'][$key]);
+        }
       }
     }
   }
   // Remove settings from the js ajaxPageState data.
   if (isset($data['ajaxPageState']['js']['settings'])) {
     unset($data['ajaxPageState']['js']['settings']);
+  }
+  if (isset($data['ajaxPageState']['js']->settings)) {
+    unset($data['ajaxPageState']['js']->settings);
   }
   return $data;
 }
@@ -2379,18 +2392,20 @@ function advagg_array_splice_assoc(array &$input, $offset, $length, $replacement
 /**
  * Callback for array_filter. Will return FALSE if strlen < 3.
  *
- * @param string $array_value
- *   A value from an array.
+ * @param string $value
+ *   A value from an array/object.
+ * @param int $min_len
+ *   The strlen check length.
  *
  * @return bool
  *   TRUE or FALSE.
  */
-function advagg_remove_short_keys($array_value) {
-  if (strlen($array_value) < 3) {
-    return FALSE;
+function advagg_remove_short_keys($value, $min_len = 3) {
+  if (strlen($value) < $min_len) {
+    return TRUE;
   }
   else {
-    return TRUE;
+    return FALSE;
   }
 }
 
