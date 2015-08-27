@@ -1748,8 +1748,14 @@ function _advagg_process_html(&$variables) {
         if (!empty($json_data)) {
           // Record that this is being used.
           $js_settings_used[$scope_settings] = TRUE;
+
+          // Find the end of the Drupal.settings.
+          $script_end = stripos($value, '</script>', $start);
+          $settings_substring = substr($value, $start, $script_end - $start);
+          $json_end = strripos($settings_substring, '});');
+
           // Replace Drupal.settings json.
-          $value = substr($value, 0, $start + 30) . $json_data . substr($value, strripos($value, '});', $start) + 1);
+          $value = substr($value, 0, $start + 30) . $json_data . substr($value, $json_end + $start + 1);
         }
       }
       $add_to_variables[$scope] = $value;
