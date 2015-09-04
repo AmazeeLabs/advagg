@@ -699,7 +699,7 @@ function advagg_admin_info_form($form, $form_state) {
  * Add various advagg settings to the system_performance_settings form.
  */
 function advagg_admin_system_performance_settings_form(&$form, $form_state) {
-  $msg = t('NOTE: If you wish bypass aggregation for a set amount of time you can go to <a href="@operations">AdvAgg operations</a> page and press the "aggregation bypass cookie" button.', array(
+  $msg = t('NOTE: If you wish to bypass aggregation for a set amount of time, you can go to the <a href="@operations">AdvAgg operations</a> page and press the "aggregation bypass cookie" button.', array(
     '@operations' => url('admin/config/development/performance/advagg/operations'),
   )) . ' ';
   if (user_access('bypass advanced aggregation')) {
