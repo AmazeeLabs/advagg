@@ -4344,12 +4344,27 @@ function advagg_aggressive_cache_conflicts() {
     $hooks[$hook] = module_implements($hook);
 
     // Also check themes as drupal_alter() allows for themes to alter things.
-    $theme_keys = array_keys(list_themes());
+    $themes = list_themes();
+    $theme_keys = array_keys($themes);
     if (!empty($theme_keys)) {
       foreach ($theme_keys as $theme_key) {
         $function = $theme_key . '_' . $hook;
+        // Search loaded themes.
         if (function_exists($function)) {
           $hooks[$hook][] = $theme_key;
+          continue;
+        }
+        // Skip disabled themes.
+        if (empty($themes[$theme_key]->status)) {
+          continue;
+        }
+        // Search enabled but not loaded themes.
+        $file = dirname($themes[$theme_key]->filename) . '/template.php';
+        if (file_exists($file)) {
+          $contents = file_get_contents($file);
+          if (stripos($contents, $function)) {
+            $hooks[$hook][] = $theme_key;
+          }
         }
       }
     }
@@ -4370,6 +4385,9 @@ function advagg_aggressive_cache_conflicts() {
 
     // Popular contrib.
     //
+    // No control; same every time.
+    'at_commerce',
+
     // ais_adaptive_styles variable; Default: array().
     // ais_adaptive_styles_method; Default: 'both-max'.
     // 'ais',
