@@ -1926,10 +1926,10 @@ function advagg_cleanup_settings_array(array $data) {
   if (isset($data['ajaxPageState']['js'])) {
     foreach ((array) $data['ajaxPageState']['js'] as $key => $value) {
       if (advagg_remove_short_keys($key)) {
-        if (is_array($data['ajaxPageState']['js'])) {
+        if (is_array($data['ajaxPageState']['js']) && isset($data['ajaxPageState']['js'][$key])) {
           unset($data['ajaxPageState']['js'][$key]);
         }
-        else {
+        elseif (isset($data['ajaxPageState']['js']->{$key})) {
           unset($data['ajaxPageState']['js']->{$key});
         }
       }
@@ -1939,10 +1939,10 @@ function advagg_cleanup_settings_array(array $data) {
   if (isset($data['ajaxPageState']['css'])) {
     foreach ((array) $data['ajaxPageState']['css'] as $key => $value) {
       if (advagg_remove_short_keys($key, 6)) {
-        if (is_object($data['ajaxPageState']['css'])) {
+        if (is_object($data['ajaxPageState']['css']) && isset($data['ajaxPageState']['css']->{$key})) {
           unset($data['ajaxPageState']['css']->{$key});
         }
-        else {
+        elseif (isset($data['ajaxPageState']['css'][$key])) {
           unset($data['ajaxPageState']['css'][$key]);
         }
       }
