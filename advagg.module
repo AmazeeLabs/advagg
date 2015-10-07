@@ -4249,6 +4249,67 @@ function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE
 }
 
 /**
+ * Decodes UTF byte-order mark (BOM) into the encoding's name.
+ *
+ * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!Unicode.php/function/Unicode%3A%3AencodingFromBOM/8
+ *
+ * @param string $data
+ *   The data possibly containing a BOM. This can be the entire contents of
+ *   a file, or just a fragment containing at least the first five bytes.
+ *
+ * @return string|bool
+ *   The name of the encoding, or FALSE if no byte order mark was present.
+ */
+function advagg_get_encoding_from_bom($data) {
+  static $bomMap = array(
+  "\xEF\xBB\xBF" => 'UTF-8',
+  "\xFE\xFF" => 'UTF-16BE',
+  "\xFF\xFE" => 'UTF-16LE',
+  "\x00\x00\xFE\xFF" => 'UTF-32BE',
+  "\xFF\xFE\x00\x00" => 'UTF-32LE',
+  "\x2B\x2F\x76\x38" => 'UTF-7',
+  "\x2B\x2F\x76\x39" => 'UTF-7',
+  "\x2B\x2F\x76\x2B" => 'UTF-7',
+  "\x2B\x2F\x76\x2F" => 'UTF-7',
+  "\x2B\x2F\x76\x38\x2D" => 'UTF-7',
+  );
+
+  foreach ($bomMap as $bom => $encoding) {
+    if (strpos($data, $bom) === 0) {
+      return $encoding;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Converts data to UTF-8.
+ *
+ * Requires the iconv, GNU recode or mbstring PHP extension.
+ *
+ * @param string $data
+ *   The data to be converted.
+ * @param string $encoding
+ *   The encoding that the data is in.
+ *
+ * @return string|bool
+ *   Converted data or FALSE.
+ */
+function advagg_convert_to_utf8($data, $encoding) {
+  if (function_exists('iconv')) {
+    return @iconv($encoding, 'utf-8', $data);
+  }
+  elseif (function_exists('mb_convert_encoding')) {
+    return @mb_convert_encoding($data, 'utf-8', $encoding);
+  }
+  elseif (function_exists('recode_string')) {
+    return @recode_string($encoding . '..utf-8', $data);
+  }
+  // Cannot convert.
+  return FALSE;
+}
+
+/**
  * Processes the contents of a stylesheet for aggregation.
  *
  * @param string $contents
@@ -4263,6 +4324,12 @@ function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE
  * @see drupal_load_stylesheet_content()
  */
 function advagg_load_stylesheet_content($contents, $optimize = FALSE) {
+  // If a BOM is found, convert the file to UTF-8.
+  $encoding = advagg_get_encoding_from_bom($contents);
+  if (!empty($encoding)) {
+    $contents = advagg_convert_to_utf8($contents, $encoding);
+  }
+
   if ($optimize) {
     // Perform some safe CSS optimizations.
     // Regexp to match comment blocks.

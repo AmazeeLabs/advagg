@@ -775,7 +775,14 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
       // Append a ';' and a newline after each JS file to prevent them from
       // running together. Also close any comment blocks.
       if (file_exists($filename)) {
-        $contents .= file_get_contents($filename) . ";/**/\n";
+        $contents .= file_get_contents($filename);
+        // If a BOM is found, convert the file to UTF-8.
+        $encoding = advagg_get_encoding_from_bom($contents);
+        if (!empty($encoding)) {
+          $contents = advagg_convert_to_utf8($contents, $encoding);
+        }
+        // Make sure that the file is ended properly.
+        $contents .= ";/**/\n";
         if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
           $contents .= "/* Above code came from $filename */\n\n";
         }
