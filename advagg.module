@@ -4561,7 +4561,24 @@ function advagg_aggressive_cache_conflicts() {
  * @see http://php.net/parse-url#85963
  */
 function advagg_glue_url(array $parsed, $strip_query_and_fragment = FALSE) {
-  $uri = isset($parsed['scheme']) ? $parsed['scheme'] . ':' . ((strtolower($parsed['scheme']) === 'mailto') ? '' : '//') : '';
+  $uri = '';
+  if (isset($parsed['scheme'])) {
+    switch (strtolower($parsed['scheme']) ) {
+      // Mailto uri.
+      case 'mailto':
+        $uri .= $parsed['scheme'] . ':';
+        break;
+
+      // Protocol relative uri.
+      case '//':
+        $uri .= $parsed['scheme'];
+        break;
+
+      // Standard uri.
+      default:
+        $uri .= $parsed['scheme'] . '://';
+    }
+  }
   $uri .= isset($parsed['user']) ? $parsed['user'] . (isset($parsed['pass']) ? ':' . $parsed['pass'] : '') . '@' : '';
   $uri .= isset($parsed['host']) ? $parsed['host'] : '';
   $uri .= !empty($parsed['port']) ? ':' . $parsed['port'] : '';

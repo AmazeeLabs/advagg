@@ -1690,6 +1690,13 @@ function advagg_install_url_mod(&$url, array &$options, $mod_url = FALSE) {
     return;
   }
 
+  // Check if this is a protocol relative url, if so add a artificial scheme so
+  // that advagg_glue_url() will produce a proper absolute url. That will work
+  // with drupal_http_request().
+  if (!isset($parts['scheme']) && substr($url, 0, 2) == '//') {
+    global $base_url;
+    $parts['scheme'] = @parse_url($base_url, PHP_URL_SCHEME);
+  }
   // Pass along user/pass in the URL.
   $advagg_auth_basic_user = variable_get('advagg_auth_basic_user', ADVAGG_AUTH_BASIC_USER);
   if (module_exists('shield')) {
