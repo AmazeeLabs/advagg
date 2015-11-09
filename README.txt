@@ -479,16 +479,16 @@ mod_headers, and mod_expires. Add the following code to the bottom of Drupal's
 core .htaccess file (located at the webroot level).
 
     <FilesMatch "^(css|js)__[A-Za-z0-9-_]{43}__[A-Za-z0-9-_]{43}__[A-Za-z0-9-_]{43}.(css|js)(\.gz)?">
-      # No mod_headers
+      # No mod_headers. Apache module headers is not enabled.
       <IfModule !mod_headers.c>
-        # No mod_expires
+        # No mod_expires. Apache module expires is not enabled.
         <IfModule !mod_expires.c>
           # Use ETags.
           FileETag MTime Size
         </IfModule>
       </IfModule>
 
-      # Use Expires Directive.
+      # Use Expires Directive if apache module expires is enabled.
       <IfModule mod_expires.c>
         # Do not use ETags.
         FileETag None
@@ -498,6 +498,7 @@ core .htaccess file (located at the webroot level).
         ExpiresDefault A31449600
       </IfModule>
 
+      # Use Headers Directive if apache module headers is enabled.
       <IfModule mod_headers.c>
         # Do not use etags for cache validation.
         Header unset ETag
