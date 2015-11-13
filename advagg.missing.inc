@@ -210,6 +210,12 @@ function advagg_generate_location_uri($filename, $type, array $aggregate_setting
  *   Array of settings. Used to generate the 307 redirect location.
  */
 function advagg_missing_send_saved_file(array $files_to_save, $uri, $created, $filename, $type, $redirect_counter, array $aggregate_settings = array()) {
+  // Send a 304 if this is a repeat request.
+  if (!empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= REQUEST_TIME) {
+    header("HTTP/1.1 304 Not Modified");
+    exit();
+  }
+
   // Negotiate whether to use gzip compression.
   $return_compressed = isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== FALSE;
   header('Vary: Accept-Encoding', FALSE);
@@ -253,6 +259,19 @@ function advagg_missing_send_saved_file(array $files_to_save, $uri, $created, $f
 
   // Output file and exit.
   if (!empty($data)) {
+    $strlen = strlen($data);
+    // Send a 304 if this is a repeat request.
+    if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
+      $etags = explode(' ', $_SERVER['HTTP_IF_NONE_MATCH']);
+      if ( $etags[0] < REQUEST_TIME + 31 * 24 * 60 * 60
+        && isset($etags[1])
+        && $etags[1] == $strlen
+      ) {
+        header("HTTP/1.1 304 Not Modified");
+        exit();
+      }
+    }
+
     // Send out a 200 OK status.
     header($_SERVER['SERVER_PROTOCOL'] . " 200 OK");
 
@@ -263,6 +282,13 @@ function advagg_missing_send_saved_file(array $files_to_save, $uri, $created, $f
       // Etags generation in php is broken due to millisecond precision for the
       // files mtime; apache has it, php does not.
     }
+    else {
+      header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T', REQUEST_TIME));
+    }
+    // Set the Expires date 1 month into the future.
+    header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', REQUEST_TIME + 31 * 24 * 60 * 60));
+    // Also send an etag out.
+    header('Etag: ' . REQUEST_TIME . ' ' . $strlen);
 
     if ($type === 'css') {
       header("Content-Type: text/css");
