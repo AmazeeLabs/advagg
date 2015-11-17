@@ -2026,7 +2026,7 @@ function advagg_add_dns_prefetch($url) {
         'rel' => 'prefetch',
         'href' => '//' . $parse['host'] . '/robots.txt',
       ),
-      '#weight' => -999.9,
+      '#weight' => variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH) == 2 ? -1001 : -999.9,
     );
     drupal_add_html_head($element, 'advagg_prefetch:' . $parse['host']);
   }
