@@ -2012,7 +2012,7 @@ function advagg_add_dns_prefetch($url) {
       'rel' => 'dns-prefetch',
       'href' => '//' . $parse['host'],
     ),
-    '#weight' => -999.9,
+    '#weight' => variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH) == 2 ? -1001 : -999.9,
   );
   // Add markup for dns-prefetch to html_head.
   drupal_add_html_head($element, 'advagg_dns_prefetch:' . $parse['host']);

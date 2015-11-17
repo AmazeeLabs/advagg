@@ -47,10 +47,15 @@ function advagg_admin_settings_form($form, $form_state) {
     '#description' => t('If <a href="@link">HTTPRL</a> is installed, advagg will use it to generate aggregates on the fly in a background parallel process.', array('@link' => 'http://drupal.org/project/httprl')),
   );
   $form['global']['advagg_browser_dns_prefetch'] = array(
-    '#type' => 'checkbox',
+    '#type' => 'radios',
     '#title' => t('Use DNS Prefetch for external CSS/JS.'),
     '#default_value' => variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH),
-    '#description' => t('Start the DNS lookup for external CSS and JavaScript files as soon as possible.'),
+    '#description' => t('Start the DNS lookup for external CSS and JavaScript files as soon as possible. If you have css and/or js files being loaded right after the "charset=utf-8" meta tag, you need to use the "above charset=utf-8" option in order for dns-prefetch to work; Optimizely is an example that would need this other option.'),
+    '#options' => array(
+      0 => t('Disabled'),
+      1 => t('Enabled, below charset=utf-8 (recommended)'),
+      2 => t('Enabled, above charset=utf-8'),
+    ),
   );
 
   $aggressive_cache_conflicts = advagg_aggressive_cache_conflicts();
