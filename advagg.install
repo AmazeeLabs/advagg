@@ -194,6 +194,12 @@ function advagg_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'filesize_processed' => array(
+        'description' => 'The file size in bytes after minification and compression.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'content_hash' => array('content_hash'),
@@ -550,6 +556,45 @@ function advagg_update_7209(&$sandbox) {
     advagg_install_change_table_collation($table, $fields, 'ascii_bin', $schema[$table]['fields']);
   }
   return t('Database schema was adjusted to match what is listed in advagg_schema.');
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add filesize_processed field to {advagg_files} table.
+ */
+function advagg_update_7210() {
+  $spec = array(
+    'description' => 'The file size in bytes after minification and compression.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  db_add_field('advagg_files', 'filesize_processed', $spec);
+  return t('The filesize_processed field has been added to the advagg_files table.');
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Populate the filesize_processed field in the {advagg_files} table.
+ */
+function advagg_update_7211() {
+  module_load_include('inc', 'advagg', 'advagg');
+  $types = array('css', 'js');
+  foreach ($types as $type) {
+    $query = db_select('advagg_files', 'af')
+      ->fields('af')
+      ->condition('filesize_processed', 0)
+      ->condition('filetype', $type)
+      ->execute();
+    $files = array();
+    foreach ($query as $row) {
+      $files[$row->filename] = (array)$row;
+    }
+    $write = advagg_insert_update_files($files, $type);
+  }
+  return t('The filesize_processed field has been populated inside the advagg_files table.');
 }
 
 /**

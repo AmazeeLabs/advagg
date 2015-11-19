@@ -116,7 +116,7 @@ function advagg_bundler_merge(array &$groupings, $max) {
         $file_size = 0;
         $group_hash_counts[$key] = 0;
         foreach ($values as $data) {
-          $file_size += $data['bundler']['filesize'];
+          $file_size += $data['bundler']['filesize_processed'];
           $group_hash_counts[$key] += intval(substr($data['bundler']['group_hash'], 0, 8));
         }
         if (variable_get('advagg_bundler_grouping_logic', ADVAGG_BUNDLER_GROUPING_LOGIC) == 0) {

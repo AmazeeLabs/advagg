@@ -320,16 +320,22 @@ function advagg_bundler_analyisis_query($safesql) {
     ->groupBy('aa.filename_hash');
 
   // Create main query for the advagg_files table.
+  $af_fields = array(
+    'filename',
+    'filesize',
+    'mtime',
+    'changes',
+    'linecount',
+    'filename_hash',
+  );
+  include_once DRUPAL_ROOT . '/includes/install.inc';
+  if (drupal_get_installed_schema_version('advagg') >= 7211) {
+    $af_fields[] = 'filesize_processed';
+  }
+
   $query = db_select('advagg_files', 'af');
   $query->join($subquery_aggregates, 'aa', 'af.filename_hash=aa.filename_hash');
-  $query = $query->fields('af', array(
-      'filename',
-      'filesize',
-      'mtime',
-      'changes',
-      'linecount',
-      'filename_hash',
-    ))
+  $query = $query->fields('af', $af_fields)
     ->fields('aa', $fields);
   $query->comment('Query called from ' . __FUNCTION__ . '()');
   $results = $query->execute();
@@ -363,6 +369,7 @@ function advagg_bundler_analyisis_query($safesql) {
       'group_hash' => $row->counter . ' ' . $row->hashlist,
       'mtime' => $row->mtime,
       'filesize' => $row->filesize,
+      'filesize_processed' => empty($row->filesize_processed) ? $row->filesize : $row->filesize_processed,
       'linecount' => $row->linecount,
       'changes' => $row->changes,
     );
