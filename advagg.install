@@ -1254,6 +1254,17 @@ function advagg_install_check_via_http(array &$requirements) {
             )),
           );
         }
+        elseif ($request->code == 403) {
+          $requirements['advagg_' . $type . '_server_permissions'] = array(
+            'title' => $t('Adv CSS/JS Agg - Webserver can not access files'),
+            'value' => $t('HTTP requests to advagg for @type files are not getting through.', array('@type' => $type)),
+            'severity' => REQUIREMENT_ERROR,
+            'description' => $t('Your webserver can not access @type advagg files. This is usually a server permissions issue. Raw request info: <pre>@request</pre>', array(
+              '@type' => $type,
+              '@request' => var_export($request, TRUE)
+            )),
+          );
+        }
         else {
           // Menu callback failed.
           $requirements['advagg_' . $type . '_generation'] = array(
@@ -1451,6 +1462,17 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
                   '@message' => isset($request->error) ? $request->error : '',
                   '@url' => 'http://checkgzipcompression.com/?url=' . urlencode($url),
                   '@skipcode' => '$conf[\'advagg_skip_gzip_check\'] = TRUE;',
+                )),
+              );
+            }
+            elseif ($request->code != 200) {
+              $requirements['advagg_' . $type . '_gzip' . $key . $options['version']] = array(
+                'title' => $t('Adv CSS/JS Agg - gzip'),
+                'severity' => REQUIREMENT_WARNING,
+                'value' => $t('Gzip is failing for %type files.', array('%type' => $type)),
+                'description' => $t('The web server is not returning a 200, instead a @code is being returned. Gzip can not be tested. Raw request info: <pre>@request</pre>', array(
+                  '@code' => $request->code,
+                  '@request' => print_r($request, TRUE),
                 )),
               );
             }
