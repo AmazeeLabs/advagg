@@ -955,6 +955,40 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   if ($temporary_file === FALSE) {
     $temporary_file = $dir . 'file_advagg_' . md5(getmypid() . microtime(TRUE) . mt_rand());
   }
+  // Make sure temp filename has the correct name.
+  if (strpos($temporary_file, 'file_advagg_') === FALSE) {
+    $basename = basename($temporary_file);
+    $temporary_file_fixed = str_replace($basename, 'file_advagg_' . md5(getmypid() . microtime(TRUE) . mt_rand()), $temporary_file);
+    if (!@rename($temporary_file, $temporary_file_fixed)) {
+      // Remove if rename failed.
+      @unlink($temporary_file);
+      watchdog('advagg', 'Rename 1 failed. Current: %current Target: %target', array(
+        '%current' => $temporary_file,
+        '%target' => $temporary_file_fixed,
+      ), WATCHDOG_ERROR);
+    }
+    else {
+      $temporary_file = $temporary_file_fixed;
+    }
+  }
+  // Make sure temp filename has the correct dir.
+  $subdir = basename($dir);
+  if (strpos($temporary_file, $subdir) === FALSE) {
+    $basename = basename($temporary_file);
+    $baddir = substr($temporary_file, 0, strpos($temporary_file, $basename));
+    $temporary_file_fixed = str_replace($baddir, $dir, $temporary_file);
+    if (!@rename($temporary_file, $temporary_file_fixed)) {
+      // Remove if rename failed.
+      @unlink($temporary_file);
+      watchdog('advagg', 'Rename 2 failed. Current: %current Target: %target', array(
+        '%current' => $temporary_file,
+        '%target' => $temporary_file_fixed,
+      ), WATCHDOG_ERROR);
+    }
+    else {
+      $temporary_file = $temporary_file_fixed;
+    }
+  }
   $temporary_file_copy = $temporary_file;
 
   // Get the extension of the original filename and append it to the temp file
@@ -965,18 +999,23 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
     $parts = pathinfo($parts['filename']);
     $extension = '.' . $parts['extension'] . $extension;
   }
+
   // Move temp file into the dest dir, if not in there.
   // Add the extension on as well.
-  $temporary_file = str_replace(substr($temporary_file, 0, strpos($temporary_file, 'file_advagg_')), $dir, $temporary_file) . $extension;
+  $temporary_file_new = str_replace(substr($temporary_file, 0, strpos($temporary_file, 'file_advagg_')), $dir, $temporary_file) . $extension;
 
   // Preform the rename, adding the extension to the temp file.
-  if (!@rename($temporary_file_copy, $temporary_file)) {
+  if (!@rename($temporary_file_copy, $temporary_file_new)) {
     // Remove if rename failed.
     @unlink($temporary_file_copy);
+    watchdog('advagg', 'Rename 3 failed. Current: %current Target: %target', array(
+      '%current' => $temporary_file_copy,
+      '%target' => $temporary_file_new,
+    ), WATCHDOG_ERROR);
   }
 
   // Save to temporary filename in the destination directory.
-  $filepath = file_unmanaged_save_data($data, $temporary_file, FILE_EXISTS_REPLACE);
+  $filepath = file_unmanaged_save_data($data, $temporary_file_new, FILE_EXISTS_REPLACE);
 
   if ($filepath) {
     // Perform the rename operation.
@@ -989,8 +1028,17 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
       // Remove temporary_file if rename failed.
       if (!$result) {
         @unlink($filepath);
+        watchdog('advagg', 'Rename 4 failed. Current: %current Target: %target', array(
+          '%current' => $filepath,
+          '%target' => $uri,
+        ), WATCHDOG_ERROR);
       }
     }
+  }
+  else {
+    watchdog('advagg', 'Write failed. Target: %target', array(
+      '%target' => $temporary_file_new,
+    ), WATCHDOG_ERROR);
   }
 }
 
