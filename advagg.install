@@ -1189,11 +1189,29 @@ function advagg_install_check_via_http(array &$requirements) {
           && !empty($exclude_paths)
           && strpos($exclude_paths, 'advagg_') === FALSE
         ) {
+          $pos_a = strpos($exclude_paths, '(?:styles)');
+          $pos_b = strpos($exclude_paths, '(?:styles|');
           if ($exclude_paths === '/\/(?:styles)\//') {
-            $description = $t('Change it from <code>/\/(?:styles)\//</code> to <code>/\/(?:styles|advagg_(cs|j)s)\//</code> Current value: %value', array('%value' => $exclude_paths));
+            $description = $t('Change it from <code> %value </code> to <code>/\/(?:styles|advagg_(cs|j)s)\//</code>', array(
+              '%value' => $exclude_paths,
+            ));
+          }
+          elseif ($pos_a !== FALSE) {
+            $description = $t('Change it from <code> %value </code> to <code> %code </code>', array(
+              '%value' => $exclude_paths,
+              '%code' => str_replace('(?:styles)', '(?:styles|advagg_(cs|j)s)', $exclude_paths),
+            ));
+          }
+          elseif ($pos_b !== FALSE) {
+            $description = $t('Change it from <code> %value </code> to <code> %code </code>', array(
+              '%value' => $exclude_paths,
+              '%code' => str_replace('(?:styles|', '(?:styles|advagg_(cs|j)s|', $exclude_paths),
+            ));
           }
           else {
-            $description = $t('Add in <code>advagg_(cs|j)s</code> into the regex. Current value: %value', array('%value' => $exclude_paths));
+            $description = $t('Add in <code>advagg_(cs|j)s</code> into the regex. Current value: %value', array(
+              '%value' => $exclude_paths,
+            ));
           }
           $requirements['advagg_404_fast_' . $type . '_generation'] = array(
             'title' => $t('Adv CSS/JS Agg - Fast 404: HTTP Request'),
