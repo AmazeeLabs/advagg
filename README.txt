@@ -9,6 +9,7 @@ CONTENTS OF THIS FILE
 
  - Features & benefits
  - Configuration
+ - Additional options for drupal_add_css/js functions
  - JSMin PHP Extension
  - JavaScript Bookmarklet
  - Technical Details & Hooks
@@ -251,6 +252,24 @@ current defaults are shown.
 
     // Default root dir for the advagg files; see advagg_get_root_files_dir().
     $conf['advagg_root_dir_prefix'] = 'public://';
+
+
+ADDITIONAL OPTIONS FOR DRUPAL_ADD_CSS/JS FUNCTIONS
+--------------------------------------------------
+
+AdvAgg extends the avaible options inside of drupal_add_css and drupal_add_js.
+
+drupal_add_js - additional keys for $options.
+ - browsers: Works the same as the one foundin drupal_add_css.
+ - onload: Run this js code when after the js file has loaded.
+ - onerror: Run this js code when if the js file did not load.
+ - async: TRUE - Load this file using async.
+ - no_defer: TRUE - Never defer or async load this js file.
+
+Both drupal_add_js + drupal_add_css - additional keys for $options.
+ - scope_lock: TRUE - Make sure the scope of this will not ever change.
+ - movable: FALSE - Make sure the ordering of this will not ever change.
+
 
 JSMIN PHP EXTENSION
 -------------------
