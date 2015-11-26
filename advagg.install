@@ -676,7 +676,7 @@ function advagg_install_change_table_collation($table_name, array $fields, $coll
  */
 function advagg_install_delete_empty_file_if_stale($uri) {
   // Set stale file threshold to 60 seconds.
-  if (filesize($uri) == 0 && REQUEST_TIME - filemtime($uri) > 60) {
+  if (filesize($uri) < 3 && REQUEST_TIME - filemtime($uri) > 60) {
     file_unmanaged_delete($uri);
   }
 }

@@ -650,6 +650,10 @@ function advagg_cron($bypass_time_check = FALSE) {
 
   // Remove expired locks from the semaphore database table.
   $return[] = advagg_cleanup_semaphore_table();
+
+  // Remove old temp files.
+  $return[] = advagg_remove_temp_files();
+
   return $return;
 }
 

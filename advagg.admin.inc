@@ -444,8 +444,20 @@ function advagg_admin_operations_form($form, $form_state) {
   );
   $form['cron']['cleanup_semaphore_table']['advagg_cleanup_semaphore_table'] = array(
     '#type' => 'submit',
-    '#value' => t('Delete Unused Aggregates From Database'),
+    '#value' => t('Delete Orphaned Semaphore Locks'),
     '#submit' => array('advagg_admin_cleanup_semaphore_table_button'),
+  );
+  $form['cron']['cleanup_temp_files'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Delete leftover temporary files'),
+    '#description' => t('Delete old temporary files from the filesystem.'),
+  );
+  $form['cron']['cleanup_temp_files']['advagg_remove_temp_files'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete leftover temporary files'),
+    '#submit' => array('advagg_admin_cleanup_temp_files_button'),
   );
 
   // Hide drastic measures as they should not be done unless you really need it.
@@ -1043,5 +1055,22 @@ function advagg_admin_cleanup_semaphore_table_button() {
   }
   else {
     drupal_set_message(t('Some orphaned advagg semaphore database table locks discovered were found. A total of %count database entries were removed.', array('%count' => $count)));
+  }
+}
+
+
+/**
+ * Delete leftover temp files.
+ */
+function advagg_admin_cleanup_temp_files_button() {
+  module_load_include('inc', 'advagg', 'advagg.cache');
+
+  // Delete orphaned/expired advagg locks from the semaphore database table.
+  $count = advagg_remove_temp_files();
+  if (empty($count)) {
+    drupal_set_message(t('No leftover temp files found. Nothing was deleted.'));
+  }
+  else {
+    drupal_set_message(t('Some leftover temp files from advagg were found. A total of %count temp files were removed.', array('%count' => $count)));
   }
 }
