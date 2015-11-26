@@ -592,7 +592,7 @@ function advagg_update_7211() {
     foreach ($query as $row) {
       $files[$row->filename] = (array)$row;
     }
-    $write = advagg_insert_update_files($files, $type);
+    advagg_insert_update_files($files, $type);
   }
   return t('The filesize_processed field has been populated inside the advagg_files table.');
 }
