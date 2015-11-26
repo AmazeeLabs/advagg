@@ -801,7 +801,7 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
       $contents = '';
       // Append a ';' and a newline after each JS file to prevent them from
       // running together. Also close any comment blocks.
-      if (file_exists($filename)) {
+      if (is_readable($filename)) {
         $contents .= file_get_contents($filename);
         // If a BOM is found, convert the file to UTF-8.
         $encoding = advagg_get_encoding_from_bom($contents);
@@ -813,6 +813,9 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
         if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
           $contents .= "/* Above code came from $filename */\n\n";
         }
+      }
+      else {
+        watchdog('advagg', 'Reading from the file system failed. %file', array('%file' => $filename), WATCHDOG_ERROR);
       }
       // Allow other modules to modify this files contents.
       // Call hook_advagg_get_js_file_contents_alter().
