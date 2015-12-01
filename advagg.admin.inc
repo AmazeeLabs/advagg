@@ -397,7 +397,7 @@ function advagg_admin_operations_form($form, $form_state) {
   $form['cron'] = array(
     '#type' => 'fieldset',
     '#title' => t('Cron Maintenance Tasks'),
-    '#description' => t('The following 4 operations are ran on cron but you can run them manually here.'),
+    '#description' => t('The following 6 operations are ran on cron but you can run them manually here.'),
   );
   $form['cron']['smart_file_flush'] = array(
     '#type' => 'fieldset',
@@ -411,6 +411,20 @@ function advagg_admin_operations_form($form, $form_state) {
     '#value' => t('Remove All Stale Files'),
     '#submit' => array('advagg_admin_flush_stale_files_button'),
   );
+
+  $form['cron']['delete_orphaned_aggregates'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Delete orphaned aggregates'),
+    '#description' => t('Scan CSS/JS advagg dir and remove file if there is no associated db record.'),
+  );
+  $form['cron']['delete_orphaned_aggregates']['advagg_delete_orphaned_aggregates'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete orphaned aggregates'),
+    '#submit' => array('advagg_admin_delete_orphaned_aggregates_button'),
+  );
+
   $form['cron']['remove_missing_files'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -423,6 +437,7 @@ function advagg_admin_operations_form($form, $form_state) {
     '#value' => t('Clear Missing Files From Database'),
     '#submit' => array('advagg_admin_remove_missing_files_from_db_button'),
   );
+
   $form['cron']['remove_old_aggregates'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -435,6 +450,7 @@ function advagg_admin_operations_form($form, $form_state) {
     '#value' => t('Delete Unused Aggregates From Database'),
     '#submit' => array('advagg_admin_remove_old_unused_aggregates_button'),
   );
+
   $form['cron']['cleanup_semaphore_table'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -447,6 +463,7 @@ function advagg_admin_operations_form($form, $form_state) {
     '#value' => t('Delete Orphaned Semaphore Locks'),
     '#submit' => array('advagg_admin_cleanup_semaphore_table_button'),
   );
+
   $form['cron']['cleanup_temp_files'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -1008,6 +1025,22 @@ function advagg_admin_increment_global_counter() {
   module_load_include('inc', 'advagg', 'advagg.cache');
   $new_value = advagg_increment_global_counter();
   drupal_set_message(t('Global counter is now set to %new_value', array('%new_value' => $new_value)));
+}
+
+/**
+ * Scan CSS/JS advagg dir and remove file if there is no associated db record.
+ */
+function advagg_admin_delete_orphaned_aggregates_button() {
+  module_load_include('inc', 'advagg', 'advagg.cache');
+
+  // Remove aggregates that include missing files.
+  $deleted = advagg_delete_orphaned_aggregates();
+  if (empty($deleted[0]) && empty($deleted[1])) {
+    drupal_set_message(t('All files have an associated db record; nothing was deleted.'));
+  }
+  else {
+    drupal_set_message(t('Some files had no associated db record and could be safely deleted from the file system. @raw', array('@raw' => print_r($deleted[1], TRUE))));
+  }
 }
 
 /**

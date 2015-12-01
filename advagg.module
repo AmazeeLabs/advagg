@@ -639,7 +639,7 @@ function advagg_cron($bypass_time_check = FALSE) {
   module_load_include('inc', 'advagg', 'advagg.cache');
   $return[] = advagg_delete_stale_aggregates();
 
-  // Remove orphaned files.
+  // Delete orphaned aggregates.
   $return[] = advagg_delete_orphaned_aggregates();
 
   // Remove aggregates that include missing files.
