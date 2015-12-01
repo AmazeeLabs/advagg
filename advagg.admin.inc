@@ -1087,7 +1087,7 @@ function advagg_admin_cleanup_semaphore_table_button() {
     drupal_set_message(t('No orphaned advagg semaphore database table locks discovered. Nothing was deleted.'));
   }
   else {
-    drupal_set_message(t('Some orphaned advagg semaphore database table locks discovered were found. A total of %count database entries were removed.', array('%count' => $count)));
+    drupal_set_message($count, format_plural('1 orphaned advagg semaphore database table lock was found. A total of 1 database entry was removed.', 'Some orphaned advagg semaphore database table locks were found. A total of @count database entries were removed.'));
   }
 }
 
@@ -1104,6 +1104,6 @@ function advagg_admin_cleanup_temp_files_button() {
     drupal_set_message(t('No leftover temp files found. Nothing was deleted.'));
   }
   else {
-    drupal_set_message(t('Some leftover temp files from advagg were found. A total of %count temp files were removed.', array('%count' => $count)));
+    drupal_set_message($count, format_plural('1 leftover temp files from advagg was found. A total of 1 temp files was removed.', 'Some leftover temp files from advagg were found. A total of %count temp files were removed.'));
   }
 }

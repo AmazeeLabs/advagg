@@ -156,34 +156,38 @@ function drush_advagg_cron() {
 
   // Output results from running advagg_remove_missing_files_from_db().
   if (empty($output[2])) {
-    drupal_set_message(t('All source files where found, no database entries where pruned.'), 'ok');
+    drupal_set_message(dt('All source files where found, no database entries where pruned.'), 'ok');
   }
   else {
-    drupal_set_message(t('Some source files are missing and as a result some unused aggregates were found. A total of %count database entries were removed.', array('%count' => count($output[2]))), 'ok');
+    // format_plural() not always available.
+    drupal_set_message(dt('Some source files are missing and as a result some unused aggregates were found. A total of %count database entries were removed.', array('%count' => count($output[2]))), 'ok');
   }
 
   // Output results from running advagg_remove_old_unused_aggregates().
   if (empty($output[3])) {
-    drupal_set_message(t('No old and unused aggregates found. Nothing was deleted.'), 'ok');
+    drupal_set_message(dt('No old and unused aggregates found. Nothing was deleted.'), 'ok');
   }
   else {
-    drupal_set_message(t('Some old and unused aggregates were found. A total of %count database entries were removed.', array('%count' => $output[3])), 'ok');
+    // format_plural() not always available.
+    drupal_set_message(dt('Some old and unused aggregates were found. A total of %count database entries were removed.', array('%count' => $output[3])), 'ok');
   }
 
   // Output results from running advagg_cleanup_semaphore_table().
   if (empty($output[4])) {
-    drupal_set_message(t('No old semaphore locks found.'), 'ok');
+    drupal_set_message(dt('No old semaphore locks found.'), 'ok');
   }
   else {
-    drupal_set_message(t('A total of %count old semaphore entries were removed.', array('%count' => count($output[4]))), 'ok');
+    // format_plural() not always available.
+    drupal_set_message(dt('A total of %count old semaphore entries were removed.', array('%count' => count($output[4]))), 'ok');
   }
 
   // Output results from running advagg_remove_temp_files().
   if (empty($output[5])) {
-    drupal_set_message(t('No leftover temporary files found. Nothing was deleted.'), 'ok');
+    drupal_set_message(dt('No leftover temporary files found. Nothing was deleted.'), 'ok');
   }
   else {
-    drupal_set_message(t('Some oleftover temporary files were found. A total of %count temporary files were removed.', array('%count' => $output[5])), 'ok');
+    // format_plural() not always available.
+    drupal_set_message(dt('Some oleftover temporary files were found. A total of %count temporary files were removed.', array('%count' => $output[5])), 'ok');
   }
 }
 
