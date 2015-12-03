@@ -14,6 +14,7 @@ CONTENTS OF THIS FILE
  - JavaScript Bookmarklet
  - Technical Details & Hooks
  - How to get a high PageSpeed score
+ - Settings that Drupal.org uses
  - nginx Configuration
  - Troubleshooting
 
@@ -257,10 +258,10 @@ current defaults are shown.
 ADDITIONAL OPTIONS FOR DRUPAL_ADD_CSS/JS FUNCTIONS
 --------------------------------------------------
 
-AdvAgg extends the avaible options inside of drupal_add_css and drupal_add_js.
+AdvAgg extends the available options inside of drupal_add_css and drupal_add_js.
 
 drupal_add_js - additional keys for $options.
- - browsers: Works the same as the one foundin drupal_add_css.
+ - browsers: Works the same as the one found in drupal_add_css.
  - onload: Run this js code when after the js file has loaded.
  - onerror: Run this js code when if the js file did not load.
  - async: TRUE - Load this file using async.
@@ -433,6 +434,49 @@ ideally with only the css/js that is different on that page. You can select how
 many bundles to create and the bundler will do it's best to meet that goal; if
 using browser css/js conditionals (js browser conditionals backported from D8
 https://drupal.org/node/865536) then the bundler might not meet your set value.
+
+
+SETTINGS THAT DRUPAL.ORG USES
+-----------------------------
+
+Issue: https://www.drupal.org/node/2493801
+These will not give you the best PageSpeed score but they will give the best
+real world performance on slower connections. To expand on this, fourkitchens
+has an excellent article on inlining critical css:
+https://fourword.fourkitchens.com/article/use-grunt-and-advagg-inline-critical-css-drupal-7-theme
+
+Configuration:
+ - Enable advanced aggregation: Checked
+ - Use DNS Prefetch for external CSS/JS: Enabled, below charset=utf-8
+ - AdvAgg Cache Settings: Aggressive Render Cache ~ 10ms
+ - Combine CSS files by using media queries: Checked
+ - Fix improperly set type: Checked
+ - Cron Options: Default
+ - Obscure Options: Default
+
+Bundler:
+ - Bundler is Active: Checked
+ - Target Number Of CSS Bundles Per Page: 2
+ - Target Number Of JS Bundles Per Page: 5
+ - Grouping logic: File size
+
+JS Compression:
+ - File Compression: Select a Compressor: JSMin (~2ms)
+ - Inline Compression: Select a Compressor: JSMin (~2ms)
+ - Inline Compression: Use even if this page is not cacheable: Checked
+
+Modifications:
+ - Remove ajaxPageState CSS and JS data if ajax.js is not used on this page:
+   Checked
+ - Move all external scripts to the top of the execution order: Checked
+ - Move all inline scripts to the bottom of the execution order: Checked
+ - Move Google Analytics analytics.js code from inline to be a file: Checked
+ - Prefetch stats.g.doubleclick.net/robots.txt: Checked
+ - Move JS to the footer: All but what is in the $all_in_footer_list
+ - Deferred JavaScript Execution: Add The defer Tag To All Script Tags: All but
+   external scripts
+ - Deferred inline JavaScript Execution: Put a wrapper around inline JS so it
+   runs from a setTimeout call: Checked
 
 
 NGINX CONFIGURATION
