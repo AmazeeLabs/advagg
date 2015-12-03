@@ -19,7 +19,7 @@ define('ADVAGG_MOD_JS_PREPROCESS', FALSE);
 /**
  * Default value to add the defer tag to all script tags.
  */
-define('ADVAGG_MOD_JS_DEFER', FALSE);
+define('ADVAGG_MOD_JS_DEFER', 0);
 
 /**
  * Default value to add use the async script shim for script tags.
@@ -74,7 +74,7 @@ define('ADVAGG_MOD_CSS_ADJUST_SORT_BROWSERS', FALSE);
 /**
  * Default value to use JavaScript to defer CSS loading.
  */
-define('ADVAGG_MOD_CSS_DEFER', FALSE);
+define('ADVAGG_MOD_CSS_DEFER', 0);
 
 /**
  * Default value to use JavaScript to defer CSS loading in the admin theme.

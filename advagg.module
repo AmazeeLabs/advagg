@@ -196,7 +196,7 @@ define('ADVAGG_SKIP_ENABLED_PREPROCESS_CHECK', FALSE);
 /**
  * Prefetch External domains for CSS/JS.
  */
-define('ADVAGG_BROWSER_DNS_PREFETCH', FALSE);
+define('ADVAGG_BROWSER_DNS_PREFETCH', 0);
 
 /**
  * Function to use when converting a non scalar to a string.
