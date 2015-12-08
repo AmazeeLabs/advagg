@@ -1243,6 +1243,10 @@ function advagg_build_aggregate_plans(array $files_to_aggregate, $type) {
     advagg_create_aggregate_files($plans, $type);
   }
 
+  // Run hooks to modify the plans.
+  // Call hook_advagg_build_aggregate_plans_post_alter().
+  drupal_alter('advagg_build_aggregate_plans_post', $plans);
+
   return $plans;
 }
 

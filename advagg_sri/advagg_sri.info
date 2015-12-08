@@ -1,0 +1,7 @@
+name = AdvAgg Subresource Integrity
+description = Provide the integrity attribute for CSS and JS files.
+core = 7.x
+dependencies[] = advagg
+package = Advanced CSS/JS Aggregation
+
+configure = admin/config/development/performance/advagg/sri

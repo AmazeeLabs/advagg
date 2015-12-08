@@ -589,11 +589,13 @@ function advagg_get_files_from_hashes($type, $aggregate_filenames_hash, $aggrega
  *   Array of filenames.
  * @param array $aggregate_settings
  *   Array of settings.
+ * @param string $aggregate_filename
+ *   Filename of the aggregeate.
  *
  * @return string
  *   String containing all the files.
  */
-function advagg_get_css_aggregate_contents(array $files, array $aggregate_settings) {
+function advagg_get_css_aggregate_contents(array $files, array $aggregate_settings, $aggregate_filename = '') {
   // Check if CSS compression is enabled.
   $optimize = TRUE;
   if (!empty($aggregate_settings['settings']['no_alters'])) {
@@ -660,7 +662,12 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
       if (empty($aggregate_settings['settings']['no_alters'])) {
         drupal_alter('advagg_get_css_file_contents_pre', $file, $optimize, $aggregate_settings);
       }
-      $contents = advagg_load_css_stylesheet($file, $optimize, $aggregate_settings);
+      if (is_readable($file)) {
+        $contents = advagg_load_css_stylesheet($file, $optimize, $aggregate_settings);
+      }
+      else {
+        advagg_missing_file_not_readable($file, $aggregate_filename);
+      }
 
       // Allow other modules to modify this files contents.
       // Call hook_advagg_get_css_file_contents_alter().
@@ -788,11 +795,13 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
  *   Array of filenames.
  * @param array $aggregate_settings
  *   Array of settings.
+ * @param string $aggregate_filename
+ *   Filename of the aggregeate.
  *
  * @return string
  *   String containing all the files.
  */
-function advagg_get_js_aggregate_contents(array $files, array $aggregate_settings) {
+function advagg_get_js_aggregate_contents(array $files, array $aggregate_settings, $aggregate_filename = '') {
   $data = '';
 
   if (!empty($files)) {
@@ -815,7 +824,7 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
         }
       }
       else {
-        watchdog('advagg', 'Reading from the file system failed. %file', array('%file' => $filename), WATCHDOG_ERROR);
+        advagg_missing_file_not_readable($filename, $aggregate_filename);
       }
       // Allow other modules to modify this files contents.
       // Call hook_advagg_get_js_file_contents_alter().
@@ -833,6 +842,23 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
   }
   return $data;
 }
+
+function advagg_missing_file_not_readable($filename, $aggregate_filename = '') {
+  // Let other modules know about this missing file.
+  // Call hook_advagg_missing_root_file().
+  module_invoke_all('advagg_missing_root_file', $aggregate_filename, $filename);
+
+  $cid = 'advagg:missing_file:' . drupal_hash_base64($filename);
+  $cache = cache_get($cid, 'cache_advagg_info');
+  if (empty($cache)) {
+    watchdog('advagg', 'Reading from the file system failed. %file %aggregate', array(
+      '%file' => $filename,
+      '%aggregate' => $aggregate_filename,
+    ), WATCHDOG_ERROR);
+    cache_set($cid, TRUE, 'cache_advagg_info', CACHE_TEMPORARY);
+  }
+}
+
 
 // File save functions.
 /**
@@ -869,10 +895,10 @@ function advagg_save_aggregate($filename, array $files, $type, array $aggregate_
   // Build the aggregates contents.
   $contents = '';
   if ($type === 'css') {
-    $contents = advagg_get_css_aggregate_contents($files, $aggregate_settings);
+    $contents = advagg_get_css_aggregate_contents($files, $aggregate_settings, $filename);
   }
   elseif ($type === 'js') {
-    $contents = advagg_get_js_aggregate_contents($files, $aggregate_settings);
+    $contents = advagg_get_js_aggregate_contents($files, $aggregate_settings, $filename);
   }
   if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
     $contents = "/* This aggregate contains the following files:\n" . implode(",\n", array_keys($files)) . ". */\n\n" . $contents;

@@ -300,6 +300,7 @@ function advagg_hook_info() {
     'advagg_save_aggregate_pre_alter',
     'advagg_save_aggregate_alter',
     'advagg_build_aggregate_plans_alter',
+    'advagg_build_aggregate_plans_post_alter',
     'advagg_css_groups_alter',
     'advagg_js_groups_alter',
     'advagg_modify_css_pre_render_alter',
@@ -309,6 +310,7 @@ function advagg_hook_info() {
     'advagg_scan_for_changes',
     'advagg_get_info_on_files_alter',
     'advagg_context_alter',
+    'advagg_missing_root_file',
   );
   $hooks = array();
   foreach ($advagg_hooks as $hook) {
@@ -1685,11 +1687,11 @@ function _advagg_process_html(&$variables) {
     }
     // Render the CSS.
     $variables['styles'] = drupal_render($full_css);
-    if (!empty($css_cache_id)) {
+    if (!empty($css_cache_id) && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 3) {
       // Save to the cache.
       cache_set($css_cache_id, array($variables['styles'], $full_css), 'cache_advagg_aggregates', CACHE_TEMPORARY);
     }
-    if (!empty($css_cache_id_no_alter)) {
+    if (!empty($css_cache_id_no_alter) && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 5) {
       // Save to the cache.
       cache_set($css_cache_id_no_alter, array($variables['styles'], $full_css), 'cache_advagg_aggregates', CACHE_TEMPORARY);
     }
@@ -1866,10 +1868,10 @@ function _advagg_process_html(&$variables) {
       }
       unset($scripts_array);
 
-      if (!empty($js_cache_id) && !empty($js_cache)) {
+      if (!empty($js_cache_id) && !empty($js_cache) && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 3) {
         cache_set($js_cache_id, array($js_cache, $js_scope_array), 'cache_advagg_aggregates', CACHE_TEMPORARY);
       }
-      if (!empty($js_cache_id_no_alter) && !empty($js_cache)) {
+      if (!empty($js_cache_id_no_alter) && !empty($js_cache) && variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 5) {
         cache_set($js_cache_id_no_alter, array($js_cache, $js_scope_array), 'cache_advagg_aggregates', CACHE_TEMPORARY);
       }
     }
@@ -2809,6 +2811,11 @@ function advagg_get_current_hooks_hash() {
 /**
  * Store settings associated with hash.
  *
+ * @param string $hash
+ *   The hash.
+ * @param array $settings
+ *   The settings associated with this hash.
+ *
  * @return MergeQuery
  *   value from db_merge
  */
@@ -2849,6 +2856,7 @@ function advagg_hooks_implemented($all = TRUE) {
   if ($all) {
     $hooks += array(
       'advagg_build_aggregate_plans_alter' => array(),
+      'advagg_build_aggregate_plans_post_alter' => array(),
       'advagg_changed_files' => array(),
       'advagg_css_groups_alter' => array(),
       'advagg_js_groups_alter' => array(),
@@ -2858,6 +2866,7 @@ function advagg_hooks_implemented($all = TRUE) {
       'advagg_hooks_implemented_alter' => array(),
       'advagg_removed_aggregates' => array(),
       'advagg_scan_for_changes' => array(),
+      'advagg_missing_root_file' => array(),
       'js_alter' => array(),
       'css_alter' => array(),
     );
@@ -3613,6 +3622,9 @@ function advagg_pre_render_styles(array $elements) {
           $element['#attributes']['href'] = advagg_file_create_url($group['data']);
           $element['#attributes']['media'] = $group['media'];
           $element['#browsers'] = $group['browsers'];
+          if (!empty($group['attributes'])) {
+            $element['#attributes'] += $group['attributes'];
+          }
           $elements[] = $element;
         }
         // The group can be aggregated, but hasn't been: combine multiple items
@@ -3652,6 +3664,9 @@ function advagg_pre_render_styles(array $elements) {
             $element['#value'] = "\n" . implode("\n", $import_batch) . "\n";
             $element['#attributes']['media'] = $group['media'];
             $element['#browsers'] = $group['browsers'];
+            if (!empty($group['attributes'])) {
+              $element['#attributes'] += $group['attributes'];
+            }
             $elements[] = $element;
           }
         }
@@ -3674,6 +3689,9 @@ function advagg_pre_render_styles(array $elements) {
             $element['#attributes']['href'] = advagg_file_create_url($item['data']) . $query_string_separator . $query_string;
             $element['#attributes']['media'] = $item['media'];
             $element['#browsers'] = $group['browsers'];
+            if (!empty($group['attributes'])) {
+              $element['#attributes'] += $group['attributes'];
+            }
             $elements[] = $element;
           }
         }
@@ -3690,6 +3708,9 @@ function advagg_pre_render_styles(array $elements) {
           $element['#value_suffix'] = $embed_suffix;
           $element['#attributes']['media'] = $group['media'];
           $element['#browsers'] = $group['browsers'];
+          if (!empty($group['attributes'])) {
+            $element['#attributes'] += $group['attributes'];
+          }
           $elements[] = $element;
         }
         else {
@@ -3700,6 +3721,9 @@ function advagg_pre_render_styles(array $elements) {
             $element['#value_suffix'] = $embed_suffix;
             $element['#attributes']['media'] = $item['media'];
             $element['#browsers'] = $group['browsers'];
+            if (!empty($group['attributes'])) {
+              $element['#attributes'] += $group['attributes'];
+            }
             $elements[] = $element;
           }
         }
@@ -3718,6 +3742,9 @@ function advagg_pre_render_styles(array $elements) {
           $element['#attributes']['href'] = $file_uri;
           $element['#attributes']['media'] = $item['media'];
           $element['#browsers'] = $group['browsers'];
+          if (!empty($group['attributes'])) {
+            $element['#attributes'] += $group['attributes'];
+          }
           $elements[] = $element;
         }
         break;
