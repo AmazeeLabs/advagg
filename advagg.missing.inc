@@ -843,13 +843,24 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
   return $data;
 }
 
+/**
+ * Let other modules know that this.
+ *
+ * @param string $filename
+ *   Filename of the missing file.
+ * @param string $aggregate_filename
+ *   Filename of the aggregate that is trying to be generated.
+ */
 function advagg_missing_file_not_readable($filename, $aggregate_filename = '') {
-  // Let other modules know about this missing file.
-  // Call hook_advagg_missing_root_file().
-  module_invoke_all('advagg_missing_root_file', $aggregate_filename, $filename);
-
+  // Get cache of this report.
   $cid = 'advagg:missing_file:' . drupal_hash_base64($filename);
   $cache = cache_get($cid, 'cache_advagg_info');
+
+  // Let other modules know about this missing file.
+  // Call hook_advagg_missing_root_file().
+  module_invoke_all('advagg_missing_root_file', $aggregate_filename, $filename, $cache);
+
+  // Report to watchdog if this is not cached.
   if (empty($cache)) {
     watchdog('advagg', 'Reading from the file system failed. %file %aggregate', array(
       '%file' => $filename,
@@ -858,7 +869,6 @@ function advagg_missing_file_not_readable($filename, $aggregate_filename = '') {
     cache_set($cid, TRUE, 'cache_advagg_info', CACHE_TEMPORARY);
   }
 }
-
 
 // File save functions.
 /**

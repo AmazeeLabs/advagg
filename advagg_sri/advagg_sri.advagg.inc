@@ -92,8 +92,8 @@ function advagg_sri_advagg_build_aggregate_plans_alter() {
 /**
  * Implements hook_advagg_missing_root_file().
  */
-function advagg_sri_advagg_missing_root_file($aggregate_filename) {
-  if (!empty($aggregate_filename)) {
+function advagg_sri_advagg_missing_root_file($aggregate_filename, $filename, $cache) {
+  if (!empty($aggregate_filename) && !empty($cache)) {
     advagg_sri_del_filename_hashes($aggregate_filename);
   }
 }
