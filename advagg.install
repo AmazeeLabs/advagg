@@ -1994,7 +1994,7 @@ function advagg_install_apache_mod_loaded($mod) {
   }
   elseif (is_callable('phpinfo') && FALSE === strpos(ini_get('disable_functions'), 'phpinfo')) {
     // Use static so we don't run phpinfo mutiple times.
-    $phpinfo = drupal_static(__FUNCTION__);
+    $phpinfo = &drupal_static(__FUNCTION__);
     if (empty($phpinfo)) {
       // Use phpinfo to get the info if apache_get_modules doesn't exist.
       ob_start();
