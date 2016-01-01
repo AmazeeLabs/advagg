@@ -364,6 +364,13 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
       return;
     }
 
+    // Under some unknown/rare circumstances, JSMin and JSqueeze can add a
+    // couple of extraneous/wrong chars at the end of the string. Check and
+    // remove if necessary.
+    if (substr(trim($contents), -2) == "\xE3\x7F") {
+      $contents = substr($contents, 0, -2);
+    }
+
     // Ensure that $contents ends with ; or }.
     if (strpbrk(substr(trim($contents), -1), ';}') === FALSE) {
       // ; or } not found, add in ; to the end of $contents.
