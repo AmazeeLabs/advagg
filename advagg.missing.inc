@@ -865,7 +865,7 @@ function advagg_missing_file_not_readable($filename, $aggregate_filename = '') {
     watchdog('advagg', 'Reading from the file system failed. %file %aggregate', array(
       '%file' => $filename,
       '%aggregate' => $aggregate_filename,
-    ), WATCHDOG_ERROR);
+    ), WATCHDOG_NOTICE);
     cache_set($cid, TRUE, 'cache_advagg_info', CACHE_TEMPORARY);
   }
 }
