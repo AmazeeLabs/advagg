@@ -878,8 +878,18 @@ function advagg_mod_js_no_ajaxpagestate(array &$scripts) {
     return;
   }
 
-  // No ajax.js but there is a settings array.
-  if (!isset($scripts['#items']['misc/ajax.js']) && isset($scripts['#items']['settings']['data'])) {
+  // Search for the ajax file in the #items array.
+  $ajax_found = FALSE;
+  if (isset($scripts['#items']) && is_array($scripts['#items'])) {
+    foreach ($scripts['#items'] as $key => $values) {
+      if (strpos($key, 'misc/ajax.js') !== FALSE || strpos($key, 'misc/ajax.min.js')) {
+        $ajax_found = TRUE;
+        break;
+      }
+    }
+  }
+  // The ajax.js file was not found and there is a settings array
+  if (!$ajax_found && isset($scripts['#items']['settings']['data'])) {
     foreach ($scripts['#items']['settings']['data'] as $delta => $setting) {
       if (array_key_exists('ajaxPageState', $setting)) {
         // Remove js files.
