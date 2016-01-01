@@ -364,11 +364,12 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
       return;
     }
 
-    // Under some unknown/rare circumstances, JSMin and JSqueeze can add a
-    // couple of extraneous/wrong chars at the end of the string. Check and
-    // remove if necessary.
-    if (substr(trim($contents), -2) == "\xE3\x7F") {
-      $contents = substr($contents, 0, -2);
+    // Under some unknown/rare circumstances, JSMin and JSqueeze can add 2-3
+    // extraneous/wrong chars at the end of the string. Check and remove if
+    // necessary. The first chars varies a bit but the last char is always an
+    // ASCII control character.
+    if (ctype_cntrl(substr(trim($contents),-1))) {
+      $contents = substr($contents,0,strrpos($contents,';'));
     }
 
     // Ensure that $contents ends with ; or }.
