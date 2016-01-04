@@ -860,8 +860,8 @@ function advagg_missing_file_not_readable($filename, $aggregate_filename = '') {
   // Call hook_advagg_missing_root_file().
   module_invoke_all('advagg_missing_root_file', $aggregate_filename, $filename, $cache);
 
-  // Report to watchdog if this is not cached.
-  if (empty($cache)) {
+  // Report to watchdog if this is not cached and it's not in the public dir.
+  if (empty($cache) && strpos($filename, 'public://') !== 0) {
     watchdog('advagg', 'Reading from the file system failed. %file %aggregate', array(
       '%file' => $filename,
       '%aggregate' => $aggregate_filename,
