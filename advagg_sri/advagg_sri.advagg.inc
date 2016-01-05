@@ -103,6 +103,11 @@ function advagg_sri_advagg_missing_root_file($aggregate_filename, $filename, $ca
  */
 function advagg_sri_advagg_removed_aggregates($kill_list) {
   foreach ($kill_list as $uri) {
+    if (is_object($uri) && property_exists($uri, 'uri')) {
+      $temp = $uri->uri;
+      unset($uri);
+      $uri = $temp;
+    }
     // Skip gzip files.
     $ext = pathinfo($uri, PATHINFO_EXTENSION);
     if ($ext === 'gz') {

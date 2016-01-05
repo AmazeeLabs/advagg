@@ -292,6 +292,10 @@ function advagg_remove_all_aggregated_files($kill_htaccess = FALSE) {
     'nomask' => '/(\.\.?|CVS)$/',
   );
   list($css_files, $js_files) = advagg_get_all_files($options);
+  // Let other modules know about the removed files.
+  // Call hook_advagg_removed_aggregates().
+  module_invoke_all('advagg_removed_aggregates', $css_files);
+  module_invoke_all('advagg_removed_aggregates', $js_files);
 
   // Remove the htaccess files as well.
   if ($kill_htaccess) {
