@@ -730,18 +730,32 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
             $css_selectors_rules = $css_rules;
           }
           $media_rules = trim($media_rules);
-          $css_selectors_rules = trim($css_selectors_rules);
+
+          // Pul all @font-face defentions inside the @media declaration above.
+          $font_face_string = '';
+          $font_blocks = advagg_parse_media_blocks($css_selectors_rules, '@font-face');
+          $css_selectors_rules = '';
+          foreach ($font_blocks as $rules) {
+            if (strpos($rules, '@font-face') !== FALSE) {
+              $font_face_string .= "\n {$rules}";
+            }
+            else {
+              $css_selectors_rules .= $rules;
+            }
+          }
+          $css_selectors_rules = str_replace("\n", "\n  ", $css_selectors_rules);
+          $font_face_string = str_replace("\n", "\n  ", $font_face_string);
 
           // Wrap css in dedicated media query if it differs from the global
           // media query and there actually are media rules.
           if (!empty($media_rules) && $media_rules !== $global_file_media) {
-            $output = "\n@media " . $media_rules . " {\n  " . str_replace("\n", "\n  ", $css_selectors_rules) . "\n}";
+            $output = "{$font_face_string} \n@media {$media_rules} {\n {$css_selectors_rules} \n}";
           }
           else {
-            $output = "\n" . $css_selectors_rules;
+            $output = "{$font_face_string} \n {$css_selectors_rules}";
           }
 
-          $contents .= $output;
+          $contents .= trim($output);
         }
 
       }
@@ -757,7 +771,7 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
       $import_statements[] = array($import_media, $matches[0]);
 
       // Close any open comment blocks.
-      $contents .= '/**/';
+      $contents .= "/**/\n";
       if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
         $contents .= "\n/* Above code came from $file */\n\n";
       }
@@ -1158,20 +1172,22 @@ function advagg_get_atime($aggregate_filenames_hash, $aggregate_contents_hash, $
  *
  * @param string $css
  *   String of CSS.
+ * @param string $starting_string
+ *   What to look for when starting to parse the string.
  *
  * @return array
  *   array of css with only media queries.
  *
  * @see http://stackoverflow.com/questions/14145620/regular-expression-for-media-queries-in-css
  */
-function advagg_parse_media_blocks($css) {
+function advagg_parse_media_blocks($css, $starting_string = '@media') {
   $media_blocks = array();
   $start = 0;
   $last_start = 0;
 
   // Using the string as an array throughout this function.
   // http://php.net/types.string#language.types.string.substr
-  while (($start = strpos($css, "@media", $start)) !== FALSE) {
+  while (($start = strpos($css, $starting_string, $start)) !== FALSE) {
     // Stack to manage brackets.
     $s = array();
 
