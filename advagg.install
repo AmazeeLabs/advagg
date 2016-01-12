@@ -1388,7 +1388,6 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
     $mod_rewrite = advagg_install_apache_mod_loaded('mod_rewrite');
     $mod_expires = advagg_install_apache_mod_loaded('mod_expires');
   }
-  list($css_path, $js_path) = advagg_get_root_files_dir();
 
   foreach ($urls as $url) {
     $key = pathinfo($url, PATHINFO_EXTENSION);
@@ -1507,13 +1506,6 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
     if ($content_type === 'js') {
       $content_type = 'javascript';
     }
-    $filename = '';
-    if ($key === 'css') {
-      $filename = $css_path[1] . '/' . basename($url);
-    }
-    elseif ($key === 'js') {
-      $filename = $js_path[1] . '/' . basename($url);
-    }
 
     if ($request->code == 200) {
       $matches = array();
@@ -1522,7 +1514,7 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
         && preg_match('/Generated file at (\\d+)/is', $request->headers['x-advagg'], $matches)
         && $matches[1] + 30 > REQUEST_TIME
       ) {
-        if (!file_exists($filename)) {
+        if (!file_exists($file_path . '/' . $filename)) {
           $requirements['advagg_' . $type . '_file_write_' . $key] = array(
             'title' => $t('Adv CSS/JS Agg - Can not write to the filesystem'),
             'severity' => REQUIREMENT_ERROR,
