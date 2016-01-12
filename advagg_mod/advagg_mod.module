@@ -204,14 +204,19 @@ function advagg_mod_library_alter(&$javascript, $module) {
  */
 function advagg_mod_init() {
   // Adjust devel_shutdown callback.
-  $callbacks = &drupal_register_shutdown_function();
-  foreach ($callbacks as $key => $values) {
-    if ($values['callback'] === 'devel_shutdown') {
-      $callbacks[$key]['callback'] = 'advagg_mod_devel_shutdown';
-      break;
+  if (variable_get('advagg_enabled', ADVAGG_ENABLED)
+  && (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)
+  ||  variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC)
+  )) {
+    $callbacks = &drupal_register_shutdown_function();
+    foreach ($callbacks as $key => $values) {
+      if ($values['callback'] === 'devel_shutdown') {
+        $callbacks[$key]['callback'] = 'advagg_mod_devel_shutdown';
+        break;
+      }
     }
+    reset($callbacks);
   }
-  reset($callbacks);
 
   // Return if unified_multisite_dir is not set.
   $dir = rtrim(variable_get('advagg_mod_unified_multisite_dir', ''), '/');
