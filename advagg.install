@@ -1436,10 +1436,10 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
           // If not apache skip this.
           $apache_module_missing = FALSE;
           if ($is_apache) {
-            if (!$mod_headers || !$mod_rewrite) {
+            if ($mod_headers === FALSE || $mod_rewrite === FALSE) {
               $apache_module_missing = TRUE;
 
-              if (!$mod_headers) {
+              if ($mod_headers === FALSE) {
                 $requirements['advagg_mod_headers' . $key] = array(
                   'title'       => $t('Adv CSS/JS Agg - Apache'),
                   'description' => $t('The Apache module "mod_headers" is not available. Enable <a href="!link">mod_headers</a> for Apache if at all possible. This is causing gzip to fail.', array('!link' => 'http://httpd.apache.org/docs/current/mod/mod_headers.html')),
@@ -1447,7 +1447,7 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
                   'value'       => $t('Apache module "mod_headers" is not installed.'),
                 );
               }
-              if (!$mod_rewrite) {
+              if ($mod_rewrite === FALSE) {
                 $requirements['advagg_mod_rewrite' . $key] = array(
                   'title'       => $t('Adv CSS/JS Agg - Apache'),
                   'description' => $t('The Apache module "mod_rewrite" is not available.  You must enable <a href="!link">mod_rewrite</a> for Apache. This is causing gzip to fail.', array('!link' => 'http://httpd.apache.org/docs/current/mod/mod_rewrite.html')),
@@ -1578,7 +1578,7 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
           && strtotime($request->headers['expires']) < time() + 2628000
         ) {
           // Recommend servers configuration be adjusted.
-          if ($is_apache && !$mod_headers) {
+          if ($is_apache && $mod_headers === FALSE) {
             $apache_module_missing = TRUE;
           }
           else {
@@ -1602,7 +1602,7 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
           || $matches[1] < 2628000
         ) {
           // Recommend servers configuration be adjusted.
-          if ($is_apache && !$mod_headers) {
+          if ($is_apache && $mod_headers === FALSE) {
             $apache_module_missing = TRUE;
           }
           else {
@@ -1620,14 +1620,14 @@ function advagg_install_chk_urls(array &$requirements, array $urls, array $optio
       }
 
       // Handle missing apache modules.
-      if ($apache_module_missing && $is_apache && !$mod_headers) {
+      if ($apache_module_missing && $is_apache && $mod_headers === FALSE) {
         $requirements['advagg_mod_headers_far_future_headers_' . $key] = array(
           'title'       => $t('Adv CSS/JS Agg - Apache'),
           'description' => $t('The Apache module "mod_headers" is not available. Enable <a href="!link">mod_headers</a> for Apache if at all possible. This is causing far-future headers to not be sent correctly.', array('!link' => 'http://httpd.apache.org/docs/current/mod/mod_headers.html')),
           'severity'    => REQUIREMENT_WARNING,
           'value'       => $t('Apache module "mod_headers" is not installed.'),
         );
-        if (!$mod_expires) {
+        if ($mod_expires === FALSE) {
           $requirements['advagg_mod_headers_far_future_expires_' . $key] = array(
             'title'       => $t('Adv CSS/JS Agg - Apache'),
             'description' => $t('The Apache module "mod_expires" is not available. Enable <a href="!link">mod_expires</a> for Apache if at all possible. This is causing far-future headers to not be sent correctly.', array('!link' => 'http://httpd.apache.org/docs/current/mod/mod_expires.html')),
@@ -1967,6 +1967,11 @@ function advagg_install_generate_advagg_filename_from_db($type) {
  *   TRUE if it exists; FALSE if it does not; NULL if it can not be determined.
  */
 function advagg_install_apache_mod_loaded($mod) {
+  $sapi_type = php_sapi_name();
+  if (substr($sapi_type, 0, 3) == 'cgi' || $sapi_type == 'fpm-fcgi') {
+    // NULL returned, apache_get_modules and phpinfo can not be called.
+    return NULL;
+  }
   if (is_callable('apache_get_modules')) {
     $mods = apache_get_modules();
     if (in_array($mod, $mods)) {
