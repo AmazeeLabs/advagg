@@ -619,3 +619,11 @@ and Live instances.
 If you're getting the "HTTP requests to advagg are not getting though" error,
 you can try to fix it by making sure the $base_url is correctly set for
 production and not production environments.
+
+
+If you're getting mixed content error for CSS JS files over HTTPS then you can
+try to redirect all http traffic to be https.
+
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
