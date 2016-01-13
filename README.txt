@@ -490,7 +490,6 @@ depending on your servers configuration.
     ### advagg_css and advagg_js support
     ###
     location ~* files/advagg_(?:css|js)/ {
-      access_log  off;
       gzip_static on;
       access_log  off;
       expires     max;
