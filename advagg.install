@@ -1044,6 +1044,32 @@ $base_url = str_replace("http://", "https://", $base_url);
   // Make sure http requests will work correctly.
   advagg_install_check_via_http($requirements);
 
+  // Check that file writes happen without any errors.
+  if (empty($requirements)) {
+    module_load_include("missing.inc", "advagg");
+    $current_hash = advagg_get_current_hooks_hash();
+    $aggregate_settings = advagg_get_hash_settings($current_hash);
+    $types = array('css', 'js');
+    foreach ($types as $type) {
+      $filename = $type . ADVAGG_SPACE . 'test_write' . REQUEST_TIME . '.' . $type;
+      $files = array('misc/farbtastic/farbtastic.' . $type => array());
+      list($files_to_save, $errors) = advagg_save_aggregate($filename, $files, $type, $aggregate_settings);
+      foreach ($files_to_save as $uri => $data) {
+        @unlink($uri);
+      }
+      if (!empty($errors)) {
+        $requirements['advagg_file_write_error_' . $type] = array(
+          'title' => $t('Adv CSS/JS Agg - File Write'),
+          'severity' => REQUIREMENT_WARNING,
+          'value' => $t('File write had some issues with %type files.', array('%type' => $type)),
+          'description' => $t('Most likely there is an issue with file and/or directory premissions. Error: @error', array(
+              '@error' => print_r($errors, TRUE),
+          )),
+        );
+      }
+    }
+  }
+
   // If all requirements have been met, state advagg should be working.
   if (empty($requirements)) {
     $description = '';

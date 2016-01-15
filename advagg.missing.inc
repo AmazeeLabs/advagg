@@ -1024,7 +1024,7 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   $scheme = file_uri_scheme($uri_dir);
   if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
     $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme);
-    $dir = $wrapper->getDirectoryPath() . '/' . substr($dir, strlen($scheme . '://'));
+    $dir = $wrapper->getDirectoryPath() . '/' . substr($uri_dir, strlen($scheme . '://'));
     $uri = $dir . substr($uri, strlen($uri_dir));
   }
   else {
