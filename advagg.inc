@@ -1122,7 +1122,7 @@ function advagg_create_subfile($css, $overall_split, array $file_info) {
   // Overwrite/create file if hash doesn't match.
   $hash = drupal_hash_base64($css);
   if ($part['content_hash'] != $hash) {
-    advagg_save_data($part_uri, $css, TRUE);
+    $errors = advagg_save_data($part_uri, $css, TRUE);
     $part = advagg_get_info_on_file($parts_path . '/' . $new_filename, TRUE) + $file_info;
     $part['split'] = TRUE;
     $part['split_location'] = $overall_split;

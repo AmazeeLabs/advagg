@@ -228,7 +228,8 @@ function advagg_mod_init() {
   $local_counter = advagg_get_global_counter();
   if (!file_exists($counter_filename)) {
     module_load_include('inc', 'advagg', 'advagg.missing');
-    advagg_save_data($counter_filename, $local_counter);
+    $errors = advagg_save_data($counter_filename, $local_counter);
+    return $errors;
   }
   else {
     $shared_counter = (int) file_get_contents($counter_filename);
@@ -240,8 +241,8 @@ function advagg_mod_init() {
     elseif ($shared_counter < $local_counter) {
       // Local counter is higher, update saved file and return.
       module_load_include('inc', 'advagg', 'advagg.missing');
-      advagg_save_data($counter_filename, $local_counter, TRUE);
-      return;
+      $errors = advagg_save_data($counter_filename, $local_counter, TRUE);
+      return $errors;
     }
     elseif ($shared_counter > $local_counter) {
       // Shared counter is higher, update local copy and return.

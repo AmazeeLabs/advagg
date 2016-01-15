@@ -382,7 +382,7 @@ function advagg_missing_create_file($filename, $no_alters = FALSE, $data = array
   }
 
   // Save aggregate file.
-  $files_to_save = advagg_save_aggregate($filename, $files, $type, $aggregate_settings);
+  list($files_to_save, $errors) = advagg_save_aggregate($filename, $files, $type, $aggregate_settings);
   // Update atime.
   advagg_multi_update_atime(array(
     array(
@@ -403,6 +403,7 @@ function advagg_missing_create_file($filename, $no_alters = FALSE, $data = array
     $aggregate_contents_hash,
     $aggregate_settings,
     $files,
+    $errors,
   );
 }
 
@@ -415,6 +416,10 @@ function advagg_missing_create_file($filename, $no_alters = FALSE, $data = array
  *   String: css or js.
  * @param bool $force
  *   (Optional) force recreate the .htaccess file.
+ *
+ * @return array
+ *   Empty array if not errors happened, list of errors if the write had any
+ *   issues.
  */
 function advagg_htaccess_check_generate(array $files_to_save, $type, $force = FALSE) {
   $content_type = $type;
@@ -478,8 +483,9 @@ function advagg_htaccess_check_generate(array $files_to_save, $type, $force = FA
       continue;
     }
 
-    advagg_save_data($htaccess_file, $data, $force);
+    $errors = advagg_save_data($htaccess_file, $data, $force);
   }
+  return $errors;
 }
 
 // Lookup functions.
@@ -898,7 +904,7 @@ function advagg_missing_file_not_readable($filename, $aggregate_filename = '') {
  *   Array of settings.
  *
  * @return array
- *   $files_to_save array.
+ *   array($files_to_save, $errors).
  */
 function advagg_save_aggregate($filename, array $files, $type, array $aggregate_settings) {
   list($css_path, $js_path) = advagg_get_root_files_dir();
@@ -940,8 +946,9 @@ function advagg_save_aggregate($filename, array $files, $type, array $aggregate_
     drupal_alter('advagg_save_aggregate', $files_to_save, $aggregate_settings, $other_parameters);
   }
 
+  $errors = array();
   foreach ($files_to_save as $uri => $data) {
-    advagg_save_data($uri, $data);
+    $errors = advagg_save_data($uri, $data);
     if (!file_exists($uri) || filesize($uri) == 0) {
       if ($type === 'css') {
         $full_dir = DRUPAL_ROOT . '/' . $css_path[1];
@@ -966,7 +973,7 @@ function advagg_save_aggregate($filename, array $files, $type, array $aggregate_
       }
     }
   }
-  return $files_to_save;
+  return array($files_to_save, $errors);
 }
 
 /**
@@ -981,14 +988,21 @@ function advagg_save_aggregate($filename, array $files, $type, array $aggregate_
  *   A string containing the contents of the file.
  * @param bool $overwrite
  *   (optional) Bool, set to TRUE to overwrite a file.
+ *
+ * @return array
+ *   Empty array if not errors happened, list of errors if the write had any
+ *   issues.
  */
 function advagg_save_data($uri, $data, $overwrite = FALSE) {
+  $t = get_t();
+  $errors = array();
   // Clear the stat cache.
   module_load_include('inc', 'advagg', 'advagg');
   advagg_clearstatcache($uri);
   // File already exists.
   if (!$overwrite && file_exists($uri) && filesize($uri) > 0) {
-    return;
+    $errors[2] = $t('File (@file) already exits.', array('@file' => $uri));
+    return $errors;
   }
 
   // If data is empty, write a space.
@@ -1003,18 +1017,41 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   // the rename command stays local.
   //
   // Get a temporary filename in the destination directory.
-  $dir = drupal_dirname($uri) . '/';
-  $temporary_file = @drupal_tempnam($dir, 'file_advagg_');
+  $uri_dir = drupal_dirname($uri) . '/';
+
+  // Corect the bug with drupal_tempnam where it doesn't pass subdirs to
+  // tempnam() if the dir is a stream wrapper.
+  $scheme = file_uri_scheme($uri_dir);
+  if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
+    $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme);
+    $dir = $wrapper->getDirectoryPath() . '/' . substr($dir, strlen($scheme . '://'));
+    $uri = $dir . substr($uri, strlen($uri_dir));
+  }
+  else {
+    $dir = $uri_dir;
+  }
+
+  $temporary_file = @drupal_tempnam($dir, 'advagg_file_');
   if ($temporary_file === FALSE) {
-    $temporary_file = $dir . 'file_advagg_' . md5(getmypid() . microtime(TRUE) . mt_rand());
+    $temporary_file = $dir . 'advagg_file_' . md5(getmypid() . microtime(TRUE) . mt_rand());
+    $errors[4] = $t('Temp file was not created using drupal_tempnam(); using @temp instead', array('@temp' => $temporary_file));
   }
   // Make sure temp filename has the correct name.
-  if (strpos($temporary_file, 'file_advagg_') === FALSE) {
+  if (strpos($temporary_file, 'advagg_file_') === FALSE) {
+    // On windows, tempnam only takes the first 3 characters of the prefix.
+    if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+      $errors[6] = $t('Temp file (@file) did not have the correct name (starting with "advagg_file_") when using drupal_tempnam().', array('@file' => $temporary_file));
+    }
+
     $basename = basename($temporary_file);
-    $temporary_file_fixed = str_replace($basename, 'file_advagg_' . md5(getmypid() . microtime(TRUE) . mt_rand()), $temporary_file);
+    $temporary_file_fixed = str_replace($basename, 'advagg_file_' . md5(getmypid() . microtime(TRUE) . mt_rand()), $temporary_file);
     if (!@rename($temporary_file, $temporary_file_fixed)) {
+      $errors[8] = $t('Renaming the incorrect temp filename (@incorrect) to the correct temp filename (@correct) failed.', array('@incorrect' => $temporary_file, '@correct' => $temporary_file_fixed));
       // Remove if rename failed.
       @unlink($temporary_file);
+      if (file_exists($temporary_file)) {
+        $errors[10] = $t('unlinking @file failed.', array('@file' => $temporary_file));
+      }
       watchdog('advagg', 'Rename 1 failed. Current: %current Target: %target', array(
         '%current' => $temporary_file,
         '%target' => $temporary_file_fixed,
@@ -1027,12 +1064,18 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   // Make sure temp filename has the correct dir.
   $subdir = basename($dir);
   if (strpos($temporary_file, $subdir) === FALSE) {
+    $errors[12] = $t('Temp file (@temp) did not have the correct directory (@dir) when using drupal_tempnam().', array('@temp' => $temporary_file, '@dir' => $subdir));
+
     $basename = basename($temporary_file);
     $baddir = substr($temporary_file, 0, strpos($temporary_file, $basename));
     $temporary_file_fixed = str_replace($baddir, $dir, $temporary_file);
     if (!@rename($temporary_file, $temporary_file_fixed)) {
+      $errors[14] = $t('Renaming the incorrect temp filename (@incorrect) to the correct temp filename (@correct) failed.', array('@incorrect' => $temporary_file, '@correct' => $temporary_file_fixed));
       // Remove if rename failed.
       @unlink($temporary_file);
+      if (file_exists($temporary_file)) {
+        $errors[16] = $t('unlinking @file failed.', array('@file' => $temporary_file));
+      }
       watchdog('advagg', 'Rename 2 failed. Current: %current Target: %target', array(
         '%current' => $temporary_file,
         '%target' => $temporary_file_fixed,
@@ -1055,12 +1098,16 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
 
   // Move temp file into the dest dir, if not in there.
   // Add the extension on as well.
-  $temporary_file_new = str_replace(substr($temporary_file, 0, strpos($temporary_file, 'file_advagg_')), $dir, $temporary_file) . $extension;
+  $temporary_file_new = str_replace(substr($temporary_file, 0, strpos($temporary_file, 'advagg_file_')), $dir, $temporary_file) . $extension;
 
   // Preform the rename, adding the extension to the temp file.
   if (!@rename($temporary_file_copy, $temporary_file_new)) {
+    $errors[18] = $t('Renaming the filename (@incorrect) to (@correct) failed.', array('@incorrect' => $temporary_file_copy, '@correct' => $temporary_file_new));
     // Remove if rename failed.
     @unlink($temporary_file_copy);
+    if (file_exists($temporary_file_copy)) {
+      $errors[16] = $t('unlinking @file failed.', array('@file' => $temporary_file_copy));
+    }
     watchdog('advagg', 'Rename 3 failed. Current: %current Target: %target', array(
       '%current' => $temporary_file_copy,
       '%target' => $temporary_file_new,
@@ -1080,7 +1127,12 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
       $result = @rename($filepath, $uri);
       // Remove temporary_file if rename failed.
       if (!$result) {
+        $errors[20] = $t('Renaming the filename (@incorrect) to (@correct) failed.', array('@incorrect' => $filepath, '@correct' => $uri));
+
         @unlink($filepath);
+        if (file_exists($filepath)) {
+          $errors[22] = $t('unlinking @file failed.', array('@file' => $filepath));
+        }
         watchdog('advagg', 'Rename 4 failed. Current: %current Target: %target', array(
           '%current' => $filepath,
           '%target' => $uri,
@@ -1089,10 +1141,12 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
     }
   }
   else {
+    $errors[24] = $t('Write failed. @file', array('@file' => $temporary_file_new));
     watchdog('advagg', 'Write failed. Target: %target', array(
       '%target' => $temporary_file_new,
     ), WATCHDOG_ERROR);
   }
+  return $errors;
 }
 
 // Helper functions.

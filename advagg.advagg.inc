@@ -30,7 +30,12 @@ function advagg_advagg_save_aggregate_alter(array &$files_to_save, array $aggreg
   $gzip_exists = FALSE;
   foreach ($files_to_save as $uri => $contents) {
     // See if this uri contains .gz near the end of it.
-    $pos = strripos($uri, '.gz', 91 + strlen(ADVAGG_SPACE) * 3);
+    if (strlen($uri) > 91 + strlen(ADVAGG_SPACE) * 3) {
+      $pos = strripos($uri, '.gz', 91 + strlen(ADVAGG_SPACE) * 3);
+    }
+    else {
+      $pos = strripos($uri, '.gz');
+    }
     if (!empty($pos)) {
       $len = strlen($uri);
       // .gz file exists, exit loop.

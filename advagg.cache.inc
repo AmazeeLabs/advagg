@@ -688,6 +688,42 @@ function advagg_remove_temp_files() {
   }
   $total_count += count($files);
 
+  // Remove empty temp files from public://.
+  $files = file_scan_directory($top_level, '/advagg_file_.*/', array(
+    'recurse' => FALSE,
+    'callback' => 'advagg_delete_temp_file_if_stale',
+  ));
+  foreach ($files as $key => $file) {
+    if (file_exists($file->uri)) {
+      unset($files[$key]);
+    }
+  }
+  $total_count += count($files);
+
+  // Remove empty temp files from public://advagg_css.
+  $files = file_scan_directory($advagg_path[0][0], '/advagg_file_.*/', array(
+    'recurse' => FALSE,
+    'callback' => 'advagg_delete_temp_file_if_stale',
+  ));
+  foreach ($files as $key => $file) {
+    if (file_exists($file->uri)) {
+      unset($files[$key]);
+    }
+  }
+  $total_count += count($files);
+
+  // Remove empty temp files from public://advagg_js.
+  $files = file_scan_directory($advagg_path[1][0], '/advagg_file_.*/', array(
+    'recurse' => FALSE,
+    'callback' => 'advagg_delete_temp_file_if_stale',
+  ));
+  foreach ($files as $key => $file) {
+    if (file_exists($file->uri)) {
+      unset($files[$key]);
+    }
+  }
+  $total_count += count($files);
+
   // Output info.
   return $total_count;
 }
