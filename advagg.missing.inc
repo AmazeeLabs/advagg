@@ -476,6 +476,7 @@ function advagg_htaccess_check_generate(array $files_to_save, $type, $force = FA
   }
   $data .= "</FilesMatch>\n";
 
+  $errors = array();
   foreach (array_keys($files_to_save) as $uri) {
     $dir = dirname($uri);
     $htaccess_file = $dir . '/.htaccess';
