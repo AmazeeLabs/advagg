@@ -369,7 +369,10 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     // necessary. The first chars varies a bit but the last char is always an
     // ASCII control character.
     if (ctype_cntrl(substr(trim($contents),-1))) {
-      $contents = substr($contents,0,strrpos($contents,';'));
+      $a = strrpos($contents, ';');
+      $b = strrpos($contents, '}');
+      $c = strrpos($contents, ')');
+      $contents = substr($contents, 0, 1 + max($a, $b, $c));
     }
 
     // Ensure that $contents ends with ; or }.
