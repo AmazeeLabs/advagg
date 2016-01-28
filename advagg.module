@@ -1645,6 +1645,10 @@ function _advagg_process_html(&$variables) {
     $variables['page'] = $variables['page']['#children'];
   }
 
+  // Parts of drupal_get_html_head().
+  $elements = drupal_add_html_head();
+  drupal_alter('html_head', $elements);
+
   // Get default javascript.
   // @see http://drupal.org/node/1279226
   if (function_exists('drupal_add_js_page_defaults')) {
@@ -1906,7 +1910,17 @@ function _advagg_process_html(&$variables) {
       }
     }
   }
-  $variables['head'] = drupal_get_html_head();
+  // Parts of drupal_get_html_head().
+  $head_elements = drupal_add_html_head();
+  $advagg_elements = array();
+  foreach ($head_elements as $key => $values) {
+    if (strpos($key, 'advagg_dns_prefetch') === 0) {
+      $advagg_elements[$key] = $values;
+    }
+  }
+  drupal_alter('html_head', $advagg_elements);
+  $elements += $advagg_elements;
+  $variables['head'] = drupal_render($elements);
 
   // Output debug info.
   if (variable_get('advagg_debug', ADVAGG_DEBUG)) {
