@@ -182,6 +182,11 @@ function advagg_mod_module_implements_alter(&$implementations, $hook) {
     unset($implementations['advagg_mod']);
     $implementations = array_merge($item, $implementations);
   }
+
+  // Remove advagg_mod. Function gets called directly.
+  if ($hook === 'html_head_alter' && array_key_exists('advagg_mod', $implementations)) {
+    unset($implementations['advagg_mod']);
+  }
 }
 
 /**

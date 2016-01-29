@@ -1912,6 +1912,16 @@ function _advagg_process_html(&$variables) {
       }
     }
   }
+
+  // Add in the headers added by advagg for dns prefetch.
+  $head_elements = drupal_add_html_head();
+  $advagg_elements = array();
+  foreach ($head_elements as $key => $values) {
+    if (strpos($key, 'advagg_dns_prefetch') === 0) {
+      $advagg_elements[$key] = $values;
+    }
+  }
+  $elements += $advagg_elements;
   // Parts of drupal_get_html_head().
   drupal_alter('html_head', $elements);
   $variables['head'] = drupal_render($elements);
