@@ -2331,8 +2331,23 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
     // Merge in last js ajaxPageState into the current data.
     $reverse_settings = array_reverse($javascript_static['settings']['data']);
     foreach ($reverse_settings as $key => $values) {
-      if (isset($values['ajaxPageState']['js'])) {
-        $javascript['settings']['data'][] = $values;
+      if (is_scalar($values) || empty($values)) {
+        // Skip if not an array or object.
+        continue;
+      }
+      $values = (array)$values;
+      if (!array_key_exists('ajaxPageState', $values)) {
+        // Skip if $values['ajaxPageState'] does not exist.
+        continue;
+      }
+      if (is_scalar($values['ajaxPageState']) || empty($values['ajaxPageState'])) {
+        // Skip if not an array or object.
+        continue;
+      }
+      $values['ajaxPageState'] = (array)$values['ajaxPageState'];
+      if (array_key_exists('js', $values['ajaxPageState'])) {
+        // $values['ajaxPageState']['js'] exists.
+        $javascript['settings']['data'][] = $reverse_settings[$key];
         break;
       }
     }
