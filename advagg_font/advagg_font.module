@@ -23,9 +23,21 @@ define('ADVAGG_FONT_NO_FOUT', 0);
 
 // Core hook implementations.
 /**
- * Implements hook_page_build().
+ * Implements hook_module_implements_alter().
  */
-function advagg_font_page_build(&$page) {
+function advagg_font_module_implements_alter(&$implementations, $hook) {
+  // Move advagg to the bottom.
+  if ($hook === 'page_alter' && array_key_exists('advagg_font', $implementations)) {
+    $item = $implementations['advagg_font'];
+    unset($implementations['advagg_font']);
+    $implementations['advagg_font'] = $item;
+  }
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+function advagg_font_page_alter(&$page) {
   // The $page variable is not an array; or the content key does not exist.
   if (!is_array($page) || !isset($page['content'])) {
     return;

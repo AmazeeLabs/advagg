@@ -4167,10 +4167,7 @@ function advagg_convert_abs_to_rel($path) {
  *   The path.
  */
 function advagg_convert_abs_to_protocol($path) {
-  if (strpos($path, 'https://') === 0) {
-    $path = substr($path, 6);
-  }
-  elseif (strpos($path, 'http://') === 0) {
+  if (strpos($path, 'http://') === 0) {
     $path = substr($path, 5);
   }
   return $path;
