@@ -365,15 +365,13 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     }
 
     // Under some unknown/rare circumstances, JSMin and JSqueeze can add 2-3
-    // extraneous/wrong chars at the end of the string. Check and remove if
-    // necessary. The first chars varies a bit but the last char is always an
-    // ASCII control character.
-    if (ctype_cntrl(substr(trim($contents),-1))) {
-      $a = strrpos($contents, ';');
-      $b = strrpos($contents, '}');
-      $c = strrpos($contents, ')');
-      $contents = substr($contents, 0, 1 + max($a, $b, $c));
-    }
+    // extraneous/wrong chars at the end of the string. This work-around will
+    // remove these chars if necessary. See https://www.drupal.org/node/2627468.
+    // Also see https://github.com/sqmk/pecl-jsmin/issues/46.
+    $a = strrpos($contents, ';');
+    $b = strrpos($contents, '}');
+    $c = strrpos($contents, ')');
+    $contents = substr($contents, 0, 1 + max($a, $b, $c));
 
     // Ensure that $contents ends with ; or }.
     if (strpbrk(substr(trim($contents), -1), ';}') === FALSE) {
