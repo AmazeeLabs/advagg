@@ -1362,7 +1362,6 @@ function advagg_load_css_stylesheet($file, $optimize, array $aggregate_settings 
   }
 
   _advagg_build_css_path(array(), $css_base_url . '/', $aggregate_settings);
-
   // Anchor all paths in the CSS with its base URL, ignoring external,
   // absolute paths, and urls that start with # or %23 (SVG).
   $contents = preg_replace_callback('%url\(\s*+[\'"]?+(?![a-z]++:|/|\#|\%23+)([^\'"()\s]++)[\'"]?+\s*+\)%i', '_advagg_build_css_path', $contents);
@@ -1450,6 +1449,19 @@ function _advagg_build_css_path(array $matches, $base = '', array $aggregate_set
   }
   $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
 
-  $url = advagg_file_create_url($base_url, $_aggregate_settings);
+  if (variable_get('advagg_skip_file_create_url_inside_css', ADVAGG_SKIP_FILE_CREATE_URL_INSIDE_CSS)) {
+    if (isset($_aggregate_settings['variables']['base_path'])) {
+      $url = $_aggregate_settings['variables']['base_path'] . $url;
+    }
+    else {
+      $url = $GLOBALS['base_path'] . $url;
+    }
+    $query = '';
+    $fragment = '';
+  }
+  else {
+    $url = advagg_file_create_url($base_url, $_aggregate_settings);
+  }
+
   return 'url(' . $url . $query . $fragment . ')';
 }

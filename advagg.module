@@ -213,6 +213,11 @@ define('ADVAGG_ROOT_DIR_PREFIX', 'public://');
  */
 define('ADVAGG_SKIP_GZIP_CHECK', FALSE);
 
+/**
+ * If true do not call file_create_url() for url() inside css files.
+ */
+define('ADVAGG_SKIP_FILE_CREATE_URL_INSIDE_CSS', FALSE);
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.

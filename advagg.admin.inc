@@ -265,6 +265,12 @@ function advagg_admin_settings_form($form, $form_state) {
       ),
     ),
   );
+  $form['global']['obscure']['advagg_skip_file_create_url_inside_css'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Do not run CSS url() values through file_create_url().'),
+    '#default_value' => variable_get('advagg_skip_file_create_url_inside_css', ADVAGG_SKIP_FILE_CREATE_URL_INSIDE_CSS),
+    '#description' => t('If checked, the processing of url() values within CSS will be handled more like core than the CDN module. This has the advantage of not converting relative paths in your source CSS to absolute paths in the aggregated CSS.'),
+  );
 
   $form['css'] = array(
     '#type' => 'fieldset',
