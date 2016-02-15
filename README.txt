@@ -190,6 +190,9 @@ current defaults are shown.
     // Display a message that the bypass cookie is set.
     $conf['advagg_show_bypass_cookie_message'] = TRUE;
 
+    // Display a message when a css/js file changed while in development mode.
+    $conf['advagg_show_file_changed_message'] = TRUE;
+
     // Skip the 404 check on status page.
     $conf['advagg_skip_404_check'] = FALSE;
 

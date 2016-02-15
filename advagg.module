@@ -218,6 +218,11 @@ define('ADVAGG_SKIP_GZIP_CHECK', FALSE);
  */
 define('ADVAGG_SKIP_FILE_CREATE_URL_INSIDE_CSS', FALSE);
 
+/**
+ * Display a message that the a CSS/JS file has changed.
+ */
+define('ADVAGG_SHOW_FILE_CHANGED_MESSAGE', TRUE);
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
@@ -4118,13 +4123,15 @@ function advagg_scan_filesystem_for_changes_live() {
       // Do not report on css files manged in the parts directory.
       continue;
     }
-    $ext = pathinfo($filename, PATHINFO_EXTENSION);
-    drupal_set_message(t('The file %filename has changed. %db_usage aggregates are using this file. %db_count db cache entries and all %type full cache entries have been flushed from the cache bins.', array(
-      '%filename' => $filename,
-      '%db_usage' => count($data[0]),
-      '%db_count' => count($data[1]),
-      '%type' => $ext,
-    )));
+    if (variable_get('advagg_show_file_changed_message', ADVAGG_SHOW_FILE_CHANGED_MESSAGE)) {
+      $ext = pathinfo($filename, PATHINFO_EXTENSION);
+      drupal_set_message(t('The file %filename has changed. %db_usage aggregates are using this file. %db_count db cache entries and all %type full cache entries have been flushed from the cache bins.', array(
+        '%filename' => $filename,
+        '%db_usage' => count($data[0]),
+        '%db_count' => count($data[1]),
+        '%type' => $ext,
+      )));
+    }
   }
 }
 
