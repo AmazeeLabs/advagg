@@ -356,6 +356,17 @@ function advagg_mod_admin_settings_form() {
       ),
     ),
   );
+  $form['css']['placement']['expert']['advagg_mod_css_defer_rel_preload'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use link rel="preload"'),
+    '#default_value' => variable_get('advagg_mod_css_defer_rel_preload', ADVAGG_MOD_CSS_DEFER_REL_PRELOAD),
+    '#description' => t('In supporting browsers, this markup will cause the browser to fetch the CSS file in an asynchronous, non-render-blocking manner, and once loaded, its onload event handler will change its rel property to "stylesheet" causing it to apply visibly in the page'),
+    '#states' => array(
+      'disabled' => array(
+        ':input[name="advagg_mod_css_defer"]' => array('value' => '0'),
+      ),
+    ),
+  );
 
   $pages_all = variable_get('advagg_mod_inline_pages', '');
   $pages_css = variable_get('advagg_mod_inline_css_pages', '');

@@ -171,6 +171,11 @@ define('ADVAGG_MOD_JS_DEFER_JQUERY', FALSE);
  */
 define('ADVAGG_MOD_PREFETCH', FALSE);
 
+/**
+ * Default value of the inclusion method for the loadCSS code for rel=preload.
+ */
+define('ADVAGG_MOD_CSS_DEFER_REL_PRELOAD', FALSE);
+
 // Core hook implementations.
 /**
  * Implements hook_module_implements_alter().
@@ -723,22 +728,22 @@ function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
 
   $css_defer_js_code = variable_get('advagg_mod_css_defer_js_code', ADVAGG_MOD_CSS_DEFER_JS_CODE);
 
-  // Make advagg_mod_loadStyleSheet() available.
+  // Make loadCSS() available.
   $type = 'external';
   // https://github.com/filamentgroup/loadCSS.
-  $data = '//cdn.rawgit.com/filamentgroup/loadCSS/master/loadCSS.js';
+  $data = '//cdn.rawgit.com/filamentgroup/loadCSS/master/src/loadCSS.js';
   $min = '';
   if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 0) {
     $min = '.min';
   }
   if ($css_defer_js_code == 2) {
     $type = 'file';
-    $data = drupal_get_path('module', 'advagg_mod') . "/loadCSS$min.js";
+    $data = drupal_get_path('module', 'advagg_mod') . "/loadCSS{$min}.js";
   }
   if ($css_defer_js_code == 0) {
     $type = 'inline';
-    $data = '//[c]2014 @scottjehl, Filament Group, Inc. Licensed MIT.
-function loadCSS(a,b,c,d){"use strict";var e=window.document.createElement("link"),f=b||window.document.getElementsByTagName("script")[0],g=window.document.styleSheets;return e.rel="stylesheet",e.href=a,e.media="only x",d&&(e.onload=d),f.parentNode.insertBefore(e,f),e.onloadcssdefined=function(b){for(var c,d=0;d<g.length;d++)g[d].href&&g[d].href.indexOf(a)>-1&&(c=!0);c?b():setTimeout(function(){e.onloadcssdefined(b)})},e.onloadcssdefined(function(){e.media=c||"all"}),e}';
+    $data = '/*! loadCSS: load a CSS file asynchronously. [c]2016 @scottjehl, Filament Group, Inc. Licensed MIT */
+!function(e){"use strict";var t=function(t,n,i){var o,a=e.document,d=a.createElement("link"),r=i||"all";if(n)o=n;else{var l=(a.body||a.getElementsByTagName("head")[0]).childNodes;o=l[l.length-1]}var s=a.styleSheets;d.rel="stylesheet",d.href=t,d.media="only x",o.parentNode.insertBefore(d,n?o:o.nextSibling);var f=function(e){for(var t=d.href,n=s.length;n--;)if(s[n].href===t)return e();setTimeout(function(){f(e)})};return d.addEventListener&&d.addEventListener("load",function(){this.media=r}),d.onloadcssdefined=f,f(function(){d.media!==r&&(d.media=r)}),d};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);';
   }
   $options = array(
     'type' => $type,
@@ -760,6 +765,46 @@ function loadCSS(a,b,c,d){"use strict";var e=window.document.createElement("link
     drupal_add_js($data, $options);
     $added['inline'] = TRUE;
   }
+  if (variable_get('advagg_mod_css_defer_rel_preload', ADVAGG_MOD_CSS_DEFER_REL_PRELOAD)) {
+    // Make cssrelpreload available.
+    $type = 'external';
+    // https://github.com/filamentgroup/loadCSS.
+    $data = '//cdn.rawgit.com/filamentgroup/loadCSS/master/src/cssrelpreload.js';
+    $min = '';
+    if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 0) {
+      $min = '.min';
+    }
+    if ($css_defer_js_code == 2) {
+      $type = 'file';
+      $data = drupal_get_path('module', 'advagg_mod') . "/cssrelpreload{$min}.js";
+    }
+    if ($css_defer_js_code == 0) {
+      $type = 'inline';
+      $data = '/*! CSS rel=preload polyfill. Depends on loadCSS function. [c]2016 @scottjehl, Filament Group, Inc. Licensed MIT  */
+!function(t){if(t.loadCSS){var e=loadCSS.relpreload={};if(e.support=function(){try{return t.document.createElement("link").relList.supports("preload")}catch(e){return!1}},e.poly=function(){for(var e=t.document.getElementsByTagName("link"),n=0;n<e.length;n++){var r=e[n];"preload"===r.rel&&"style"===r.getAttribute("as")&&(t.loadCSS(r.href,r),r.rel=null)}},!e.support()){e.poly();var n=t.setInterval(e.poly,300);t.addEventListener&&t.addEventListener("load",function(){t.clearInterval(n)}),t.attachEvent&&t.attachEvent("onload",function(){t.clearInterval(n)})}}}(this);';
+    }
+    $options = array(
+      'type' => $type,
+      'scope' => $css_defer >= 7 ? 'footer' : 'header',
+      'scope_lock' => TRUE,
+      'every_page' => TRUE,
+      'group' => $css_defer == 1 ? JS_LIBRARY - 1 : JS_LIBRARY,
+      'weight' => $css_defer == 1 ? -50000 : 0,
+      'movable' => $css_defer == 1 ? FALSE : TRUE,
+    );
+    if ($type !== 'inline') {
+      $options['async'] = TRUE;
+    }
+    else {
+      $options['no_defer'] = TRUE;
+    }
+    static $added;
+    if (!isset($added['inline'])) {
+      drupal_add_js($data, $options);
+      $added['inline'] = TRUE;
+    }
+  }
+
 
   // Wrap CSS in noscript tags.
   $options = array(
