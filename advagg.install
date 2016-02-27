@@ -580,6 +580,7 @@ function advagg_update_7210() {
  * Populate the filesize_processed field in the {advagg_files} table.
  */
 function advagg_update_7211() {
+  drupal_load('module', 'advagg');
   module_load_include('inc', 'advagg', 'advagg');
   $types = array('css', 'js');
   foreach ($types as $type) {
