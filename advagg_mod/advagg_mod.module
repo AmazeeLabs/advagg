@@ -714,6 +714,12 @@ function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
     return;
   }
 
+  // Return early if we're in a page that is not specified in the settings for
+  // specific pages.
+  if (!advagg_mod_css_defer_page()) {
+    return;
+  }
+
   // Return early if this setting is disabled.
   $css_defer = variable_get('advagg_mod_css_defer', ADVAGG_MOD_CSS_DEFER);
   if (empty($css_defer)) {
@@ -1979,6 +1985,18 @@ function advagg_mod_inline_page_css() {
 function advagg_mod_inline_page_js() {
   $visibility = variable_get('advagg_mod_inline_js_visibility', ADVAGG_MOD_VISIBILITY_LISTED);
   $pages = variable_get('advagg_mod_inline_js_pages', '');
+  return advagg_mod_match_path($pages, $visibility);
+}
+
+/**
+ * Returns TRUE if this page should have critical CSS inlined.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function advagg_mod_css_defer_page() {
+  $visibility = variable_get('advagg_mod_css_defer_visibility', ADVAGG_MOD_VISIBILITY_NOTLISTED);
+  $pages = variable_get('advagg_mod_css_defer_pages', '');
   return advagg_mod_match_path($pages, $visibility);
 }
 
