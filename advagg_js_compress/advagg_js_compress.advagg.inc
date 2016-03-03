@@ -300,7 +300,8 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     && $semicolon_count > 10
     && $semicolon_count > (substr_count($contents, "\n", strpos($contents, ';')) * 5)
   ) {
-    if ($add_licensing && variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE)) {
+    $add_license_setting = isset($aggregate_settings['variables']['advagg_js_compress_add_license']) ? ['variables']['advagg_js_compress_add_license'] : variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE);
+    if ($add_licensing && ($add_license_setting == 1 || $add_license_setting == 3)) {
       $url = file_create_url($filename);
       $contents = "/* Source and licensing information for the line(s) below can be found at $url. */\n" . $contents . ";\n/* Source and licensing information for the above line(s) can be found at $url. */\n";
     }
@@ -351,13 +352,10 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     $contents = str_replace(pack("CCC", 0xef, 0xbb, 0xbf), "", $contents);
     // Use the compressor.
     list(, , , $functions) = advagg_js_compress_configuration();
-    if ($compressor == 1) {
-      advagg_js_compress_jsminplus($contents, $log_errors);
-    }
-    elseif (isset($functions[$compressor])) {
+    if (isset($functions[$compressor])) {
       $run = $functions[$compressor];
       if (function_exists($run)) {
-        $run($contents);
+        $run($contents, $log_errors, $aggregate_settings);
       }
     }
     else {
@@ -392,6 +390,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
 
   if ($test_ratios) {
     $aggregate_settings['variables']['advagg_js_compress_max_ratio'] = isset($aggregate_settings['variables']['advagg_js_compress_max_ratio']) ? $aggregate_settings['variables']['advagg_js_compress_max_ratio'] : variable_get('advagg_js_compress_max_ratio', ADVAGG_JS_COMPRESS_MAX_RATIO);
+    $add_license_setting = isset($aggregate_settings['variables']['advagg_js_compress_add_license']) ? ['variables']['advagg_js_compress_add_license'] : variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE);
     // Make sure the returned string is not empty or has a VERY high
     // compression ratio.
     if ( empty($contents)
@@ -401,7 +400,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     ) {
       $contents = $contents_before;
     }
-    elseif ($add_licensing && variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE)) {
+    elseif ($add_licensing && ($add_license_setting == 1 || $add_license_setting == 3)) {
       $url = file_create_url($filename);
       $contents = "/* Source and licensing information for the line(s) below can be found at $url. */\n" . $contents . ";\n/* Source and licensing information for the above line(s) can be found at $url. */\n";
     }

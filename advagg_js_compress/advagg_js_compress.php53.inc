@@ -52,8 +52,10 @@ function advagg_js_compress_jshrink(&$contents, $log_errors = TRUE) {
  *   Javascript string.
  * @param bool $log_errors
  *   FALSE to disable logging to watchdog on failure.
+ * @param array $aggregate_settings
+ *   The aggregate_settings array.
  */
-function advagg_js_compress_jsqueeze(&$contents, $log_errors = TRUE) {
+function advagg_js_compress_jsqueeze(&$contents, $log_errors = TRUE, array $aggregate_settings = array()) {
   $contents_before = $contents;
 
   // Only include jshrink.inc if the Patchwork\JSqueeze class doesn't exist.
@@ -66,12 +68,17 @@ function advagg_js_compress_jsqueeze(&$contents, $log_errors = TRUE) {
   }
   ob_start();
   try {
+    $add_license_setting = isset($aggregate_settings['variables']['advagg_js_compress_add_license']) ? ['variables']['advagg_js_compress_add_license'] : variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE);
+    $keep_important_comments = FALSE;
+    if ($add_license_setting == 2 || $add_license_setting == 3) {
+      $keep_important_comments = TRUE;
+    }
     // Minify the contents of the aggregated file.
     $jz = new Patchwork\JSqueeze();
     $contents = $jz->squeeze(
       $contents,
       TRUE,
-      !variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE),
+      $keep_important_comments,
       FALSE
     );
 
