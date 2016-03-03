@@ -1300,6 +1300,36 @@ function advagg_install_check_via_http(array &$requirements) {
             )),
           );
         }
+        elseif (stripos($request->data, 'nginx')) {
+          $config_location = '';
+          if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+            $config_location = ' ' . $t('You might be able to find the nginx configuration file by running <pre>@command_1</pre> or <pre>@command_2</pre>', array(
+              '@command_1' => 'ps -o args -C nginx',
+              '@command_2' => 'nginx -t',
+            ));
+          }
+          $requirements['advagg_' . $type . '_nginx_config'] = array(
+            'title' => $t('Adv CSS/JS Agg - Nginx not sending 404 to Drupal.'),
+            'value' => $t('HTTP requests to advagg for @type files are not getting through.', array('@type' => $type)),
+            'severity' => REQUIREMENT_ERROR,
+            'description' => $t('Your nginx webserver is not sending 404s to drupal. Please make sure that your nginx configuration has something like this in it: <p><code>@code</code></p> Note that @drupal (last line of code above) might be @rewrite or @rewrites depending on your servers configuration. !config_location Raw request info: <pre>@request</pre>', array(
+              '@request' => var_export($request, TRUE),
+              '@code' => nl2br('
+###
+### advagg_css and advagg_js support
+###
+location ~* files/advagg_(?:css|js)/ {
+  gzip_static on;
+  access_log  off;
+  expires     max;
+  add_header  ETag "";
+  add_header  Cache-Control "max-age=31449600, no-transform, public";
+  try_files   $uri @drupal;
+}'),
+              '!config_location' => $config_location,
+            )),
+          );
+        }
         else {
           // Menu callback failed.
           $requirements['advagg_' . $type . '_generation'] = array(
