@@ -603,6 +603,7 @@ function advagg_get_files_from_hashes($type, $aggregate_filenames_hash, $aggrega
  *   String containing all the files.
  */
 function advagg_get_css_aggregate_contents(array $files, array $aggregate_settings, $aggregate_filename = '') {
+  $write_aggregate = TRUE;
   // Check if CSS compression is enabled.
   $optimize = TRUE;
   if (!empty($aggregate_settings['settings']['no_alters'])) {
@@ -611,6 +612,9 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
   if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
     $optimize = FALSE;
   }
+
+  module_load_include('inc', 'advagg', 'advagg');
+  $info_on_files = advagg_load_files_info_into_static_cache(array_keys($files));
 
   $data = '';
   if (!empty($files)) {
@@ -670,10 +674,29 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
         drupal_alter('advagg_get_css_file_contents_pre', $file, $optimize, $aggregate_settings);
       }
       if (is_readable($file)) {
-        $contents = advagg_load_css_stylesheet($file, $optimize, $aggregate_settings);
+        // Get the files contents.
+        $file_contents = (string) @file_get_contents($file);
+        // Get a hash of the file's contents.
+        $file_contents_hash = drupal_hash_base64($file_contents);
+        $cid = 'advagg:file:' . advagg_drupal_hash_base64($file);
+        if (empty($info_on_files[$cid]['content_hash'])) {
+          // If hash was not in the cache, get it from the DB.
+          $results = db_select('advagg_files', 'af')
+              ->fields('af', array('content_hash', 'filename_hash'))
+              ->condition('filename', $file)
+              ->execute();
+          foreach ($results as $row) {
+            $info_on_files['advagg:file:' . $row->filename_hash]['content_hash'] = $row->content_hash;
+          }
+        }
+        if ($info_on_files[$cid]['content_hash'] !== $file_contents_hash) {
+          // If the content hash doesn't match don't write the file.
+          $write_aggregate = advagg_missing_file_not_readable($file, $aggregate_filename, FALSE);
+        }
+        $contents = advagg_load_css_stylesheet($file, $optimize, $aggregate_settings, $file_contents);
       }
       else {
-        advagg_missing_file_not_readable($file, $aggregate_filename);
+        $write_aggregate = advagg_missing_file_not_readable($file, $aggregate_filename, TRUE);
       }
 
       // Allow other modules to modify this files contents.
@@ -806,7 +829,7 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
   if (empty($aggregate_settings['settings']['no_alters'])) {
     drupal_alter('advagg_get_css_aggregate_contents', $data, $files, $aggregate_settings);
   }
-  return $data;
+  return array($data, $write_aggregate);
 }
 
 /**
@@ -823,7 +846,11 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
  *   String containing all the files.
  */
 function advagg_get_js_aggregate_contents(array $files, array $aggregate_settings, $aggregate_filename = '') {
+  $write_aggregate = TRUE;
   $data = '';
+
+  module_load_include('inc', 'advagg', 'advagg');
+  $info_on_files = advagg_load_files_info_into_static_cache(array_keys($files));
 
   if (!empty($files)) {
     // Build aggregate JS file.
@@ -832,7 +859,24 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
       // Append a ';' and a newline after each JS file to prevent them from
       // running together. Also close any comment blocks.
       if (is_readable($filename)) {
-        $contents .= file_get_contents($filename);
+        $file_contents = (string) @file_get_contents($filename);
+        $file_contents_hash = drupal_hash_base64($file_contents);
+        $cid = 'advagg:file:' . advagg_drupal_hash_base64($filename);
+        if (empty($info_on_files[$cid]['content_hash'])) {
+          $results = db_select('advagg_files', 'af')
+              ->fields('af', array('content_hash', 'filename_hash'))
+              ->condition('filename', $filename)
+              ->execute();
+          foreach ($results as $row) {
+            $info_on_files['advagg:file:' . $row->filename_hash]['content_hash'] = $row->content_hash;
+          }
+        }
+        if ($info_on_files[$cid]['content_hash'] !== $file_contents_hash) {
+          // If the content hash doesn't match don't write the file.
+          $write_aggregate = advagg_missing_file_not_readable($filename, $aggregate_filename, FALSE);
+        }
+
+        $contents .= $file_contents;
         // If a BOM is found, convert the file to UTF-8.
         $encoding = advagg_get_encoding_from_bom($contents);
         if (!empty($encoding)) {
@@ -845,7 +889,7 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
         }
       }
       else {
-        advagg_missing_file_not_readable($filename, $aggregate_filename);
+        $write_aggregate = advagg_missing_file_not_readable($filename, $aggregate_filename, TRUE);
       }
       // Allow other modules to modify this files contents.
       // Call hook_advagg_get_js_file_contents_alter().
@@ -861,7 +905,7 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
   if (empty($aggregate_settings['settings']['no_alters'])) {
     drupal_alter('advagg_get_js_aggregate_contents', $data, $files, $aggregate_settings);
   }
-  return $data;
+  return array($data, $write_aggregate);
 }
 
 /**
@@ -871,10 +915,15 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
  *   Filename of the missing file.
  * @param string $aggregate_filename
  *   Filename of the aggregate that is trying to be generated.
+ * @param bool $fs_read_failure
+ *   Set to TRUE if the file system couldn't be read.
  */
-function advagg_missing_file_not_readable($filename, $aggregate_filename = '') {
+function advagg_missing_file_not_readable($filename, $aggregate_filename = '', $fs_read_failure = FALSE) {
+  $write_aggregate = FALSE;
+  $config_path = advagg_admin_config_root_path();
+
   // Get cache of this report.
-  $cid = 'advagg:missing_file:' . drupal_hash_base64($filename);
+  $cid = 'advagg:file_issue:' . drupal_hash_base64($filename);
   $cache = cache_get($cid, 'cache_advagg_info');
 
   // Let other modules know about this missing file.
@@ -883,12 +932,28 @@ function advagg_missing_file_not_readable($filename, $aggregate_filename = '') {
 
   // Report to watchdog if this is not cached and it's not in the public dir.
   if (empty($cache) && strpos($filename, 'public://') !== 0) {
-    watchdog('advagg', 'Reading from the file system failed. %file %aggregate', array(
-      '%file' => $filename,
-      '%aggregate' => $aggregate_filename,
-    ), WATCHDOG_NOTICE);
+    if ($fs_read_failure) {
+      watchdog('advagg', 'Reading from the file system failed. This can sometimes happen durning a deployment. %file %aggregate', array(
+        '%file' => $filename,
+        '%aggregate' => $aggregate_filename,
+      ), WATCHDOG_WARNING);
+    }
+    else {
+      watchdog('advagg', 'The content hash for %file does not match the stored content hash from the database. Please <a href="@url">flush the advagg cache</a> under Smart Cache Flush. This can sometimes happen durning a deployment. %file %aggregate', array(
+        '%file' => $filename,
+        '%aggregate' => $aggregate_filename,
+        '@url' => url($config_path . '/advagg/operations', array(
+          'fragment' => 'edit-smart-flush',
+        ))
+      ), WATCHDOG_WARNING);
+    }
     cache_set($cid, TRUE, 'cache_advagg_info', CACHE_TEMPORARY);
   }
+  elseif ($cache->created < (REQUEST_TIME - variable_get('advagg_file_read_failure_timeout', ADVAGG_FILE_READ_FAILURE_TIMEOUT))) {
+    // Write the aggregate if it's been in a failure state for over an hour.
+    $write_aggregate = TRUE;
+  }
+  return $write_aggregate;
 }
 
 // File save functions.
@@ -926,10 +991,10 @@ function advagg_save_aggregate($filename, array $files, $type, array $aggregate_
   // Build the aggregates contents.
   $contents = '';
   if ($type === 'css') {
-    $contents = advagg_get_css_aggregate_contents($files, $aggregate_settings, $filename);
+    list($contents, $write_aggregate) = advagg_get_css_aggregate_contents($files, $aggregate_settings, $filename);
   }
   elseif ($type === 'js') {
-    $contents = advagg_get_js_aggregate_contents($files, $aggregate_settings, $filename);
+    list($contents, $write_aggregate) = advagg_get_js_aggregate_contents($files, $aggregate_settings, $filename);
   }
   if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
     $contents = "/* This aggregate contains the following files:\n" . implode(",\n", array_keys($files)) . ". */\n\n" . $contents;
@@ -948,29 +1013,31 @@ function advagg_save_aggregate($filename, array $files, $type, array $aggregate_
   }
 
   $errors = array();
-  foreach ($files_to_save as $uri => $data) {
-    $errors = advagg_save_data($uri, $data);
-    if (!file_exists($uri) || filesize($uri) == 0) {
-      if ($type === 'css') {
-        $full_dir = DRUPAL_ROOT . '/' . $css_path[1];
-      }
-      elseif ($type === 'js') {
-        $full_dir = DRUPAL_ROOT . '/' . $js_path[1];
-      }
-      $free_space = @disk_free_space($full_dir);
-      if ($free_space !== FALSE && strlen($data) > $free_space) {
-        watchdog('advagg', 'Write to file system failed. Disk is full. %uri', array('%uri' => $uri), WATCHDOG_ALERT);
-      }
-      elseif (!is_writable($full_dir)) {
-        watchdog('advagg', 'Write to file system failed. Check directory permissions. %uri', array('%uri' => $uri), WATCHDOG_ERROR);
-      }
-      else {
-        watchdog('advagg', 'Write to file system failed. %uri', array('%uri' => $uri), WATCHDOG_ERROR);
-      }
-      // If the file is empty, remove it. Serving via drupal is better than an
-      // empty aggregate being served.
-      if (file_exists($uri) && filesize($uri) == 0) {
-        @unlink($uri);
+  if ($write_aggregate) {
+    foreach ($files_to_save as $uri => $data) {
+      $errors = advagg_save_data($uri, $data);
+      if (!file_exists($uri) || filesize($uri) == 0) {
+        if ($type === 'css') {
+          $full_dir = DRUPAL_ROOT . '/' . $css_path[1];
+        }
+        elseif ($type === 'js') {
+          $full_dir = DRUPAL_ROOT . '/' . $js_path[1];
+        }
+        $free_space = @disk_free_space($full_dir);
+        if ($free_space !== FALSE && strlen($data) > $free_space) {
+          watchdog('advagg', 'Write to file system failed. Disk is full. %uri', array('%uri' => $uri), WATCHDOG_ALERT);
+        }
+        elseif (!is_writable($full_dir)) {
+          watchdog('advagg', 'Write to file system failed. Check directory permissions. %uri', array('%uri' => $uri), WATCHDOG_ERROR);
+        }
+        else {
+          watchdog('advagg', 'Write to file system failed. %uri', array('%uri' => $uri), WATCHDOG_ERROR);
+        }
+        // If the file is empty, remove it. Serving via drupal is better than an
+        // empty aggregate being served.
+        if (file_exists($uri) && filesize($uri) == 0) {
+          @unlink($uri);
+        }
       }
     }
   }

@@ -223,6 +223,11 @@ define('ADVAGG_SKIP_FILE_CREATE_URL_INSIDE_CSS', FALSE);
  */
 define('ADVAGG_SHOW_FILE_CHANGED_MESSAGE', TRUE);
 
+/**
+ * How long to wait untill an aggregate with a missing file is written to disk.
+ */
+define('ADVAGG_FILE_READ_FAILURE_TIMEOUT', 3600);
+
 // Core hook implementations.
 /**
  * Inbound URL rewrite helper.
@@ -4281,7 +4286,7 @@ function advagg_file_create_url($path, array $aggregate_settings = array()) {
  *
  * @see drupal_load_stylesheet()
  */
-function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE) {
+function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE, $contents = '') {
   // These statics are not cache variables, so we don't use drupal_static().
   static $_optimize, $basepath;
   if ($reset_basepath) {
@@ -4307,7 +4312,9 @@ function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE
   // stylesheets in their .info file that don't exist in the theme's path,
   // but are merely there to disable certain module CSS files.
   $content = '';
-  $contents = @file_get_contents($file);
+  if (empty($contents) && !empty($file)) {
+    $contents = @file_get_contents($file);
+  }
   if ($contents) {
     // Return the processed stylesheet.
     $content = advagg_load_stylesheet_content($contents, $_optimize);

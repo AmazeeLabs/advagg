@@ -259,6 +259,10 @@ current defaults are shown.
     // Default root dir for the advagg files; see advagg_get_root_files_dir().
     $conf['advagg_root_dir_prefix'] = 'public://';
 
+    // How long to wait when writing the aggregate if a file is missing or the
+    // hash doesn't match.
+    $conf['advagg_file_read_failure_timeout'] = 3600;
+
 
 ADDITIONAL OPTIONS FOR DRUPAL_ADD_CSS/JS FUNCTIONS
 --------------------------------------------------

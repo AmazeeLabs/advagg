@@ -281,10 +281,10 @@ function advagg_generate_filesize_processed($filename, $type) {
 
   $file_aggregate = array($filename => array());
   if ($type === 'css') {
-    $contents = advagg_get_css_aggregate_contents($file_aggregate, $aggregate_settings);
+    list($contents) = advagg_get_css_aggregate_contents($file_aggregate, $aggregate_settings);
   }
   elseif ($type === 'js') {
-    $contents = advagg_get_js_aggregate_contents($file_aggregate, $aggregate_settings);
+    list($contents) = advagg_get_js_aggregate_contents($file_aggregate, $aggregate_settings);
   }
   if (!empty($contents)) {
     $compressed = gzencode($contents, 9, FORCE_GZIP);
@@ -443,8 +443,8 @@ function &advagg_load_files_info_into_static_cache(array $files) {
  */
 function advagg_drupal_hash_base64($file) {
   // Get the static cache of this data.
-  $cached_data = &drupal_static('advagg_drupal_hash_base64');
-  if (!isset($cached_data[$file])) {
+  $cached_data = &drupal_static('advagg_drupal_hash_base64', array());
+  if (!array_key_exists($file, $cached_data)) {
     $cached_data[$file] = drupal_hash_base64($file);
   }
   return $cached_data[$file];
@@ -1332,14 +1332,14 @@ function advagg_create_aggregate_files(array $plans, $type) {
  * @return string
  *   Contents of the stylesheet, including any resolved @import commands.
  */
-function advagg_load_css_stylesheet($file, $optimize, array $aggregate_settings = array()) {
+function advagg_load_css_stylesheet($file, $optimize = TRUE, array $aggregate_settings = array(), $contents = '') {
   $old_base_path = $GLOBALS['base_path'];
 
   // Change context to that of when this aggregate was created.
   advagg_context_switch($aggregate_settings, 0);
 
   // Get the stylesheets contents.
-  $contents = advagg_load_stylesheet($file, $optimize);
+  $contents = advagg_load_stylesheet($file, $optimize, TRUE, $contents);
 
   // Get the parent directory of this file, relative to the Drupal root.
   $css_base_url = substr($file, 0, strrpos($file, '/'));
