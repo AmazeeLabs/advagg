@@ -1364,7 +1364,7 @@ function advagg_load_css_stylesheet($file, $optimize = TRUE, array $aggregate_se
   _advagg_build_css_path(array(), $css_base_url . '/', $aggregate_settings);
   // Anchor all paths in the CSS with its base URL, ignoring external,
   // absolute paths, and urls that start with # or %23 (SVG).
-  $contents = preg_replace_callback('%url\(\s*+[\'"]?+(?![a-z]++:|/|\#|\%23+)([^\'"()\s]++)[\'"]?+\s*+\)%i', '_advagg_build_css_path', $contents);
+  $contents = preg_replace_callback('%url\(\s*+[\'"]?+(?![a-z]++:|/|\#|\%23+)([^\'"\)]++)[\'"]?+\s*+\)%i', '_advagg_build_css_path', $contents);
 
   // Change context back.
   advagg_context_switch($aggregate_settings, 1);
