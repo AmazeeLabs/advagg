@@ -328,6 +328,7 @@ function advagg_bundler_analyisis_query($safesql) {
     'linecount',
     'filename_hash',
   );
+  // Make drupal_get_installed_schema_version() available.
   include_once DRUPAL_ROOT . '/includes/install.inc';
   if (drupal_get_installed_schema_version('advagg') >= 7211) {
     $af_fields[] = 'filesize_processed';

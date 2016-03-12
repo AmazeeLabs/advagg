@@ -763,7 +763,6 @@ function advagg_generate_groups(array $files_to_aggregate, $type) {
   if ($type == 'js') {
     // Make drupal_get_installed_schema_version() available.
     include_once DRUPAL_ROOT . '/includes/install.inc';
-
     if (drupal_get_installed_schema_version('advagg') >= 7213) {
       $query = db_select('advagg_files', 'af')
         ->fields('af', array('filename', 'use_strict'))
