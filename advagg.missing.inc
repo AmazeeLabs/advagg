@@ -949,7 +949,7 @@ function advagg_missing_file_not_readable($filename, $aggregate_filename = '', $
     }
     cache_set($cid, TRUE, 'cache_advagg_info', CACHE_TEMPORARY);
   }
-  elseif ($cache->created < (REQUEST_TIME - variable_get('advagg_file_read_failure_timeout', ADVAGG_FILE_READ_FAILURE_TIMEOUT))) {
+  elseif (!empty($cache) && $cache->created < (REQUEST_TIME - variable_get('advagg_file_read_failure_timeout', ADVAGG_FILE_READ_FAILURE_TIMEOUT))) {
     // Write the aggregate if it's been in a failure state for over an hour.
     $write_aggregate = TRUE;
   }
