@@ -200,11 +200,18 @@ function advagg_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'use_strict' => array(
+        'description' => 'If 1 then the js file starts with "use strict";. If 0 then it does not.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'content_hash' => array('content_hash'),
       'filetype' => array('filetype'),
       'filesize' => array('filesize'),
+      'use_strict' => array('use_strict'),
     ),
     'primary key' => array('filename_hash'),
   );
@@ -561,23 +568,25 @@ function advagg_update_7209(&$sandbox) {
 /**
  * Implements hook_update_N().
  *
- * Add filesize_processed field to {advagg_files} table.
+ * Add filesize_processed field to advagg_files table.
  */
 function advagg_update_7210() {
-  $spec = array(
-    'description' => 'The file size in bytes after minification and compression.',
-    'type' => 'int',
-    'not null' => TRUE,
-    'default' => 0,
-  );
-  db_add_field('advagg_files', 'filesize_processed', $spec);
+  if (!db_field_exists('advagg_files', 'filesize_processed')) {
+    $spec = array(
+      'description' => 'The file size in bytes after minification and compression.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    );
+    db_add_field('advagg_files', 'filesize_processed', $spec);
+  }
   return t('The filesize_processed field has been added to the advagg_files table.');
 }
 
 /**
  * Implements hook_update_N().
  *
- * Populate the filesize_processed field in the {advagg_files} table.
+ * Populate the filesize_processed field in the advagg_files table.
  */
 function advagg_update_7211() {
   drupal_load('module', 'advagg');
@@ -589,13 +598,68 @@ function advagg_update_7211() {
       ->condition('filesize_processed', 0)
       ->condition('filetype', $type)
       ->execute();
-    $files = array();
     foreach ($query as $row) {
-      $files[$row->filename] = (array)$row;
+      $row->filesize_processed = advagg_generate_filesize_processed($row->filename, $type);
+      if (!empty($row->filesize_processed)) {
+        $write = (array) $row;
+        db_merge('advagg_files')
+          ->key(array(
+              'filename_hash' => $write['filename_hash'],
+            ))
+          ->fields($write)
+          ->execute();
+      }
     }
-    advagg_insert_update_files($files, $type);
   }
   return t('The filesize_processed field has been populated inside the advagg_files table.');
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add use_strict field to advagg_files table.
+ */
+function advagg_update_7212() {
+  if (!db_field_exists('advagg_files', 'use_strict')) {
+    $spec = array(
+      'description' => 'If 1 then the js file starts with "use strict";. If 0 then it does not.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    );
+    db_add_field('advagg_files', 'use_strict', $spec);
+  }
+  if (!db_index_exists('advagg_files', 'use_strict')) {
+    db_add_index('advagg_files', 'use_strict', array('use_strict'));
+  }
+  return t('The use_strict field has been added to the advagg_files table.');
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Populate the use_strict field in the advagg_files table.
+ */
+function advagg_update_7213() {
+  drupal_load('module', 'advagg');
+  module_load_include('inc', 'advagg', 'advagg');
+  $query = db_select('advagg_files', 'af')
+    ->fields('af')
+    ->condition('filetype', 'js')
+    ->execute();
+  foreach ($query as $row) {
+    $row->use_strict = advagg_does_js_start_with_use_strict($row->filename);
+    if (!empty($row->use_strict)) {
+      $write = (array) $row;
+      db_merge('advagg_files')
+        ->key(array(
+            'filename_hash' => $write['filename_hash'],
+          ))
+        ->fields($write)
+        ->execute();
+    }
+  }
+  return t('The use_strict field has been populated inside the advagg_files table.');
 }
 
 /**
