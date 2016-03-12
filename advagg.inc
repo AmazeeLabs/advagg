@@ -760,13 +760,18 @@ function advagg_generate_groups(array $files_to_aggregate, $type) {
   }
 
   $strict_files = array();
-  if ($type == 'js' && drupal_get_installed_schema_version('advagg') >= 7213) {
-    $query = db_select('advagg_files', 'af')
-      ->fields('af', array('filename', 'use_strict'))
-      ->condition('use_strict', 1)
-      ->execute();
-    foreach ($query as $row) {
-      $strict_files[$row->filename] = $row->use_strict;
+  if ($type == 'js') {
+    // Make drupal_get_installed_schema_version() available.
+    include_once DRUPAL_ROOT . '/includes/install.inc';
+
+    if (drupal_get_installed_schema_version('advagg') >= 7213) {
+      $query = db_select('advagg_files', 'af')
+        ->fields('af', array('filename', 'use_strict'))
+        ->condition('use_strict', 1)
+        ->execute();
+      foreach ($query as $row) {
+        $strict_files[$row->filename] = $row->use_strict;
+      }
     }
   }
 
