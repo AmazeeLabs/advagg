@@ -804,7 +804,6 @@ function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
     else {
       $options['no_defer'] = TRUE;
     }
-    static $added;
     if (!isset($added['inline'])) {
       drupal_add_js($data, $options);
       $added['inline'] = TRUE;

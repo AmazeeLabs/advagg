@@ -573,6 +573,7 @@ function advagg_menu() {
     'title' => "Generate CSS Aggregate",
     'page callback' => 'advagg_missing_aggregate',
     'type' => MENU_CALLBACK,
+    // Allow anyone to access these public css files.
     'access callback' => TRUE,
     'file path' => $file_path,
     'file' => 'advagg.missing.inc',
@@ -581,6 +582,7 @@ function advagg_menu() {
     'title' => "Generate JS Aggregate",
     'page callback' => 'advagg_missing_aggregate',
     'type' => MENU_CALLBACK,
+    // Allow anyone to access these public js files.
     'access callback' => TRUE,
     'file path' => $file_path,
     'file' => 'advagg.missing.inc',

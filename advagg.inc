@@ -325,7 +325,7 @@ function advagg_does_js_start_with_use_strict($filename) {
       $single_line_comment = stripos($substr, '//');
       $multi_line_comment = stripos($substr, '/*');
       $in_function = stripos($substr, '{');
-      if ($multi_line_comment !== FALSE || $multi_line_comment !== FALSE) {
+      if ($single_line_comment !== FALSE || $multi_line_comment !== FALSE) {
         // Include jsminplus.inc and advagg_js_compress.advagg.inc.
         if (!function_exists('advagg_js_compress_jsminplus')) {
           include_once drupal_get_path('module', 'advagg') . '/advagg_js_compress/advagg_js_compress.advagg.inc';
