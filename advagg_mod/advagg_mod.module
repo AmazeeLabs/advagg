@@ -1080,6 +1080,8 @@ function advagg_mod_get_lists(array $js = array()) {
     }
 
     $move_js_to_footer = variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER);
+    $defer_setting = variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER);
+    $async_setting = variable_get('advagg_mod_js_async', ADVAGG_MOD_JS_ASYNC);
 
     // Allow other modules to add/edit the above lists.
     // Call hook_advagg_mod_get_lists_alter().
@@ -1092,6 +1094,8 @@ function advagg_mod_get_lists(array $js = array()) {
       $inline_js_defer_skip_list,
       $all_in_footer_list,
       $move_js_to_footer,
+      $defer_setting,
+      $async_setting,
     );
     drupal_alter('advagg_mod_get_lists', $lists, $js);
   }
@@ -1197,7 +1201,10 @@ function advagg_mod_js_async_defer(array &$js) {
     return $jquery_defered;
   }
 
-  list(, , $no_async_defer_list, $inline_wrapper_list) = advagg_mod_get_lists($js);
+  list(, , $no_async_defer_list, $inline_wrapper_list, , , , , $defer_setting, $async_setting) = advagg_mod_get_lists($js);
+  if (!$defer_setting && !$async_setting) {
+    return $jquery_defered;
+  }
 
   // Disable this section of code for now; the on error attribute only works
   // with async safe JS.
