@@ -1016,6 +1016,9 @@ function advagg_mod_get_lists(array $js = array()) {
 
     // Get inline wrap js skip list string and convert it to an array.
     $inline_js_wrap_skip_list = array_filter(array_map('trim', explode("\n", variable_get('advagg_mod_wrap_inline_js_skip_list', ADVAGG_MOD_WRAP_INLINE_JS_SKIP_LIST))));
+    if (module_exists('devel')) {
+      $inline_js_wrap_skip_list[] = 'function krumo(';
+    }
 
     // Get inline defer js skip list string and convert it to an array.
     $inline_js_defer_skip_list = array_filter(array_map('trim', explode("\n", variable_get('advagg_mod_defer_inline_js_skip_list', ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST))));
