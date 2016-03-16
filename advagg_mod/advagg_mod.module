@@ -979,10 +979,13 @@ function advagg_mod_js_no_ajaxpagestate(array &$scripts) {
  * Controls inline wrapping and defer. Controls no async/defer file list.
  * Controls files that say in the header.
  *
+ * @param array $js
+ *   The JS array.
+ *
  * @return array
  *   A multidimensional array.
  */
-function advagg_mod_get_lists() {
+function advagg_mod_get_lists(array $js = array()) {
   $lists = &drupal_static(__FUNCTION__);
   if (!isset($lists)) {
     // Do not move to footer file list.
@@ -1076,6 +1079,8 @@ function advagg_mod_get_lists() {
       $inline_js_defer_skip_list[] = 'GA_googleFillSlot(';
     }
 
+    $move_js_to_footer = variable_get('advagg_mod_js_footer', ADVAGG_MOD_JS_FOOTER);
+
     // Allow other modules to add/edit the above lists.
     // Call hook_advagg_mod_get_lists_alter().
     $lists = array(
@@ -1086,8 +1091,9 @@ function advagg_mod_get_lists() {
       $inline_js_wrap_skip_list,
       $inline_js_defer_skip_list,
       $all_in_footer_list,
+      $move_js_to_footer,
     );
-    drupal_alter('advagg_mod_get_lists', $lists);
+    drupal_alter('advagg_mod_get_lists', $lists, $js);
   }
   return $lists;
 }
@@ -1105,7 +1111,10 @@ function advagg_mod_js_move_to_footer(array &$js) {
     return;
   }
 
-  list($header_file_list, $header_inline_list, , , , , $all_in_footer_list) = advagg_mod_get_lists();
+  list($header_file_list, $header_inline_list, , , , , $all_in_footer_list, $move_js_to_footer) = advagg_mod_get_lists($js);
+  if (empty($move_js_to_footer)) {
+    return;
+  }
 
   // Process all in footer list.
   if ($move_js_to_footer == 3 && !empty($all_in_footer_list)) {
@@ -1188,7 +1197,7 @@ function advagg_mod_js_async_defer(array &$js) {
     return $jquery_defered;
   }
 
-  list(, , $no_async_defer_list, $inline_wrapper_list) = advagg_mod_get_lists();
+  list(, , $no_async_defer_list, $inline_wrapper_list) = advagg_mod_get_lists($js);
 
   // Disable this section of code for now; the on error attribute only works
   // with async safe JS.
