@@ -1242,9 +1242,20 @@ function advagg_install_check_via_http(array &$requirements) {
       }
 
       // Try request without https.
-      if ($request->code == 0 && stripos($request->error, 'Error opening socket ssl://')) {
+      if ($request->code == 0 && stripos($request->error, 'Error opening socket ssl://') !== FALSE) {
         $url = advagg_force_http_path($url);
         $request = drupal_http_request($url, $options);
+      }
+
+      // Try request to 127.0.0.1.
+      if ($request->code == 0 && stripos($request->error, 'getaddrinfo failed') !== FALSE) {
+        $parts = @parse_url($url);
+        if ($parts['host'] !== '127.0.0.1') {
+          $options['headers']['Host'] = $parts['host'];
+          $parts['host'] = '127.0.0.1';
+          $url = advagg_glue_url($parts);
+          $request = drupal_http_request($url, $options);
+        }
       }
 
       // Check response. Report an error if
