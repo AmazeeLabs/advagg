@@ -55,7 +55,10 @@ function advagg_js_compress_requirements($phase) {
     && constant('PHP_VERSION_ID') >= 50310
   ) {
     // Check versions.
-    $request = drupal_http_request('https://cdn.rawgit.com/sqmk/pecl-jsmin/master/package.xml', array('timeout' => 10, 'headers' => array('Connection' => 'close',)));
+    $request = drupal_http_request('https://cdn.rawgit.com/sqmk/pecl-jsmin/master/package.xml', array(
+      'timeout' => 10,
+      'headers' => array('Connection' => 'close'),
+    ));
     if (!empty($request->data) && $request->code == 200) {
       $string = $request->data;
       $dom = new DOMDocument();

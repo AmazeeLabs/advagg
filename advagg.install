@@ -448,9 +448,10 @@ function advagg_update_7204(&$sandbox) {
  * usage of ForceType from update 7203.
  */
 function advagg_update_7205(&$sandbox) {
-  $output = t('First pattern results:') . ' ' . advagg_install_update_htaccess('ForceType text/css .js');
-  $output .= ' ' . t('Second pattern results:') . ' ' . advagg_install_update_htaccess('ForceType application/javascript .js');
-  return $output;
+  return t('First pattern results: !first Second pattern results: !second', array(
+    '!first' => advagg_install_update_htaccess('ForceType text/css .js'),
+    '!second' => advagg_install_update_htaccess('ForceType application/javascript .js')
+  ));
 }
 
 /**
@@ -604,8 +605,8 @@ function advagg_update_7211() {
         $write = (array) $row;
         db_merge('advagg_files')
           ->key(array(
-              'filename_hash' => $write['filename_hash'],
-            ))
+            'filename_hash' => $write['filename_hash'],
+          ))
           ->fields($write)
           ->execute();
       }
@@ -653,8 +654,8 @@ function advagg_update_7213() {
       $write = (array) $row;
       db_merge('advagg_files')
         ->key(array(
-            'filename_hash' => $write['filename_hash'],
-          ))
+          'filename_hash' => $write['filename_hash'],
+        ))
         ->fields($write)
         ->execute();
     }
@@ -666,7 +667,7 @@ function advagg_update_7213() {
  * Convert the table to the specified collation.
  *
  * @param string $table_name
- *   Preform the operation on this table.
+ *   Perform the operation on this table.
  * @param array $fields
  *   An array of field names.
  * @param string $collation
@@ -885,7 +886,7 @@ function advagg_requirements($phase) {
       'description' => $t('%path is not setup correctly.', array('%path' => $css_path[0])),
     );
   }
-  elseif (!is_writeable($css_path[0])) {
+  elseif (!is_writable($css_path[0])) {
     $requirements['advagg_css_path'] = array(
       'title' => $t('Adv CSS/JS Agg - CSS Path'),
       'severity' => REQUIREMENT_ERROR,
@@ -901,7 +902,7 @@ function advagg_requirements($phase) {
       'description' => $t('%path is not setup correctly.', array('%path' => $css_path[0])),
     );
   }
-  elseif (!is_writeable($css_path[1])) {
+  elseif (!is_writable($css_path[1])) {
     $requirements['advagg_css_path'] = array(
       'title' => $t('Adv CSS/JS Agg - CSS Path'),
       'severity' => REQUIREMENT_ERROR,
@@ -925,7 +926,7 @@ function advagg_requirements($phase) {
       'description' => $t('%path is not setup correctly.', array('%path' => $js_path[0])),
     );
   }
-  elseif (!is_writeable($js_path[0])) {
+  elseif (!is_writable($js_path[0])) {
     $requirements['advagg_css_path'] = array(
       'title' => $t('Adv CSS/JS Agg - JS Path'),
       'severity' => REQUIREMENT_ERROR,
@@ -941,7 +942,7 @@ function advagg_requirements($phase) {
       'description' => $t('%path is not setup correctly.', array('%path' => $js_path[0])),
     );
   }
-  elseif (!is_writeable($js_path[1])) {
+  elseif (!is_writable($js_path[1])) {
     $requirements['advagg_css_path'] = array(
       'title' => $t('Adv CSS/JS Agg - JS Path'),
       'severity' => REQUIREMENT_ERROR,
@@ -1128,7 +1129,7 @@ $base_url = str_replace("http://", "https://", $base_url);
           'severity' => REQUIREMENT_WARNING,
           'value' => $t('File write had some issues with %type files.', array('%type' => $type)),
           'description' => $t('Most likely there is an issue with file and/or directory premissions. Error: @error', array(
-              '@error' => print_r($errors, TRUE),
+            '@error' => print_r($errors, TRUE),
           )),
         );
       }
@@ -1246,13 +1247,11 @@ function advagg_install_check_via_http(array &$requirements) {
         $request = drupal_http_request($url, $options);
       }
 
-      // @ignore sniffer_commenting_inlinecomment_spacingbefore:5
       // Check response. Report an error if
       //  Not a 404 OR
       //  No data returned OR
       //   Headers do not contain "x-advagg" AND
       //   Body does not contain "advagg_missing_fast404".
-      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:3
       if ( $request->code != 404
         || empty($request->data)
         || ( empty($request->headers['x-advagg'])
@@ -1360,7 +1359,7 @@ function advagg_install_check_via_http(array &$requirements) {
             'severity' => REQUIREMENT_ERROR,
             'description' => $t('Your webserver can not access @type advagg files. This is usually a server permissions issue. Raw request info: <pre>@request</pre>', array(
               '@type' => $type,
-              '@request' => var_export($request, TRUE)
+              '@request' => var_export($request, TRUE),
             )),
           );
         }
@@ -1457,7 +1456,7 @@ location ~* files/advagg_(?:css|js)/ {
       ),
       'version' => '1.0',
     );
-    // Test http 1.0
+    // Test http 1.0.
     $old_requirements = $requirements;
     advagg_install_chk_urls($requirements, $urls, $options, $mod_url, $type, $url_path, $file_path, $filename);
 
@@ -1898,7 +1897,7 @@ function advagg_install_get_first_advagg_file($directory, $type) {
   $scanned_directory[] = '';
 
   foreach ($scanned_directory as $key => $filename) {
-    // Skip if filename is not long enough,
+    // Skip if filename is not long enough.
     $len = strlen($filename);
     if ($len < 91 + strlen(ADVAGG_SPACE) * 3) {
       continue;

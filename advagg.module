@@ -224,7 +224,7 @@ define('ADVAGG_SKIP_FILE_CREATE_URL_INSIDE_CSS', FALSE);
 define('ADVAGG_SHOW_FILE_CHANGED_MESSAGE', TRUE);
 
 /**
- * How long to wait untill an aggregate with a missing file is written to disk.
+ * How long to wait until an aggregate with a missing file is written to disk.
  */
 define('ADVAGG_FILE_READ_FAILURE_TIMEOUT', 3600);
 
@@ -547,7 +547,7 @@ function advagg_file_url_alter(&$original_uri) {
   // CDN module does not exist
   // CDN far future is disabled
   // CDN mode is not basic
-  // URI does not contain cdn/farfuture/
+  // URI does not contain cdn/farfuture/.
   if ( variable_get('maintenance_mode', FALSE)
     || !module_exists('cdn')
     || !variable_get(CDN_BASIC_FARFUTURE_VARIABLE, CDN_BASIC_FARFUTURE_DEFAULT)
@@ -1538,7 +1538,7 @@ function advagg_get_render_cache(array $full_css, array $js_scope_array) {
     // Get the cached data.
     $cached_data = cache_get_multiple($cids, 'cache_advagg_aggregates');
 
-    // Set variables from the cache,
+    // Set variables from the cache.
     if (isset($cached_data[$css_cache_id])) {
       $css_cache = $cached_data[$css_cache_id];
     }
@@ -2194,7 +2194,7 @@ function advagg_get_full_js(array $javascript = array(), $skip_alter = FALSE) {
 
   // Return an empty array if
   // no javascript is used,
-  // only the settings array is used and scope is header,
+  // only the settings array is used and scope is header.
   if (  empty($javascript)
     || (isset($javascript['settings']) && count($javascript) == 1)
   ) {
@@ -2278,7 +2278,7 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
     $javascript = advagg_get_full_js();
   }
 
-  // Return an empty array if no javascript is used,
+  // Return an empty array if no javascript is used.
   if (empty($javascript)) {
     return array();
   }
@@ -2352,7 +2352,7 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
         // Skip if not an array or object.
         continue;
       }
-      $values = (array)$values;
+      $values = (array) $values;
       if (!array_key_exists('ajaxPageState', $values)) {
         // Skip if $values['ajaxPageState'] does not exist.
         continue;
@@ -2361,7 +2361,7 @@ function advagg_get_js($scope = 'header', array $javascript = array(), $ajax = F
         // Skip if not an array or object.
         continue;
       }
-      $values['ajaxPageState'] = (array)$values['ajaxPageState'];
+      $values['ajaxPageState'] = (array) $values['ajaxPageState'];
       if (array_key_exists('js', $values['ajaxPageState'])) {
         // $values['ajaxPageState']['js'] exists.
         $javascript['settings']['data'][] = $reverse_settings[$key];
@@ -2705,7 +2705,7 @@ function advagg_enabled() {
           $msg_set = TRUE;
           if (user_access('administer site configuration')) {
             drupal_set_message(t('The AdvAgg bypass cookie is currently enabled. Turn it off by going to the <a href="@advagg_operations">AdvAgg Operations</a> page and clicking the <em>Toggle the "aggregation bypass cookie" for this browser</em> button.', array(
-            '@advagg_operations' => url(advagg_admin_config_root_path() . '/advagg/operations', array('fragment' => 'edit-bypass')),
+              '@advagg_operations' => url(advagg_admin_config_root_path() . '/advagg/operations', array('fragment' => 'edit-bypass')),
             )));
           }
           else {
@@ -3000,7 +3000,7 @@ function advagg_get_root_files_dir($reset = FALSE) {
 
   // Make sure directories are available and writable.
   if (empty($css_paths) || empty($js_paths) || $reset) {
-    // Default is public://
+    // Default is public://.
     $prefix = variable_get('advagg_root_dir_prefix', ADVAGG_ROOT_DIR_PREFIX);
     $css_paths[0] = $prefix . 'advagg_css';
     $js_paths[0] = $prefix . 'advagg_js';
@@ -3213,7 +3213,7 @@ function advagg_multi_update_atime(array $files) {
   $caches = cache_get_multiple($cids, 'cache_advagg_info');
   if (!empty($caches)) {
     foreach ($caches as $cache) {
-      // See if the atime value needs to be updated;
+      // See if the atime value needs to be updated.
       if (!empty($cache->data['atime']) && $cache->data['atime'] > REQUEST_TIME - (12 * 60 * 60)) {
         // If atime is less than 12 hours old, do nothing.
         unset($records[$cache->cid]);
@@ -3230,7 +3230,7 @@ function advagg_multi_update_atime(array $files) {
       ->key(array(
         'aggregate_filenames_hash' => $record['aggregate_filenames_hash'],
         'aggregate_contents_hash' => $record['aggregate_contents_hash'],
-        ))
+      ))
       ->fields(array('atime' => $record['atime']))
       ->execute();
     if (!$write_done && $result) {
@@ -3913,9 +3913,9 @@ function advagg_group_js(array $javascript) {
         $group_keys = NULL;
         // Log the error as well.
         watchdog('advagg', 'Bad javascript was added. Type is unknown. @key - @item', array(
-            '@key' => $key,
-            '@item' => print_r($item, TRUE),
-          ), WATCHDOG_NOTICE);
+          '@key' => $key,
+          '@item' => print_r($item, TRUE),
+        ), WATCHDOG_NOTICE);
         break;
 
     }
@@ -4023,7 +4023,7 @@ function advagg_json_encode($data) {
     $php530 = version_compare(PHP_VERSION, '5.3.0', '>=');
   }
 
-  // Use fallback drupal encoder if PHP < 5.3.0
+  // Use fallback drupal encoder if PHP < 5.3.0.
   if (!$php530) {
     return @drupal_json_encode($data);
   }
@@ -4333,30 +4333,30 @@ function advagg_load_stylesheet($file, $optimize = FALSE, $reset_basepath = TRUE
 /**
  * Decodes UTF byte-order mark (BOM) into the encoding's name.
  *
- * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!Unicode.php/function/Unicode%3A%3AencodingFromBOM/8
- *
  * @param string $data
  *   The data possibly containing a BOM. This can be the entire contents of
  *   a file, or just a fragment containing at least the first five bytes.
  *
  * @return string|bool
  *   The name of the encoding, or FALSE if no byte order mark was present.
+ *
+ * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!Unicode.php/function/Unicode%3A%3AencodingFromBOM/8
  */
 function advagg_get_encoding_from_bom($data) {
-  static $bomMap = array(
-  "\xEF\xBB\xBF" => 'UTF-8',
-  "\xFE\xFF" => 'UTF-16BE',
-  "\xFF\xFE" => 'UTF-16LE',
-  "\x00\x00\xFE\xFF" => 'UTF-32BE',
-  "\xFF\xFE\x00\x00" => 'UTF-32LE',
-  "\x2B\x2F\x76\x38" => 'UTF-7',
-  "\x2B\x2F\x76\x39" => 'UTF-7',
-  "\x2B\x2F\x76\x2B" => 'UTF-7',
-  "\x2B\x2F\x76\x2F" => 'UTF-7',
-  "\x2B\x2F\x76\x38\x2D" => 'UTF-7',
+  static $bom_map = array(
+    "\xEF\xBB\xBF" => 'UTF-8',
+    "\xFE\xFF" => 'UTF-16BE',
+    "\xFF\xFE" => 'UTF-16LE',
+    "\x00\x00\xFE\xFF" => 'UTF-32BE',
+    "\xFF\xFE\x00\x00" => 'UTF-32LE',
+    "\x2B\x2F\x76\x38" => 'UTF-7',
+    "\x2B\x2F\x76\x39" => 'UTF-7',
+    "\x2B\x2F\x76\x2B" => 'UTF-7',
+    "\x2B\x2F\x76\x2F" => 'UTF-7',
+    "\x2B\x2F\x76\x38\x2D" => 'UTF-7',
   );
 
-  foreach ($bomMap as $bom => $encoding) {
+  foreach ($bom_map as $bom => $encoding) {
     if (strpos($data, $bom) === 0) {
       return $encoding;
     }
@@ -4562,7 +4562,7 @@ function advagg_aggressive_cache_conflicts() {
     // drupal_static('clientside_validation_settings') array.
     // 'clientside_validation',
     //
-    // version_compare(VERSION, '7.14', '<')
+    // version_compare(VERSION, '7.14', '<').
     'conditional_fields',
 
     // _css_injector_load_rule() function.
@@ -4645,7 +4645,7 @@ function advagg_aggressive_cache_conflicts() {
 function advagg_glue_url(array $parsed, $strip_query_and_fragment = FALSE) {
   $uri = '';
   if (isset($parsed['scheme'])) {
-    switch (strtolower($parsed['scheme']) ) {
+    switch (strtolower($parsed['scheme'])) {
       // Mailto uri.
       case 'mailto':
         $uri .= $parsed['scheme'] . ':';

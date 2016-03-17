@@ -164,7 +164,7 @@ function advagg_sri_del_filename_hashes($filename) {
  * Returns the hashes settings.
  *
  * @param array $filenames
- *   An array of filenames
+ *   An array of filenames.
  *
  * @return array
  *   The hashes for the given filenames.

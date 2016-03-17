@@ -286,7 +286,7 @@ function advagg_missing_send_saved_file(array $files_to_save, $uri, $created, $f
       header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T', REQUEST_TIME));
     }
     // Set the Expires date 1 month into the future.
-    header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', REQUEST_TIME + 31 * 24 * 60 * 60));
+    header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', REQUEST_TIME + 31 * 24 * 60 * 60));
     // Also send an etag out.
     header('Etag: ' . REQUEST_TIME . ' ' . $strlen);
 
@@ -320,7 +320,7 @@ function advagg_missing_set_farfuture_headers() {
   // Browsers that implement the W3C Access Control specification might refuse
   // to use certain resources such as fonts if those resources violate the
   // same-origin policy. Send a header to explicitly allow cross-domain use of
-  // those resources. (This is called Cross-Origin Resource Sharing, or CORS.)
+  // those resources. This is called Cross-Origin Resource Sharing, or CORS.
   header("Access-Control-Allow-Origin: *");
   // Remove all previously set Cache-Control headers, because we're going to
   // override it. Since multiple Cache-Control headers might have been set,
@@ -944,7 +944,7 @@ function advagg_missing_file_not_readable($filename, $aggregate_filename = '', $
         '%aggregate' => $aggregate_filename,
         '@url' => url($config_path . '/advagg/operations', array(
           'fragment' => 'edit-smart-flush',
-        ))
+        )),
       ), WATCHDOG_WARNING);
     }
     cache_set($cid, TRUE, 'cache_advagg_info', CACHE_TEMPORARY);
@@ -1168,7 +1168,7 @@ function advagg_save_data($uri, $data, $overwrite = FALSE) {
   // Add the extension on as well.
   $temporary_file_new = str_replace(substr($temporary_file, 0, strpos($temporary_file, 'advagg_file_')), $dir, $temporary_file) . $extension;
 
-  // Preform the rename, adding the extension to the temp file.
+  // Perform the rename, adding the extension to the temp file.
   if (!@rename($temporary_file_copy, $temporary_file_new)) {
     $errors[18] = $t('Renaming the filename (@incorrect) to (@correct) failed.', array('@incorrect' => $temporary_file_copy, '@correct' => $temporary_file_new));
     // Remove if rename failed.

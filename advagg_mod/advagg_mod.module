@@ -810,7 +810,6 @@ function advagg_mod_advagg_modify_css_pre_render_alter(&$children, &$elements) {
     }
   }
 
-
   // Wrap CSS in noscript tags.
   $options = array(
     'type' => 'inline',
@@ -949,7 +948,7 @@ function advagg_mod_js_no_ajaxpagestate(array &$scripts) {
       }
     }
   }
-  // The ajax.js file was not found and there is a settings array
+  // The ajax.js file was not found and there is a settings array.
   if (!$ajax_found && isset($scripts['#items']['settings']['data'])) {
     foreach ($scripts['#items']['settings']['data'] as $delta => $setting) {
       if (array_key_exists('ajaxPageState', $setting)) {
@@ -1300,7 +1299,7 @@ function advagg_mod_js_async_defer(array &$js) {
           }
           $values['onerror'] .= 'advagg_fallback(\'' . $jquery_update_fallback . '\');';
         }
-        // Do not defer/async the loading of jquery.js
+        // Do not defer/async the loading of jquery.js.
         if (!variable_get('advagg_mod_js_defer_jquery', ADVAGG_MOD_JS_DEFER_JQUERY)) {
           if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
             $values['defer'] = FALSE;
@@ -1326,7 +1325,7 @@ function advagg_mod_js_async_defer(array &$js) {
           }
           $values['onerror'] .= 'advagg_fallback(' . $jquery_update_ui_fallback . ');';
         }
-        // Do not defer/async the loading of jquery-ui.js
+        // Do not defer/async the loading of jquery-ui.js.
         if (!variable_get('advagg_mod_js_defer_jquery', ADVAGG_MOD_JS_DEFER_JQUERY)) {
           if (variable_get('advagg_mod_js_defer', ADVAGG_MOD_JS_DEFER)) {
             $values['defer'] = FALSE;
@@ -1431,7 +1430,7 @@ function advagg_mod_inline_defer(array &$js, $jquery_defered) {
         }
         elseif (stripos($values['data'], 'jQuery.') !== FALSE || stripos($values['data'], '(jQuery)') !== FALSE) {
           // Inline js has a named function that uses jQuery;
-          // do not defer jQuery.js
+          // do not defer jQuery.js.
           $no_jquery_defer = TRUE;
         }
       }
@@ -2506,7 +2505,7 @@ function advagg_mod_magic_form_validate($form, &$form_state) {
 /**
  * Runs on shutdown to clean up and display developer information.
  *
- * devel_boot() registers this function as a shutdown function.
+ * This function is registered by devel_boot() as a shutdown function.
  * The bulk of the work is done in devel_shutdown_real().
  */
 function advagg_mod_devel_shutdown() {
@@ -2518,13 +2517,13 @@ function advagg_mod_devel_shutdown() {
 /**
  * Runs on shutdown to display developer information in the footer.
  *
- * devel_shutdown() registers this function as a shutdown function.
+ * This function is registered by devel_shutdown() as a shutdown function.
  */
 function advagg_mod_devel_shutdown_real() {
   global $user;
   $output = '';
 
-  // Set $GLOBALS['devel_shutdown'] = FALSE in order to supress the
+  // Set $GLOBALS['devel_shutdown'] = FALSE in order to suppress the
   // devel footer for a page.  Not necessary if your page outputs any
   // of the Content-type http headers tested below (e.g. text/xml,
   // text/javascript, etc).  This is is advised where applicable.
@@ -2533,8 +2532,16 @@ function advagg_mod_devel_shutdown_real() {
     if (function_exists('drupal_get_http_header')) {
       $header = drupal_get_http_header('content-type');
       if ($header) {
-        $formats = array('xml', 'javascript', 'json', 'plain', 'image',
-          'application', 'csv', 'x-comma-separated-values');
+        $formats = array(
+          'xml',
+          'javascript',
+          'json',
+          'plain',
+          'image',
+          'application',
+          'csv',
+          'x-comma-separated-values',
+        );
         foreach ($formats as $format) {
           if (strstr($header, $format)) {
             return;
@@ -2597,14 +2604,14 @@ function advagg_mod_devel_query_put_contents($queries) {
   // Create the devel_querylog within the temp folder, if needed.
   file_prepare_directory($path, FILE_CREATE_DIRECTORY);
 
-  // Occassionally wipe the querylog dir so that files don't accumulate.
+  // Occasionally wipe the querylog dir so that files don't accumulate.
   if (mt_rand(1, 1000) == 401) {
     devel_empty_dir($path);
   }
 
   $path .= "/$request_id.txt";
   $path = file_stream_wrapper_uri_normalize($path);
-  // Save queries as a json array. Suppress errors due to recursion ()
+  // Save queries as a json array. Suppress errors due to recursion.
   $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
   if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
     $options |= JSON_PARTIAL_OUTPUT_ON_ERROR;

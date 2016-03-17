@@ -75,7 +75,7 @@ function advagg_insert_aggregate_version($aggregate_filenames_hash, $aggregate_c
     ->key(array(
       'aggregate_filenames_hash' => $record['aggregate_filenames_hash'],
       'aggregate_contents_hash' => $record['aggregate_contents_hash'],
-      ))
+    ))
     ->insertFields($record)
     ->execute();
   return $return;
@@ -133,7 +133,7 @@ function advagg_insert_aggregate(array $files, $aggregate_filenames_hash) {
       ->key(array(
         'aggregate_filenames_hash' => $record['aggregate_filenames_hash'],
         'filename_hash' => $record['filename_hash'],
-        ))
+      ))
       ->insertFields($record)
       ->execute();
 
@@ -210,7 +210,7 @@ function advagg_insert_update_files(array $files, $type) {
         $return = db_merge('advagg_files')
           ->key(array(
             'filename_hash' => $record['filename_hash'],
-            ))
+          ))
           ->insertFields($record)
           ->execute();
         if ($return) {
@@ -250,7 +250,7 @@ function advagg_insert_update_files(array $files, $type) {
         $return = db_merge('advagg_files')
           ->key(array(
             'filename_hash' => $diff['filename_hash'],
-            ))
+          ))
           ->fields($diff)
           ->execute();
         if ($return) {
@@ -311,7 +311,7 @@ function advagg_does_js_start_with_use_strict($filename) {
   $file_aggregate = array($filename => array());
   list($contents) = advagg_get_js_aggregate_contents($file_aggregate, $aggregate_settings);
 
-  // See if the js file starts with "use strict";
+  // See if the js file starts with "use strict";.
   $use_strict = stripos(trim($contents), '"use strict";');
   $strict_js = FALSE;
   if ($use_strict !== FALSE) {
@@ -574,7 +574,7 @@ function advagg_get_info_on_files(array $files, $bypass_cache = FALSE, $run_alte
 
     $ext = pathinfo($file, PATHINFO_EXTENSION);
     if ($ext !== 'css' && $ext !== 'js') {
-      // Get the $ext from the database,
+      // Get the $ext from the database.
       $row = db_select('advagg_files', 'af')
         ->fields('af')
         ->condition('filename', $file)
@@ -787,7 +787,7 @@ function advagg_generate_groups(array $files_to_aggregate, $type) {
         $ext = isset($file_info['fileext']) ? $file_info['fileext'] : pathinfo($file_info['data'], PATHINFO_EXTENSION);
         if ($ext !== 'css' && $ext !== 'js') {
           if (empty($last_ext)) {
-            // Get the $ext from the database,
+            // Get the $ext from the database.
             $row = db_select('advagg_files', 'af')
               ->fields('af')
               ->condition('filename', $file_info['data'])

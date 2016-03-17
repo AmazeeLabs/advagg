@@ -142,7 +142,7 @@ function advagg_js_compress_admin_settings_form_submit($form, &$form_state) {
   // Save per file settings.
   $new_settings = array();
   foreach ($form_state['values'] as $key => $value) {
-    // Skip if not advagg_js_compressor_file_settings
+    // Skip if not advagg_js_compressor_file_settings.
     if (strpos($key, 'advagg_js_compressor_file_settings_') === FALSE) {
       continue;
     }

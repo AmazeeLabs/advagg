@@ -79,7 +79,7 @@ function advagg_ext_compress_execute_cmd($input_file, $ext = '') {
   if (empty($ext)) {
     $ext = strtolower(pathinfo($input_file, PATHINFO_EXTENSION));
     if ($ext !== 'css' && $ext !== 'js') {
-      // Get the $ext from the database,
+      // Get the $ext from the database.
       $row = db_select('advagg_files', 'af')
         ->fields('af')
         ->condition('filename', $input_file)

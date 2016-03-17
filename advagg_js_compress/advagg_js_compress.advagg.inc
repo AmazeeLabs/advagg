@@ -330,11 +330,11 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
   if ($compressor == 3 && (version_compare(phpversion('jsmin'), '2.0.0', '<') &&advagg_js_compress_string_contains_multibyte_characters($contents))) {
     if (defined('PHP_VERSION_ID') && constant('PHP_VERSION_ID') >= 50300) {
       $compressor = 5;
-      watchdog('advagg_js_compress', 'The currently installed jsmin version does not handle multibyte characters, you may concider to upgrade the jsmin extension. Using JSqueeze fallback.');
+      watchdog('advagg_js_compress', 'The currently installed jsmin version does not handle multibyte characters, you may consider to upgrade the jsmin extension. Using JSqueeze fallback.');
     }
     else {
       $compressor = 1;
-      watchdog('advagg_js_compress', 'The currently installed jsmin version does not handle multibyte characters, you may concider to upgrade the jsmin extension. Using JSmin+ fallback.');
+      watchdog('advagg_js_compress', 'The currently installed jsmin version does not handle multibyte characters, you may consider to upgrade the jsmin extension. Using JSmin+ fallback.');
     }
   }
 
@@ -412,6 +412,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
  *
  * @param string $string
  *   String to check.
+ *
  * @return bool
  *   TRUE if string contains multibyte character.
  */
@@ -459,7 +460,10 @@ function advagg_js_compress_jsminplus(&$contents, $log_errors = TRUE) {
   catch (Exception $e) {
     // Log the exception thrown by JSMin+ and roll back to uncompressed content.
     if ($log_errors) {
-      watchdog('advagg_js_compress', $e->getMessage() . '<pre>' . $contents_before . '</pre>', NULL, WATCHDOG_WARNING);
+      watchdog('advagg_js_compress', '@message <pre> @contents </pre>', array(
+        '@message' => $e->getMessage(),
+        '@contents' => $contents_before,
+      ), WATCHDOG_WARNING);
     }
     $contents = $contents_before;
   }
