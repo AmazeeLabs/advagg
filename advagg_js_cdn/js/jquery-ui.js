@@ -1,5 +1,7 @@
 // @codingStandardsIgnoreFile
 // jshint ignore:start
+/* eslint-disable */
+
 /*!
  * jQuery UI 1.8.7
  *
