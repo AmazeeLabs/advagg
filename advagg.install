@@ -600,7 +600,7 @@ function advagg_update_7211() {
       ->condition('filetype', $type)
       ->execute();
     foreach ($query as $row) {
-      $row->filesize_processed = advagg_generate_filesize_processed($row->filename, $type);
+      $row->filesize_processed = (int) advagg_generate_filesize_processed($row->filename, $type);
       if (!empty($row->filesize_processed)) {
         $write = (array) $row;
         db_merge('advagg_files')
@@ -649,7 +649,7 @@ function advagg_update_7213() {
     ->condition('filetype', 'js')
     ->execute();
   foreach ($query as $row) {
-    $row->use_strict = advagg_does_js_start_with_use_strict($row->filename);
+    $row->use_strict = (int) advagg_does_js_start_with_use_strict($row->filename);
     if (!empty($row->use_strict)) {
       $write = (array) $row;
       db_merge('advagg_files')
