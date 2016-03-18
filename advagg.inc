@@ -194,13 +194,13 @@ function advagg_insert_update_files(array $files, $type) {
       try {
         // Add in filesize_processed if the schema is 7210 or higher.
         if (drupal_get_installed_schema_version('advagg') >= 7210) {
-          $record['filesize_processed'] = advagg_generate_filesize_processed($filename, $type);
+          $record['filesize_processed'] = (int) advagg_generate_filesize_processed($filename, $type);
         }
         // Add in use_strict if the schema is 7212 or higher.
         if (drupal_get_installed_schema_version('advagg') >= 7212) {
           $record['use_strict'] = 0;
           if ($type === 'js') {
-            $record['use_strict'] = advagg_does_js_start_with_use_strict($filename);
+            $record['use_strict'] = (int) advagg_does_js_start_with_use_strict($filename);
           }
         }
 
@@ -235,12 +235,12 @@ function advagg_insert_update_files(array $files, $type) {
 
         // Add in filesize_processed if the schema is 7210 or higher.
         if (drupal_get_installed_schema_version('advagg') >= 7210) {
-          $diff['filesize_processed'] = advagg_generate_filesize_processed($filename, $type);
+          $diff['filesize_processed'] = (int) advagg_generate_filesize_processed($filename, $type);
         }
         if (drupal_get_installed_schema_version('advagg') >= 7212) {
           $diff['use_strict'] = 0;
           if ($type === 'js') {
-            $diff['use_strict'] = advagg_does_js_start_with_use_strict($filename);
+            $diff['use_strict'] = (int) advagg_does_js_start_with_use_strict($filename);
             if (empty($diff['use_strict'])) {
               $diff['use_strict'] = 0;
             }
@@ -274,24 +274,28 @@ function advagg_insert_update_files(array $files, $type) {
  *   Processed filesize.
  */
 function advagg_generate_filesize_processed($filename, $type) {
-  // Make advagg_get_*_aggregate_contents() available.
-  module_load_include('inc', 'advagg', 'advagg.missing');
-  $aggregate_settings = advagg_current_hooks_hash_array();
+  $files = &drupal_static(__FUNCTION__, array());
+  if (!isset($files[$type][$filename])) {
+    // Make advagg_get_*_aggregate_contents() available.
+    module_load_include('inc', 'advagg', 'advagg.missing');
+    $aggregate_settings = advagg_current_hooks_hash_array();
 
-  $file_aggregate = array($filename => array());
-  if ($type === 'css') {
-    list($contents) = advagg_get_css_aggregate_contents($file_aggregate, $aggregate_settings);
+    $file_aggregate = array($filename => array());
+    if ($type === 'css') {
+      list($contents) = advagg_get_css_aggregate_contents($file_aggregate, $aggregate_settings);
+    }
+    elseif ($type === 'js') {
+      list($contents) = advagg_get_js_aggregate_contents($file_aggregate, $aggregate_settings);
+    }
+    if (!empty($contents)) {
+      $compressed = gzencode($contents, 9, FORCE_GZIP);
+      $files[$type][$filename] = strlen($compressed);
+    }
+    else {
+      $files[$type][$filename] = 0;
+    }
   }
-  elseif ($type === 'js') {
-    list($contents) = advagg_get_js_aggregate_contents($file_aggregate, $aggregate_settings);
-  }
-  if (!empty($contents)) {
-    $compressed = gzencode($contents, 9, FORCE_GZIP);
-    return strlen($compressed);
-  }
-  else {
-    return 0;
-  }
+  return $files[$type][$filename];
 }
 
 /**
@@ -304,52 +308,56 @@ function advagg_generate_filesize_processed($filename, $type) {
  *   True if "use strict"; is the first thing ran.
  */
 function advagg_does_js_start_with_use_strict($filename) {
-  // Make advagg_get_*_aggregate_contents() available.
-  module_load_include('inc', 'advagg', 'advagg.missing');
-  $aggregate_settings = advagg_current_hooks_hash_array();
+  $files = &drupal_static(__FUNCTION__, array());
+  if (!isset($files[$filename])) {
+    // Make advagg_get_*_aggregate_contents() available.
+    module_load_include('inc', 'advagg', 'advagg.missing');
+    $aggregate_settings = advagg_current_hooks_hash_array();
 
-  $file_aggregate = array($filename => array());
-  list($contents) = advagg_get_js_aggregate_contents($file_aggregate, $aggregate_settings);
+    $file_aggregate = array($filename => array());
+    list($contents) = advagg_get_js_aggregate_contents($file_aggregate, $aggregate_settings);
 
-  // See if the js file starts with "use strict";.
-  $use_strict = stripos(trim($contents), '"use strict";');
-  $strict_js = FALSE;
-  if ($use_strict !== FALSE) {
-    if ($use_strict == 0) {
-      $strict_js = TRUE;
-    }
-    else {
-      // Get all text before "use strict";.
-      $substr = substr($contents, 0, $use_strict);
-      // Check if there are any comments.
-      $single_line_comment = stripos($substr, '//');
-      $multi_line_comment = stripos($substr, '/*');
-      $in_function = stripos($substr, '{');
-      if ($single_line_comment !== FALSE || $multi_line_comment !== FALSE) {
-        // Include jsminplus.inc and advagg_js_compress.advagg.inc.
-        if (!function_exists('advagg_js_compress_jsminplus')) {
-          include_once drupal_get_path('module', 'advagg') . '/advagg_js_compress/advagg_js_compress.advagg.inc';
-          if (!class_exists('JSMinPlus')) {
-            include drupal_get_path('module', 'advagg') . '/advagg_js_compress/jsminplus.inc';
-            $nesting_level = ini_get('xdebug.max_nesting_level');
-            if (!empty($nesting_level) && $nesting_level < 200) {
-              ini_set('xdebug.max_nesting_level', 200);
-            }
-          }
-        }
-        // Jsminplus strips all comments.
-        advagg_js_compress_jsminplus($contents, FALSE);
-        $use_strict = stripos($contents, '"use strict"');
-        $substr = substr($contents, 0, $use_strict);
-        // Check if there is a function before this.
-        $in_function = stripos($substr, '{');
-      }
-      if ($in_function === FALSE) {
+    // See if the js file starts with "use strict";.
+    $use_strict = stripos(trim($contents), '"use strict";');
+    $strict_js = FALSE;
+    if ($use_strict !== FALSE) {
+      if ($use_strict == 0) {
         $strict_js = TRUE;
       }
+      else {
+        // Get all text before "use strict";.
+        $substr = substr($contents, 0, $use_strict);
+        // Check if there are any comments.
+        $single_line_comment = stripos($substr, '//');
+        $multi_line_comment = stripos($substr, '/*');
+        $in_function = stripos($substr, '{');
+        if ($single_line_comment !== FALSE || $multi_line_comment !== FALSE) {
+          // Include jsminplus.inc and advagg_js_compress.advagg.inc.
+          if (!function_exists('advagg_js_compress_jsminplus')) {
+            include_once drupal_get_path('module', 'advagg') . '/advagg_js_compress/advagg_js_compress.advagg.inc';
+            if (!class_exists('JSMinPlus')) {
+              include drupal_get_path('module', 'advagg') . '/advagg_js_compress/jsminplus.inc';
+              $nesting_level = ini_get('xdebug.max_nesting_level');
+              if (!empty($nesting_level) && $nesting_level < 200) {
+                ini_set('xdebug.max_nesting_level', 200);
+              }
+            }
+          }
+          // Jsminplus strips all comments.
+          advagg_js_compress_jsminplus($contents, FALSE);
+          $use_strict = stripos($contents, '"use strict"');
+          $substr = substr($contents, 0, $use_strict);
+          // Check if there is a function before this.
+          $in_function = stripos($substr, '{');
+        }
+        if ($in_function === FALSE) {
+          $strict_js = TRUE;
+        }
+      }
     }
+    $files[$filename] = $strict_js;
   }
-  return $strict_js;
+  return $files[$filename];
 }
 
 // File operations.
