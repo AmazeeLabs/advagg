@@ -483,6 +483,10 @@ function _advagg_locale_js_alter(&$js) {
   catch (PDOException $e) {
     // If it fails we don't care, javascript_parsed is either already written or
     // it will happen again on the next request.
+    // Still log it if in development mode.
+    if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
+      watchdog('advagg', 'Development Mode - Caught PDO Exception: <code>@info</code>', array('@info' => $e));
+    }
   }
   lock_release('locale_js_alter');
 }

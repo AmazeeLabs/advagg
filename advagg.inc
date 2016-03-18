@@ -220,6 +220,10 @@ function advagg_insert_update_files(array $files, $type) {
       catch (PDOException $e) {
         // If it fails we don't care, the file was added to the table by another
         // process then.
+        // Still log it if in development mode.
+        if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) < 0) {
+          watchdog('advagg', 'Development Mode - Caught PDO Exception: <code>@info</code>', array('@info' => $e));
+        }
       }
     }
     else {
