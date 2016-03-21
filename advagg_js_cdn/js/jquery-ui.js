@@ -1,6 +1,6 @@
 // @codingStandardsIgnoreFile
-// jshint ignore:start
-/* eslint-disable */
+/* jshint ignore:start */
+/*eslint-disable */
 
 /*!
  * jQuery UI 1.8.7
@@ -11513,3 +11513,5 @@ $.extend( $.ui.tabs.prototype, {
 });
 
 })( jQuery );
+/*eslint-enable */
+/* jshint ignore:end */
