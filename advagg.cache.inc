@@ -92,6 +92,14 @@ function advagg_push_new_changes() {
   drupal_static_reset('advagg_current_hooks_hash_array');
   drupal_static_reset('advagg_get_current_hooks_hash');
 
+  // Clear the libraries cache.
+  if (function_exists('libraries_flush_caches')) {
+    $cache_tables = libraries_flush_caches();
+    foreach ($cache_tables as $table) {
+      cache_clear_all('*', $table, TRUE);
+    }
+  }
+
   // Scan the file system for changes to CSS/JS files.
   $files = advagg_scan_for_changes();
   $results = array();
