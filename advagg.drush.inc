@@ -189,6 +189,14 @@ function drush_advagg_cron() {
     // format_plural() not always available.
     drupal_set_message(dt('Some oleftover temporary files were found. A total of %count temporary files were removed.', array('%count' => $output[5])), 'ok');
   }
+
+  // Output results from running advagg_refresh_all_locale_files().
+  if (empty($output[6])) {
+    drupal_set_message(dt('Locale did not translate anything in any JavaScript files.'), 'ok');
+  }
+  else {
+    drupal_set_message(dt('Locale did translate some JavaScript files. Resulting locale js files: @files', array('@files' => print_r($output[6], TRUE))), 'ok');
+  }
 }
 
 /**

@@ -423,6 +423,49 @@ function advagg_advagg_changed_files(array $files, array $types) {
 }
 
 /**
+ * Implements hook_advagg_changed_files().
+ *
+ * If the locale module is enabled regenerate locale translations.
+ *
+ * @param array $files
+ *   List of files that have changed.
+ * @param array $types
+ *   Array with the css and or the js key.
+ */
+function locale_advagg_changed_files(array $files, array $types) {
+  // Skip if no js changed.
+  if (empty($types['js'])) {
+    return;
+  }
+
+  $javascript = array();
+  foreach ($files as $filename => $meta_data) {
+    // Only care about js files.
+    $ext = pathinfo($filename, PATHINFO_EXTENSION);
+    if ($ext != 'js') {
+      continue;
+    }
+    $javascript[] = array(
+      'type' => 'file',
+      'data' => $filename,
+    );
+  }
+  if (!empty($javascript)) {
+    $javascript_before = $javascript;
+    $language_before = $GLOBALS['language'];
+    $language_list = language_list();
+    foreach ($language_list as $lang) {
+      if ($lang->enabled) {
+        $GLOBALS['language'] = $lang;
+        $javascript = $javascript_before;
+        locale_js_alter($javascript);
+      }
+    }
+    $GLOBALS['language'] = $language_before;
+  }
+}
+
+/**
  * Implements hook_advagg_scan_for_changes().
  *
  * Used to see if the responsive files inside an adaptive theme has changed.

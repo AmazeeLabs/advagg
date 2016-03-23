@@ -729,6 +729,48 @@ function advagg_remove_temp_files() {
 }
 
 /**
+ * Refresh all locale files.
+ *
+ * @return int
+ *   Count of the number of files removed
+ */
+function advagg_refresh_all_locale_files() {
+  $locale_files = array();
+  if (!module_exists('locale')) {
+    return $locale_files;
+  }
+
+  $results = db_select('advagg_files', 'af')
+    ->fields('af')
+    ->condition('af.filetype', 'js')
+    ->execute();
+  $javascript = array();
+  foreach ($results as $row) {
+    $javascript[] = array(
+      'type' => 'file',
+      'data' => $row->filename,
+    );
+  }
+
+  if (!empty($javascript)) {
+    $javascript_before = $javascript;
+    $language_before = $GLOBALS['language'];
+    $language_list = language_list();
+    foreach ($language_list as $lang) {
+      if ($lang->enabled) {
+        $GLOBALS['language'] = $lang;
+        $javascript = $javascript_before;
+        locale_js_alter($javascript);
+        $locale_file = array_diff_key($javascript, $javascript_before);
+        $locale_files += $locale_file;
+      }
+    }
+    $GLOBALS['language'] = $language_before;
+  }
+  return $locale_files;
+}
+
+/**
  * Callback to delete files if modified more than 60 seconds ago.
  *
  * @param string $uri

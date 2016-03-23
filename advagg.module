@@ -446,6 +446,13 @@ function advagg_module_implements_alter(&$implementations, $hook) {
       $implementations['advagg_js_compress'] = $item;
     }
   }
+
+  // Move advagg to the bottom.
+  if ($hook === 'cron' && array_key_exists('advagg', $implementations)) {
+    $item = $implementations['advagg'];
+    unset($implementations['advagg']);
+    $implementations['advagg'] = $item;
+  }
 }
 
 /**
@@ -676,6 +683,9 @@ function advagg_cron($bypass_time_check = FALSE) {
 
   // Remove old temp files.
   $return[] = advagg_remove_temp_files();
+
+  // Refresh all locale files.
+  $return[] = advagg_refresh_all_locale_files();
 
   return $return;
 }

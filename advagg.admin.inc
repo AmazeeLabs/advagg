@@ -484,6 +484,21 @@ function advagg_admin_operations_form($form, $form_state) {
     '#submit' => array('advagg_admin_cleanup_temp_files_button'),
   );
 
+  if (module_exists('locale')) {
+    $form['cron']['refresh_locale_files'] = array(
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#title' => t('Refresh all locale files'),
+      '#description' => t('Run all js files in the advagg_files table through locale_js_alter; loop for each enabled language.'),
+    );
+    $form['cron']['refresh_locale_files']['advagg_refresh_all_locale_files'] = array(
+      '#type' => 'submit',
+      '#value' => t('Refresh all locale files'),
+      '#submit' => array('advagg_admin_refresh_locale_files_button'),
+    );
+  }
+
   // Hide drastic measures as they should not be done unless you really need it.
   $form['drastic_measures'] = array(
     '#type' => 'fieldset',
@@ -1094,10 +1109,25 @@ function advagg_admin_cleanup_semaphore_table_button() {
     drupal_set_message(t('No orphaned advagg semaphore database table locks discovered. Nothing was deleted.'));
   }
   else {
-    drupal_set_message($count, format_plural('1 orphaned advagg semaphore database table lock was found. A total of 1 database entry was removed.', 'Some orphaned advagg semaphore database table locks were found. A total of @count database entries were removed.'));
+    drupal_set_message(format_plural($count, '1 orphaned advagg semaphore database table lock was found. A total of 1 database entry was removed.', 'Some orphaned advagg semaphore database table locks were found. A total of @count database entries were removed.'));
   }
 }
 
+/**
+ * Delete orphaned/expired advagg locks from the semaphore database table.
+ */
+function advagg_admin_refresh_locale_files_button() {
+  module_load_include('inc', 'advagg', 'advagg.cache');
+
+  // Refresh all locale files.
+  $locale_files = advagg_refresh_all_locale_files();
+  if (empty($locale_files)) {
+    drupal_set_message(t('No locale files are being used.'));
+  }
+  else {
+    drupal_set_message(t('The following locale files are being used: <pre>@files</pre>', array('@files' => print_r($locale_files, TRUE))));
+  }
+}
 
 /**
  * Delete leftover temp files.
@@ -1111,6 +1141,6 @@ function advagg_admin_cleanup_temp_files_button() {
     drupal_set_message(t('No leftover temp files found. Nothing was deleted.'));
   }
   else {
-    drupal_set_message($count, format_plural('1 leftover temp files from advagg was found. A total of 1 temp files was removed.', 'Some leftover temp files from advagg were found. A total of %count temp files were removed.'));
+    drupal_set_message(format_plural($count, '1 leftover temp files from advagg was found. A total of 1 temp files was removed.', 'Some leftover temp files from advagg were found. A total of %count temp files were removed.'));
   }
 }
