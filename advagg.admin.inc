@@ -948,6 +948,14 @@ function advagg_admin_get_file_info($filename) {
  * Perform a smart flush.
  */
 function advagg_admin_flush_cache_button() {
+  // Clear the libraries cache.
+  if (function_exists('libraries_flush_caches')) {
+    $cache_tables = libraries_flush_caches();
+    foreach ($cache_tables as $table) {
+      cache_clear_all('*', $table, TRUE);
+    }
+  }
+
   // Run the command.
   module_load_include('inc', 'advagg', 'advagg.cache');
   $flushed = advagg_push_new_changes();
@@ -987,6 +995,14 @@ function advagg_admin_flush_cache_button() {
  * Clear out all advagg cache bins.
  */
 function advagg_admin_clear_all_caches_button() {
+  // Clear the libraries cache.
+  if (function_exists('libraries_flush_caches')) {
+    $cache_tables = libraries_flush_caches();
+    foreach ($cache_tables as $table) {
+      cache_clear_all('*', $table, TRUE);
+    }
+  }
+
   // Run the command.
   module_load_include('inc', 'advagg', 'advagg.cache');
   advagg_flush_all_cache_bins();

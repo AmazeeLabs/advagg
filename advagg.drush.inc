@@ -203,6 +203,14 @@ function drush_advagg_cron() {
  * Flush the correct caches so CSS/JS changes go live.
  */
 function drush_advagg_smart_cache_flush() {
+  // Clear the libraries cache.
+  if (function_exists('libraries_flush_caches')) {
+    $cache_tables = libraries_flush_caches();
+    foreach ($cache_tables as $table) {
+      cache_clear_all('*', $table, TRUE);
+    }
+  }
+
   // Run the command.
   module_load_include('inc', 'advagg', 'advagg.cache');
   $flushed = advagg_push_new_changes();
