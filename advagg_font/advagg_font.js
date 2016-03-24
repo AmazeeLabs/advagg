@@ -28,7 +28,7 @@ function advagg_run_check(key, value) {
 
       // Set Cookie for a day.
       if (Drupal.settings.advagg_font_cookie == 1) {
-        expire_date = new Date(new Date().getTime() + 86400 * 1000);
+        var expire_date = new Date(new Date().getTime() + 86400 * 1000);
         document.cookie = 'advaggfont_' + key + '=' + value + ';'
           + ' expires=' + expire_date.toGMTString() + ';'
           + ' path=/;'
