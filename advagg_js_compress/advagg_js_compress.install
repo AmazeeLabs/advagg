@@ -49,44 +49,6 @@ function advagg_js_compress_requirements($phase) {
     }
   }
 
-  // Check locale and jsmin version.
-  if ( function_exists('jsmin')
-    && defined('PHP_VERSION_ID')
-    && constant('PHP_VERSION_ID') >= 50310
-  ) {
-    // Check versions.
-    $request = drupal_http_request('https://cdn.rawgit.com/sqmk/pecl-jsmin/master/package.xml', array(
-      'timeout' => 10,
-      'headers' => array('Connection' => 'close'),
-    ));
-    if (!empty($request->data) && $request->code == 200) {
-      $string = $request->data;
-      $dom = new DOMDocument();
-      $dom->loadXML($string);
-      $items = $dom->getElementsByTagName('release');
-      $github_version = 0;
-      foreach ($items as $item) {
-        if (!empty($item->nodeValue) && preg_match("/[0-9]+/", $item->nodeValue)) {
-          $github_version = $item->nodeValue;
-          break;
-        }
-      }
-      $jsmin_version = phpversion('jsmin');
-      if (!empty($jsmin_version) && !empty($github_version) && version_compare($jsmin_version, $github_version, '<')) {
-        $requirements['advagg_js_compress_jsmin_version'] = array(
-          'title' => $t('AdvAgg JS Compressor'),
-          'severity' => REQUIREMENT_WARNING,
-          'value' => $t('jsmin should be upgraded.'),
-          'description' => $t('There is a newer version of <a href="@url">jsmin</a> available. Server version: @server, Git hub version: @github', array(
-            '@url' => 'https://github.com/sqmk/pecl-jsmin',
-            '@server' => $jsmin_version,
-            '@github' => $github_version,
-          )),
-        );
-      }
-    }
-  }
-
   return $requirements;
 }
 
