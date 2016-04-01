@@ -1018,12 +1018,17 @@ function advagg_mod_get_lists(array $js = array()) {
     if (module_exists('devel')) {
       $inline_js_wrap_skip_list[] = 'function krumo(';
     }
+    if (module_exists('googleanalytics')) {
+      $inline_js_wrap_skip_list[] = '_gaq.push(["_';
+      $inline_js_wrap_skip_list[] = '"GoogleAnalyticsObject"';
+    }
 
     // Get inline defer js skip list string and convert it to an array.
     $inline_js_defer_skip_list = array_filter(array_map('trim', explode("\n", variable_get('advagg_mod_defer_inline_js_skip_list', ADVAGG_MOD_DEFER_INLINE_JS_SKIP_LIST))));
     $inline_js_defer_skip_list[] = 'loadCSS(';
     if (module_exists('googleanalytics')) {
       $inline_js_defer_skip_list[] = '_gaq.push(["_';
+      $inline_js_defer_skip_list[] = '"GoogleAnalyticsObject"';
     }
 
     // If there is a fast clicker, ajax links might not work if ajax.js is
