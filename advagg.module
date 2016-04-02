@@ -3493,6 +3493,9 @@ function advagg_pre_render_scripts(array $elements) {
           }
           $element['#attributes']['onerror'] .= $item['onerror'];
         }
+        if (!empty($group['attributes'])) {
+          $element['#attributes'] += $group['attributes'];
+        }
         $element['#browsers'] = isset($item['browsers']) ? $item['browsers'] : array();
 
         // Crude type detection if needed.
