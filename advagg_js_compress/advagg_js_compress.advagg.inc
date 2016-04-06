@@ -179,13 +179,15 @@ function advagg_js_compress_advagg_save_aggregate_alter(&$files_to_save, $aggreg
   $gzip_exists = FALSE;
   foreach ($files_to_save as $uri => $contents) {
     // See if this uri contains .gz near the end of it.
-    $pos = strripos($uri, '.gz', 91 + strlen(ADVAGG_SPACE) * 3);
-    if (!empty($pos)) {
-      $len = strlen($uri);
-      // .gz file exists, exit loop.
-      if ($pos == $len - 3) {
-        $gzip_exists = TRUE;
-        break;
+    if (strlen($uri) >= 91 + strlen(ADVAGG_SPACE) * 3) {
+      $pos = strripos($uri, '.gz', 91 + strlen(ADVAGG_SPACE) * 3);
+      if (!empty($pos)) {
+        $len = strlen($uri);
+        // .gz file exists, exit loop.
+        if ($pos == $len - 3) {
+          $gzip_exists = TRUE;
+          break;
+        }
       }
     }
   }
