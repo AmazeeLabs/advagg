@@ -353,7 +353,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     // Jsmin may have errors (incorrectly determining EOLs) with mixed tabs
     // and spaces. An example: jQuery.Cycle 3.0.3 - http://jquery.malsup.com/
     if ($compressor == 3) {
-      $data = str_replace("\t", " ", $data);
+      $contents = str_replace("\t", " ", $contents);
     }
 
     // Use the compressor.
