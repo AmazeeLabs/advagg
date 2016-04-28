@@ -976,7 +976,7 @@ function advagg_mod_js_no_ajaxpagestate(array &$scripts) {
  * Generate a list of rules and exceptions for js files and inline.
  *
  * Controls inline wrapping and defer. Controls no async/defer file list.
- * Controls files that say in the header.
+ * Controls files that stay in the header.
  *
  * @param array $js
  *   The JS array.
