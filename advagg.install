@@ -974,7 +974,7 @@ function advagg_requirements($phase) {
         'title' => $t('Adv CSS/JS Agg - Core Variables'),
         'severity' => REQUIREMENT_ERROR,
         'value' => $t('Core CSS and/or JS aggregation is disabled.'),
-        'description' => $t('"Optimize CSS files" and "Optimize JavaScript files" on the <a href="@performance">performance page</a> should be enabled.', array('@performance' => url('admin/config/development/performance'))),
+        'description' => $t('"Optimize CSS files" and "Optimize JavaScript files" on the <a href="@performance">performance page</a> should be enabled.', array('@performance' => url('admin/config/development/performance', array('fragment' => 'edit-bandwidth-optimization')))),
       );
     }
   }
