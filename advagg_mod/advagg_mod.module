@@ -988,7 +988,10 @@ function advagg_mod_js_no_ajaxpagestate(array &$scripts) {
  */
 function advagg_mod_get_lists(array $js = array(), array $css = array()) {
   $lists = &drupal_static(__FUNCTION__);
-  if (!isset($lists)) {
+  $js_count = count($js);
+  $css_count = count($css);
+  $key = $js_count . '.' . $css_count;
+  if (!isset($lists[$key])) {
     // Do not move to footer file list.
     $header_file_list = array(
       // Modernizr js.
@@ -1096,7 +1099,7 @@ function advagg_mod_get_lists(array $js = array(), array $css = array()) {
 
     // Allow other modules to add/edit the above lists.
     // Call hook_advagg_mod_get_lists_alter().
-    $lists = array(
+    $lists[$key] = array(
       $header_file_list,
       $header_inline_list,
       $no_async_defer_list,
@@ -1109,9 +1112,9 @@ function advagg_mod_get_lists(array $js = array(), array $css = array()) {
       $async_setting,
       $css_defer,
     );
-    drupal_alter('advagg_mod_get_lists', $lists, $js, $css);
+    drupal_alter('advagg_mod_get_lists', $lists[$key], $js, $css);
   }
-  return $lists;
+  return $lists[$key];
 }
 
 /**
