@@ -3395,6 +3395,11 @@ function advagg_jsspecialchars($string = '') {
  * @see drupal_get_js()
  */
 function advagg_pre_render_scripts(array $elements) {
+  // Don't run it twice.
+  if (!empty($elements['#groups'])) {
+    return $elements;
+  }
+
   // Group and aggregate the items.
   if (isset($elements['#group_callback'])) {
     // Call advagg_group_js().
@@ -3633,6 +3638,11 @@ function advagg_get_css_prefix_suffix() {
  * @see drupal_get_css()
  */
 function advagg_pre_render_styles(array $elements) {
+  // Don't run it twice.
+  if (!empty($elements['#groups'])) {
+    return $elements;
+  }
+
   // Group and aggregate the items.
   if (isset($elements['#group_callback'])) {
     // Call drupal_group_css().
