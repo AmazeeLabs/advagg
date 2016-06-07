@@ -51,11 +51,13 @@ function advagg_run_check(key, value) {
 function advagg_font_add_font_classes_on_load() {
   "use strict";
   for (var key in Drupal.settings.advagg_font) {
-    var html_class = (' ' + window.document.documentElement.className + ' ').indexOf(' ' + key + ' ');
-    // If the class already exists in the html element do nothing.
-    if (html_class === -1) {
-      // Wait till the font is downloaded, then set cookie & class.
-      advagg_run_check(key, Drupal.settings.advagg_font[key]);
+    if (Drupal.settings.advagg_font.hasOwnProperty(key)) {
+      var html_class = (' ' + window.document.documentElement.className + ' ').indexOf(' ' + key + ' ');
+      // If the class already exists in the html element do nothing.
+      if (html_class === -1) {
+        // Wait till the font is downloaded, then set cookie & class.
+        advagg_run_check(key, Drupal.settings.advagg_font[key]);
+      }
     }
   }
 }
