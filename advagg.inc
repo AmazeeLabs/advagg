@@ -324,6 +324,9 @@ function advagg_does_js_start_with_use_strict($filename) {
     // See if the js file starts with "use strict";.
     $use_strict = stripos(trim($contents), '"use strict";');
     $strict_js = FALSE;
+    if ($use_strict === FALSE) {
+      $use_strict = stripos(trim($contents), "'use strict';");
+    }
     if ($use_strict !== FALSE) {
       if ($use_strict == 0) {
         $strict_js = TRUE;
@@ -349,7 +352,10 @@ function advagg_does_js_start_with_use_strict($filename) {
           }
           // Jsminplus strips all comments.
           advagg_js_compress_jsminplus($contents, FALSE);
-          $use_strict = stripos($contents, '"use strict"');
+          $use_strict = stripos($contents, '"use strict";');
+          if ($use_strict === FALSE) {
+            $use_strict = stripos($contents, "'use strict';");
+          }
           $substr = substr($contents, 0, $use_strict);
           // Check if there is a function before this.
           $in_function = stripos($substr, '{');

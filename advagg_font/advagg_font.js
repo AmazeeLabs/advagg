@@ -14,7 +14,7 @@
  *   The font name.
  */
 function advagg_run_check(key, value) {
-  "use strict";
+  'use strict';
   // Only run if window.FontFaceObserver is defined.
   if (window.FontFaceObserver) {
     new window.FontFaceObserver(value).check().then(function () {
@@ -49,7 +49,7 @@ function advagg_run_check(key, value) {
  * Get the list of fonts to check for.
  */
 function advagg_font_add_font_classes_on_load() {
-  "use strict";
+  'use strict';
   for (var key in Drupal.settings.advagg_font) {
     if (Drupal.settings.advagg_font.hasOwnProperty(key)) {
       var html_class = (' ' + window.document.documentElement.className + ' ').indexOf(' ' + key + ' ');
@@ -66,7 +66,7 @@ function advagg_font_add_font_classes_on_load() {
  * Make sure jQuery and Drupal.settings are defined before running.
  */
 function advagg_font_check() {
-  "use strict";
+  'use strict';
   if (window.jQuery && window.Drupal && window.Drupal.settings) {
     advagg_font_add_font_classes_on_load();
   }

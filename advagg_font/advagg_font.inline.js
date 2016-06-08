@@ -9,7 +9,7 @@
  * Changes the top level class to include the font name found in the cookie.
  */
 function advagg_font_inline() {
-  "use strict";
+  'use strict';
   var fonts = document.cookie.split('advagg');
   for (var i = 0; i < fonts.length; i++) {
     var font = fonts[i].split('=');
