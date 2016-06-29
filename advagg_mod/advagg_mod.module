@@ -2552,7 +2552,7 @@ function advagg_mod_devel_shutdown_real() {
       }
     }
 
-    if (isset($user) && user_access('access devel information')) {
+    if (isset($user) && is_object($user) && user_access('access devel information')) {
       $queries = (devel_query_enabled() ? Database::getLog('devel', 'default') : NULL);
       if (!empty($queries)) {
         // Remove caller args to avoid recursion.
