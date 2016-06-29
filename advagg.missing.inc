@@ -871,7 +871,7 @@ function advagg_get_js_aggregate_contents(array $files, array $aggregate_setting
             $info_on_files['advagg:file:' . $row->filename_hash]['content_hash'] = $row->content_hash;
           }
         }
-        if ($info_on_files[$cid]['content_hash'] !== $file_contents_hash) {
+        if (isset($info_on_files[$cid]['content_hash']) && $info_on_files[$cid]['content_hash'] !== $file_contents_hash) {
           // If the content hash doesn't match don't write the file.
           $write_aggregate = advagg_missing_file_not_readable($filename, $aggregate_filename, FALSE);
         }
