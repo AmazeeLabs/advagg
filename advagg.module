@@ -972,6 +972,11 @@ function advagg_js_alter(&$js) {
         continue;
       }
 
+      // Default to file if type is not set.
+      if (!isset($value['type'])) {
+        $value['type'] = 'file';
+      }
+
       // Default to file if not file, inline, external, setting.
       if ( $value['type'] !== 'file'
         && $value['type'] !== 'inline'
@@ -1040,6 +1045,11 @@ function advagg_css_alter(&$css) {
     foreach ($css as &$value) {
       if (empty($value['data']) || !is_string($value['data'])) {
         continue;
+      }
+
+      // Default to file if type is not set.
+      if (!isset($value['type'])) {
+        $value['type'] = 'file';
       }
 
       // Default to file if not file, inline, or external.
