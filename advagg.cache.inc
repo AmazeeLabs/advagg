@@ -126,7 +126,11 @@ function advagg_push_new_changes() {
         unset($meta_data['changes']);
       }
 
-      $results[$filename] = array(count($cache_ids), count($cache_hits), $changes);
+      $results[$filename] = array(
+        count($cache_ids),
+        count($cache_hits),
+        $changes,
+      );
 
       // Update database.
       advagg_insert_update_files(array($filename => $meta_data), $ext);

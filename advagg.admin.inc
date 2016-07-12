@@ -138,7 +138,7 @@ function advagg_admin_settings_form($form, $form_state) {
     '#collapsed' => TRUE,
     '#description' => t('Unless you have a good reason to adjust these values you should leave them alone.'),
   );
-  // @ignore sniffer_squiz_commenting_poststatementcomment_found:27
+  // @codingStandardsIgnoreStart
   $short_times = drupal_map_assoc(array(
     60 * 15, // 15 min.
     60 * 30, // 30 min.
@@ -167,6 +167,7 @@ function advagg_admin_settings_form($form, $form_state) {
     60 * 60 * 24 * 45, // 1 month 2 weeks.
     60 * 60 * 24 * 60, // 2 months.
   ), 'format_interval');
+  // @codingStandardsIgnoreEnd
   $last_ran = variable_get('advagg_cron_timestamp', 0);
   if (!empty($last_ran)) {
     $last_ran = t('@time ago', array('@time' => format_interval(REQUEST_TIME - $last_ran)));

@@ -263,7 +263,7 @@ function advagg_missing_send_saved_file(array $files_to_save, $uri, $created, $f
     // Send a 304 if this is a repeat request.
     if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
       $etags = explode(' ', $_SERVER['HTTP_IF_NONE_MATCH']);
-      if ( $etags[0] < REQUEST_TIME + 31 * 24 * 60 * 60
+      if ($etags[0] < REQUEST_TIME + 31 * 24 * 60 * 60
         && isset($etags[1])
         && $etags[1] == $strlen
       ) {
@@ -276,7 +276,6 @@ function advagg_missing_send_saved_file(array $files_to_save, $uri, $created, $f
     header($_SERVER['SERVER_PROTOCOL'] . " 200 OK");
 
     // Insure the Last-Modified header is set so 304's work correctly.
-    // @ignore druplart_andor_assignment
     if (file_exists($uri) && $filemtime = @filemtime($uri)) {
       header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T', $filemtime));
       // Etags generation in php is broken due to millisecond precision for the
@@ -427,7 +426,6 @@ function advagg_htaccess_check_generate(array $files_to_save, $type, $force = FA
     $content_type = 'javascript';
   }
 
-  // @ignore style_lowercase_html:45
   $data  = "\n";
   $data .= "<FilesMatch \"^${type}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}" . ADVAGG_SPACE . "[A-Za-z0-9-_]{43}.${type}(\.gz)?\">\n";
   $data .= "  # No mod_headers. Apache module headers is not enabled.\n";
@@ -737,7 +735,7 @@ function advagg_get_css_aggregate_contents(array $files, array $aggregate_settin
             $css_selectors_rules = substr($css_rules, $start + 1, $end - ($start + 1));
 
             // Add in main media rule if needed.
-            if ( !empty($settings['media'])
+            if (!empty($settings['media'])
               && strpos($media_rules, $settings['media']) === FALSE
               && $settings['media'] !== $global_file_media
             ) {
@@ -1025,13 +1023,25 @@ function advagg_save_aggregate($filename, array $files, $type, array $aggregate_
         }
         $free_space = @disk_free_space($full_dir);
         if ($free_space !== FALSE && strlen($data) > $free_space) {
-          watchdog('advagg', 'Write to file system failed. Disk is full. %uri. !errors. %full_dir.', array('%uri' => $uri, '!errors' => print_r($errors), '%full_dir' => $full_dir), WATCHDOG_ALERT);
+          watchdog('advagg', 'Write to file system failed. Disk is full. %uri. !errors. %full_dir.', array(
+            '%uri' => $uri,
+            '!errors' => print_r($errors),
+            '%full_dir' => $full_dir,
+          ), WATCHDOG_ALERT);
         }
         elseif (!is_writable($full_dir)) {
-          watchdog('advagg', 'Write to file system failed. Check directory permissions. %uri. !errors. %full_dir.', array('%uri' => $uri, '!errors' => print_r($errors), '%full_dir' => $full_dir), WATCHDOG_ERROR);
+          watchdog('advagg', 'Write to file system failed. Check directory permissions. %uri. !errors. %full_dir.', array(
+            '%uri' => $uri,
+            '!errors' => print_r($errors),
+            '%full_dir' => $full_dir,
+          ), WATCHDOG_ERROR);
         }
         else {
-          watchdog('advagg', 'Write to file system failed. %uri. !errors. %full_dir.', array('%uri' => $uri, '!errors' => print_r($errors), '%full_dir' => $full_dir), WATCHDOG_ERROR);
+          watchdog('advagg', 'Write to file system failed. %uri. !errors. %full_dir.', array(
+            '%uri' => $uri,
+            '!errors' => print_r($errors),
+            '%full_dir' => $full_dir,
+          ), WATCHDOG_ERROR);
         }
         // If the file is empty, remove it. Serving via drupal is better than an
         // empty aggregate being served.

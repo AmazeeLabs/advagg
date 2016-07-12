@@ -260,8 +260,7 @@ function advagg_url_inbound_alter(&$path, $original_path, $path_language) {
 
   // If requested path was for an advagg file but now it is something else
   // switch is back to the advagg file.
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:2
-  if ( !empty($path)
+  if (!empty($path)
     && $path != $request_path
     && advagg_match_file_pattern($request_path)
   ) {
@@ -514,9 +513,7 @@ function advagg_system_info_alter(&$info, $file, $type) {
   }
 
   // Replace advagg path.
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:2
-  // @ignore sniffer_whitespace_closebracketspacing_closingwhitespace:8
-  if ( !empty($info['configure'])
+  if (!empty($info['configure'])
     && strpos($info['configure'], '/advagg') !== FALSE
     && ((!empty($info['dependencies'])
       && is_array($info['dependencies'])
@@ -551,12 +548,6 @@ function advagg_file_url_alter(&$original_uri) {
     return;
   }
 
-  // Ignore coder warnings.
-  // @ignore sniffer_commenting_inlinecomment_spacingbefore:10
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:11
-  // @ignore sniffer_whitespace_closebracketspacing_closingwhitespace:19
-  // @ignore sniffer_commenting_inlinecomment_spacingafter
-  //
   // CDN fix.
   // Do nothing if
   // in maintenance_mode
@@ -564,7 +555,7 @@ function advagg_file_url_alter(&$original_uri) {
   // CDN far future is disabled
   // CDN mode is not basic
   // URI does not contain cdn/farfuture/.
-  if ( variable_get('maintenance_mode', FALSE)
+  if (variable_get('maintenance_mode', FALSE)
     || !module_exists('cdn')
     || !variable_get(CDN_BASIC_FARFUTURE_VARIABLE, CDN_BASIC_FARFUTURE_DEFAULT)
     || variable_get(CDN_MODE_VARIABLE, CDN_MODE_BASIC) != CDN_MODE_BASIC
@@ -857,11 +848,7 @@ function advagg_ajax_render_alter(&$commands) {
       continue;
     }
 
-    // Ignore coder warnings.
-    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace:22
-    // @ignore sniffer_whitespace_closebracketspacing_closingwhitespace:25
-    // @ignore sniffer_commenting_inlinecomment_spacingafter
-    if ( $values['command'] === 'settings'
+    if ($values['command'] === 'settings'
       && is_array($values['settings'])
       && !empty($values['merge'])
     ) {
@@ -869,7 +856,7 @@ function advagg_ajax_render_alter(&$commands) {
       unset($commands[$key]);
       continue;
     }
-    if ( $values['command'] === 'insert'
+    if ($values['command'] === 'insert'
       && is_null($values['settings'])
       && $values['method'] === 'prepend'
       && $values['data'] == $core_scripts_header
@@ -878,7 +865,7 @@ function advagg_ajax_render_alter(&$commands) {
       unset($commands[$key]);
       continue;
     }
-    if ( $values['command'] === 'insert'
+    if ($values['command'] === 'insert'
       && is_null($values['settings'])
       && $values['method'] === 'append'
       && $values['data'] == $core_scripts_footer
@@ -941,7 +928,7 @@ function advagg_js_alter(&$js) {
     }
 
     // Google Analytics.
-    if ( strpos($value['data'], 'GoogleAnalyticsObject') !== FALSE
+    if (strpos($value['data'], 'GoogleAnalyticsObject') !== FALSE
       || strpos($value['data'], '.google-analytics.com/ga.js') !== FALSE
     ) {
       if (!empty($value['dns_prefetch']) && is_string($value['dns_prefetch'])) {
@@ -978,7 +965,7 @@ function advagg_js_alter(&$js) {
       }
 
       // Default to file if not file, inline, external, setting.
-      if ( $value['type'] !== 'file'
+      if ($value['type'] !== 'file'
         && $value['type'] !== 'inline'
         && $value['type'] !== 'external'
         && $value['type'] !== 'setting'
@@ -993,7 +980,7 @@ function advagg_js_alter(&$js) {
 
       // If type is external but doesn't start with http, https, or // change it
       // to file.
-      if ( $value['type'] === 'external'
+      if ($value['type'] === 'external'
         && stripos($value['data'], 'http://') !== 0
         && stripos($value['data'], 'https://') !== 0
         && stripos($value['data'], '//') !== 0
@@ -1003,7 +990,7 @@ function advagg_js_alter(&$js) {
 
       // If type is file but it starts with http, https, or // change it to
       // external.
-      if ( $value['type'] === 'file'
+      if ($value['type'] === 'file'
         && (stripos($value['data'], 'http://') === 0
         || stripos($value['data'], 'https://') === 0
         || (stripos($value['data'], '//') === 0 && stripos($value['data'], '///') === FALSE))
@@ -1014,7 +1001,7 @@ function advagg_js_alter(&$js) {
       // If type is external and starts with http, https, or // but points to
       // this host change to file, but move it to the top of the aggregation
       // stack.
-      if ( $value['type'] === 'external'
+      if ($value['type'] === 'external'
         && stripos($value['data'], $mod_base_url) !== FALSE
         && ( stripos($value['data'], 'http://') === 0
           || stripos($value['data'], 'https://') === 0
@@ -1053,7 +1040,7 @@ function advagg_css_alter(&$css) {
       }
 
       // Default to file if not file, inline, or external.
-      if ( $value['type'] !== 'file'
+      if ($value['type'] !== 'file'
         && $value['type'] !== 'inline'
         && $value['type'] !== 'external'
       ) {
@@ -1062,7 +1049,7 @@ function advagg_css_alter(&$css) {
 
       // If type is external but doesn't start with http, https, or // change it
       // to file.
-      if ( $value['type'] === 'external'
+      if ($value['type'] === 'external'
         && stripos($value['data'], 'http://') !== 0
         && stripos($value['data'], 'https://') !== 0
         && stripos($value['data'], '//') !== 0
@@ -1072,10 +1059,10 @@ function advagg_css_alter(&$css) {
 
       // If type is file but it starts with http, https, or // change it to
       // external.
-      if ( $value['type'] === 'file'
-        && ( stripos($value['data'], 'http://') === 0
+      if ($value['type'] === 'file'
+        && (stripos($value['data'], 'http://') === 0
           || stripos($value['data'], 'https://') === 0
-          || ( stripos($value['data'], '//') === 0
+          || (stripos($value['data'], '//') === 0
             && stripos($value['data'], '///') === FALSE
             )
           )
@@ -1313,7 +1300,6 @@ function _advagg_aggregate_css(array &$css_groups) {
     $serialize_function = variable_get('advagg_serialize', ADVAGG_SERIALIZE);
     $css_hash = drupal_hash_base64($serialize_function($files_to_aggregate));
     $cache_id = 'advagg:css:' . $hooks_hash . ':' . $css_hash;
-    // @ignore druplart_andor_assignment
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1 && $cache = cache_get($cache_id, 'cache_advagg_aggregates')) {
       $plans = $cache->data;
     }
@@ -1416,7 +1402,6 @@ function _advagg_aggregate_js(array &$js_groups) {
     $serialize_function = variable_get('advagg_serialize', ADVAGG_SERIALIZE);
     $js_hash = drupal_hash_base64($serialize_function($files_to_aggregate));
     $cache_id = 'advagg:js:' . $hooks_hash . ':' . $js_hash;
-    // @ignore druplart_andor_assignment
     if (variable_get('advagg_cache_level', ADVAGG_CACHE_LEVEL) >= 1 && $cache = cache_get($cache_id, 'cache_advagg_aggregates')) {
       $plans = $cache->data;
     }
@@ -1577,7 +1562,7 @@ function advagg_get_render_cache(array $full_css, array $js_scope_array) {
   }
 
   // Special handling if the css is loaded via JS.
-  if ( advagg_css_in_js()
+  if (advagg_css_in_js()
     && !empty($css_cache)
     && empty($js_cache)
     ) {
@@ -1902,7 +1887,7 @@ function _advagg_process_html(&$variables) {
         }
         elseif (variable_get('advagg_scripts_scope_anywhere', ADVAGG_SCRIPTS_SCOPE_ANYWHERE)) {
           // Scripts in other places.
-          if ( isset($variables[$scope])
+          if (isset($variables[$scope])
             && is_string($variables[$scope])
             && array_key_exists($scope, $GLOBALS['theme_info']->info['regions'])
           ) {
@@ -2224,7 +2209,7 @@ function advagg_get_full_js(array $javascript = array(), $skip_alter = FALSE) {
   // Return an empty array if
   // no javascript is used,
   // only the settings array is used and scope is header.
-  if (  empty($javascript)
+  if (empty($javascript)
     || (isset($javascript['settings']) && count($javascript) == 1)
   ) {
     return array();
@@ -2564,8 +2549,7 @@ function advagg_get_js_scopes(array $javascript) {
   }
 
   // Process footer last if everything has been moved to the footer.
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-  if ( isset($scopes['footer'])
+  if (isset($scopes['footer'])
     && count($scopes) > 1
     && $js_settings_in_footer
   ) {
@@ -2597,8 +2581,7 @@ function advagg_merge_plans(array $css_js_groups, array $plans) {
       // Remove files from the old css/js array.
       $file_removed = FALSE;
       foreach ($css_js_groups[$key]['items'] as $k => $values) {
-        // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-        if ( is_array($values)
+        if (is_array($values)
           && array_key_exists('data', $values)
           && is_array($plan['items']['files'])
           && is_string($values['data'])
@@ -2645,8 +2628,7 @@ function advagg_merge_plans(array $css_js_groups, array $plans) {
 
     if (!$plan_added) {
       foreach ($css_js_groups as $key => $group) {
-        // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-        if ( empty($group['items']['aggregate_filenames_hash'])
+        if (empty($group['items']['aggregate_filenames_hash'])
           || $group['items']['aggregate_filenames_hash'] != $plan['items']['aggregate_filenames_hash']
           || empty($group['items']['aggregate_contents_hash'])
           || $group['items']['aggregate_contents_hash'] != $plan['items']['aggregate_contents_hash']
@@ -2702,8 +2684,7 @@ function advagg_enabled() {
   }
   else {
     // Allow for AdvAgg to be enabled per request.
-    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-    if ( isset($_GET['advagg'])
+    if (isset($_GET['advagg'])
       && $_GET['advagg'] == 1
       && !defined('MAINTENANCE_MODE')
       && user_access('bypass advanced aggregation')
@@ -2746,8 +2727,7 @@ function advagg_enabled() {
         }
       }
       // Disable advagg if requested.
-      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-      if ( isset($_GET['advagg'])
+      if (isset($_GET['advagg'])
         && $_GET['advagg'] == -1
         && user_access('bypass advanced aggregation')
       ) {
@@ -2756,8 +2736,7 @@ function advagg_enabled() {
         $GLOBALS['conf']['preprocess_js'] = FALSE;
       }
       // Disable core preprocessing if requested.
-      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-      if ( isset($_GET['advagg-core'])
+      if (isset($_GET['advagg-core'])
         && $_GET['advagg-core'] == 0
         && user_access('bypass advanced aggregation')
       ) {
@@ -2765,8 +2744,7 @@ function advagg_enabled() {
         $GLOBALS['conf']['preprocess_js'] = FALSE;
       }
       // Enable core preprocessing if requested.
-      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-      if ( isset($_GET['advagg-core'])
+      if (isset($_GET['advagg-core'])
         && $_GET['advagg-core'] == 1
         && user_access('bypass advanced aggregation')
       ) {
@@ -2774,8 +2752,7 @@ function advagg_enabled() {
         $GLOBALS['conf']['preprocess_js'] = TRUE;
       }
       // Enable debugging if requested.
-      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-      if ( isset($_GET['advagg-debug'])
+      if (isset($_GET['advagg-debug'])
         && $_GET['advagg-debug'] == 1
         && user_access('bypass advanced aggregation')
       ) {
@@ -3908,14 +3885,14 @@ function advagg_group_js(array $javascript) {
         $item['type'] = 'setting';
       }
       // Check for the schema or // for protocol-relative.
-      elseif ( (stripos($item['data'], 'http://') === 0
+      elseif ((stripos($item['data'], 'http://') === 0
             || stripos($item['data'], 'https://') === 0
             || (stripos($item['data'], '//') === 0 && stripos($item['data'], '///') === FALSE))
       ) {
         $item['type'] = 'external';
       }
       // See if the data contains a semicolon, new line, $, or quotes.
-      elseif ( stripos($item['data'], ';') !== FALSE
+      elseif (stripos($item['data'], ';') !== FALSE
             || stripos($item['data'], "\n")
             || stripos($item['data'], "$")
             || stripos($item['data'], "'")

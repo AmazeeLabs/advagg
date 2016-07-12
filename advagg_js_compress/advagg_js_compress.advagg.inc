@@ -28,8 +28,7 @@ function advagg_js_compress_advagg_get_info_on_files_alter(&$return, $cached_dat
       continue;
     }
     // New or updated data or no advagg_js_compress data.
-    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-    if ( empty($cached_data[$info['cache_id']])
+    if (empty($cached_data[$info['cache_id']])
       || empty($info['advagg_js_compress'])
       || $info['content_hash'] != $cached_data[$info['cache_id']]['content_hash']
     ) {
@@ -143,8 +142,7 @@ function advagg_js_compress_advagg_save_aggregate_alter(&$files_to_save, $aggreg
   // Return if gzip is disabled.
   // Return if packer is disabled.
   // Return if type is not js.
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-  if ( empty($aggregate_settings['variables']['advagg_gzip'])
+  if (empty($aggregate_settings['variables']['advagg_gzip'])
     || empty($aggregate_settings['variables']['advagg_js_compress_packer'])
     || $type !== 'js'
   ) {
@@ -166,8 +164,7 @@ function advagg_js_compress_advagg_save_aggregate_alter(&$files_to_save, $aggreg
     }
     // If this file causes php to bomb or the ratio is way too good then do not
     // use packer on this aggregate.
-    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-    if ( !isset($info['advagg_js_compress'][$compressor]['code'])
+    if (!isset($info['advagg_js_compress'][$compressor]['code'])
       || $info['advagg_js_compress'][$compressor]['code'] == -1
       || $info['advagg_js_compress'][$compressor]['code'] == -3
     ) {
@@ -298,7 +295,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
   }
   // Do nothing if the file is already minified.
   $semicolon_count = substr_count($contents, ';');
-  if ( $compressor != 2
+  if ($compressor != 2
     && $semicolon_count > 10
     && $semicolon_count > (substr_count($contents, "\n", strpos($contents, ';')) * 5)
   ) {
@@ -401,7 +398,7 @@ function advagg_js_compress_prep(&$contents, $filename, array $aggregate_setting
     $add_license_setting = isset($aggregate_settings['variables']['advagg_js_compress_add_license']) ? $aggregate_settings['variables']['advagg_js_compress_add_license'] : variable_get('advagg_js_compress_add_license', ADVAGG_JS_COMPRESS_ADD_LICENSE);
     // Make sure the returned string is not empty or has a VERY high
     // compression ratio.
-    if ( empty($contents)
+    if (empty($contents)
       || empty($ratio)
       || $ratio < 0
       || $ratio > $aggregate_settings['variables']['advagg_js_compress_max_ratio']

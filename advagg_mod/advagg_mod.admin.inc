@@ -549,8 +549,7 @@ function advagg_mod_admin_settings_form_validate($form, &$form_state) {
   // Prepare directory.
   $css_dir = $multisite_dir . '/advagg_css';
   $js_dir = $multisite_dir . '/advagg_js';
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-  if ( !file_prepare_directory($css_dir, FILE_CREATE_DIRECTORY)
+  if (!file_prepare_directory($css_dir, FILE_CREATE_DIRECTORY)
     || !file_prepare_directory($js_dir, FILE_CREATE_DIRECTORY)
   ) {
     if (!is_dir($multisite_dir) || !is_writable($multisite_dir)) {

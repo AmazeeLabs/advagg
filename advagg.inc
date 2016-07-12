@@ -478,8 +478,7 @@ function &advagg_load_files_info_into_static_cache(array $files) {
   $cache_ids = array();
   foreach ($files as $file) {
     $cache_id = 'advagg:file:' . advagg_drupal_hash_base64($file);
-    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-    if ( !empty($cached_data)
+    if (!empty($cached_data)
       && !empty($cached_data[$cache_id])
     ) {
       // Make sure the cache_id is included.
@@ -556,8 +555,7 @@ function advagg_get_info_on_files(array $files, $bypass_cache = FALSE, $run_alte
     $filename_hash = advagg_drupal_hash_base64($file);
     $cache_id = 'advagg:file:' . $filename_hash;
     // If we are not bypassing the cache add cached data.
-    // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-    if ( $bypass_cache == FALSE
+    if ($bypass_cache == FALSE
       && is_array($cached_data)
       && array_key_exists($cache_id, $cached_data)
     ) {
@@ -640,8 +638,7 @@ function advagg_get_info_on_files(array $files, $bypass_cache = FALSE, $run_alte
     foreach ($return as $info) {
       // If no cache is empty add/update the cached entry.
       // Update the cache if it is new or something changed.
-      // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-      if ( empty($info['#no_cache'])
+      if (empty($info['#no_cache'])
         && !empty($info['cache_id'])
         && (empty($cached_data[$info['cache_id']]) || $info !== $cached_data[$info['cache_id']])
       ) {
@@ -762,7 +759,7 @@ function advagg_generate_groups(array $files_to_aggregate, $type) {
   // Get CSS limit value.
   $limit_value = variable_get('advagg_ie_css_selector_limiter_value', ADVAGG_IE_CSS_SELECTOR_LIMITER_VALUE);
 
-  if ( variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER)
+  if (variable_get('advagg_ie_css_selector_limiter', ADVAGG_IE_CSS_SELECTOR_LIMITER)
     || variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH)
   ) {
     foreach ($files_to_aggregate as $data) {
@@ -918,7 +915,7 @@ function advagg_generate_groups(array $files_to_aggregate, $type) {
         }
 
         // Merge in dns_prefetch.
-        if ( variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH)
+        if (variable_get('advagg_browser_dns_prefetch', ADVAGG_BROWSER_DNS_PREFETCH)
           && isset($files_info[$file_info['data']]['dns_prefetch'])
         ) {
           if (!isset($file_info['dns_prefetch'])) {
@@ -1372,8 +1369,7 @@ function advagg_create_aggregate_files(array $plans, $type) {
   }
 
   // If the httprl module exists and we want to use it.
-  // @ignore sniffer_whitespace_openbracketspacing_openingwhitespace
-  if ( module_exists('httprl')
+  if (module_exists('httprl')
     && variable_get('advagg_use_httprl', ADVAGG_USE_HTTPRL)
     && ( is_callable('httprl_is_background_callback_capable')
       && httprl_is_background_callback_capable()
@@ -1453,7 +1449,7 @@ function advagg_load_css_stylesheet($file, $optimize = TRUE, array $aggregate_se
   $url_parts = strpos($css_base_url, $parts_path);
   // If this CSS file is actually a part of a previously split larger CSS file,
   // don't use it to construct relative paths within the CSS file for
-  // 'url( ... )' bits.
+  // 'url(...)' bits.
   if ($url_parts !== FALSE) {
     $css_base_url = substr($css_base_url, $url_parts + strlen($parts_path));
   }
