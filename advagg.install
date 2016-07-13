@@ -589,15 +589,32 @@ function advagg_update_7210() {
  *
  * Populate the filesize_processed field in the advagg_files table.
  */
-function advagg_update_7211() {
+function advagg_update_7211(&$sandbox) {
   drupal_load('module', 'advagg');
   module_load_include('inc', 'advagg', 'advagg');
   $types = array('css', 'js');
+
+  // If first run of this update function then set progress variables.
+  if (!isset($sandbox['progress'])) {
+    $count = db_select('advagg_files', 'af')
+      ->fields('af')
+      ->condition('filesize_processed', 0)
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $sandbox['progress'] = 0;
+    $sandbox['max'] = $count;
+  }
+
+  // How many items should be processed per pass.
+  $limit = 20;
+
   foreach ($types as $type) {
     $query = db_select('advagg_files', 'af')
       ->fields('af')
       ->condition('filesize_processed', 0)
       ->condition('filetype', $type)
+      ->range($sandbox['progress'], $limit)
       ->execute();
     foreach ($query as $row) {
       $row->filesize_processed = (int) advagg_generate_filesize_processed($row->filename, $type);
@@ -612,7 +629,15 @@ function advagg_update_7211() {
       }
     }
   }
-  return t('The filesize_processed field has been populated inside the advagg_files table.');
+
+  // Update our progress information.
+  $sandbox['progress'] += $limit;
+  // Set the value for finished.
+  $sandbox['#finished'] = ($sandbox['progress'] >= $sandbox['max']) ? TRUE : ($sandbox['progress'] / $sandbox['max']);
+
+  if ($sandbox['#finished']) {
+    return t('The filesize_processed field has been populated inside the advagg_files table.');
+  }
 }
 
 /**
@@ -641,12 +666,29 @@ function advagg_update_7212() {
  *
  * Populate the use_strict field in the advagg_files table.
  */
-function advagg_update_7213() {
+function advagg_update_7213(&$sandbox) {
   drupal_load('module', 'advagg');
   module_load_include('inc', 'advagg', 'advagg');
+
+  // If first run of this update function then set progress variables.
+  if (!isset($sandbox['progress'])) {
+    $count = db_select('advagg_files', 'af')
+      ->fields('af')
+      ->condition('filetype', 'js')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $sandbox['progress'] = 0;
+    $sandbox['max'] = $count;
+  }
+
+  // How many items should be processed per pass.
+  $limit = 10;
+
   $query = db_select('advagg_files', 'af')
     ->fields('af')
     ->condition('filetype', 'js')
+    ->range($sandbox['progress'], $limit)
     ->execute();
   foreach ($query as $row) {
     $row->use_strict = (int) advagg_does_js_start_with_use_strict($row->filename);
@@ -660,7 +702,15 @@ function advagg_update_7213() {
         ->execute();
     }
   }
-  return t('The use_strict field has been populated inside the advagg_files table.');
+
+  // Update our progress information.
+  $sandbox['progress'] += $limit;
+  // Set the value for finished.
+  $sandbox['#finished'] = ($sandbox['progress'] >= $sandbox['max']) ? TRUE : ($sandbox['progress'] / $sandbox['max']);
+
+  if ($sandbox['#finished']) {
+    return t('The use_strict field has been populated inside the advagg_files table.');
+  }
 }
 
 /**
