@@ -419,7 +419,14 @@ function advagg_get_aggregate_info_from_files($type, array $files_with_meta_data
 
   $files_info_filenames = array();
   foreach ($files_with_meta_data as $info) {
-    $files_info_filenames[] = $info['data'];
+    if (!empty($info['data']) && is_string($info['data'])) {
+      $files_info_filenames[] = $info['data'];
+    }
+    else {
+      watchdog('advagg', 'Bad data key. File info: <code>@finfo</code>', array(
+        '@info' => var_export($file_info, TRUE),
+      ));
+    }
   }
 
   // Get filesystem data.
@@ -765,7 +772,15 @@ function advagg_generate_groups(array $files_to_aggregate, $type) {
     foreach ($files_to_aggregate as $data) {
       foreach ($data as $values) {
         foreach ($values['items'] as $file_info) {
-          $filenames[] = $file_info['data'];
+          if (!empty($file_info['data']) && is_string($file_info['data'])) {
+            $filenames[] = $file_info['data'];
+          }
+          else {
+            watchdog('advagg', 'Bad data key. File info: <code>@finfo</code> Group info: <code>@ginfo</code>', array(
+              '@finfo' => var_export($file_info, TRUE),
+              '@ginfo' => var_export($values, TRUE),
+            ));
+          }
         }
       }
     }
