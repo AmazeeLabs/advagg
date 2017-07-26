@@ -3558,8 +3558,11 @@ function advagg_pre_render_scripts(array $elements) {
  *   An array where the prefix is key 0 and suffix is key 1.
  */
 function advagg_get_css_prefix_suffix() {
-  $embed_prefix = "\n/* <![CDATA[ */\n";
-  $embed_suffix = "\n/* ]]> */\n";
+  // For inline JavaScript to validate as XHTML, all JavaScript containing
+  // XHTML needs to be wrapped in CDATA. To make that backwards compatible
+  // with HTML 4, we need to comment out the CDATA-tag.
+  $embed_prefix = "\n//<![CDATA[\n";
+  $embed_suffix = "\n//]]>\n";
   return array($embed_prefix, $embed_suffix);
 }
 
