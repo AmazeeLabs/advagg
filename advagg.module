@@ -3408,8 +3408,8 @@ function advagg_pre_render_scripts(array $elements) {
   // For inline JavaScript to validate as XHTML, all JavaScript containing
   // XHTML needs to be wrapped in CDATA. To make that backwards compatible
   // with HTML 4, we need to comment out the CDATA-tag.
-  $embed_prefix = "\n<!--//--><![CDATA[//><!--\n";
-  $embed_suffix = "\n//--><!]]>\n";
+  $embed_prefix = "\n//<![CDATA[\n";
+  $embed_suffix = "\n//]]>\n";
 
   // Since JavaScript may look for arguments in the URL and act on them, some
   // third-party code might require the use of a different query string.
